@@ -1,0 +1,169 @@
+/* =====================
+   Global Styles
+   ===================== */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+  line-height: 1.6;
+  background: #f9f9fb;
+  color: #333;
+  padding: 0;
+  margin: 0;
+}
+
+/* =====================
+   Header & Navigation
+   ===================== */
+header {
+  background: #0f172a; /* Navy/Slate mix */
+  color: #fff;
+  padding: 1rem 2rem;
+  border-bottom: 3px solid #1d4ed8; /* Accent Blue */
+}
+
+header h1 {
+  margin-bottom: 0.5rem;
+}
+
+nav ul {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+nav a {
+  color: #fff;
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease-in-out;
+}
+
+nav a:hover {
+  color: #93c5fd; /* Light Blue hover */
+}
+
+/* =====================
+   Main Layout
+   ===================== */
+main {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: auto;
+}
+
+h2 {
+  margin-bottom: 1rem;
+  color: #1e3a8a;
+}
+
+h3 {
+  margin: 1rem 0 0.5rem;
+  color: #1e40af;
+}
+
+/* =====================
+   Forms
+   ===================== */
+form {
+  background: #fff;
+  padding: 1rem 1.5rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  margin-top: 1rem;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+form label {
+  display: block;
+  margin: 0.5rem 0;
+}
+
+input,
+select,
+textarea,
+button {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.25rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+button {
+  background: #1d4ed8;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s ease-in-out;
+}
+
+button:hover {
+  background: #2563eb;
+}
+
+/* =====================
+   Tables
+   ===================== */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1rem 0;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+}
+
+table th,
+table td {
+  padding: 0.75rem;
+  border: 1px solid #e2e8f0;
+  text-align: left;
+}
+
+table th {
+  background: #f1f5f9;
+  color: #1e293b;
+}
+
+/* =====================
+   Footer
+   ===================== */
+footer {
+  text-align: center;
+  padding: 1rem;
+  background: #0f172a;
+  color: #fff;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+}
+
+/* =====================
+   Utilities
+   ===================== */
+ul {
+  margin-left: 1.25rem;
+}
+
+p,
+li {
+  margin-bottom: 0.5rem;
+}
+
+/* =====================
+   Responsive
+   ===================== */
+@media (max-width: 768px) {
+  nav ul {
+    flex-direction: column;
+  }
+
+  main {
+    padding: 1rem;
+  }
+}
