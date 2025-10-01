@@ -41,12 +41,13 @@
     <!-- Header and Navigation -->
     <header class="bg-white shadow-md sticky top-0 z-10">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
-            <img src="IMG_9047.png" alt="logo>
+            <img src="IMG_9047.png" alt="logo">
+
             <div class="flex items-center space-x-3">
-                <div class="w-10 h-10 bg-primary-blue rounded-lg flex items-center justify-center font-bold text-white text-lg">
-                    B2U
-                </div>
-                <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight hidden sm:block">Bartending2U</h1>
+                <!-- Removed the pesky B2U bubble -->
+                <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight hidden sm:block">
+                    Bartending2U
+                </h1>
             </div>
 
             <!-- Mobile-friendly Navigation -->
@@ -58,10 +59,11 @@
                 <a href="settings.html" class="text-sm font-medium text-gray-600 hover:text-primary-blue">Settings</a>
             </nav>
 
-            <!-- User/Action Button -->
-            <button class="bg-accent-orange text-white text-sm font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-orange-600 transition duration-150">
+            <!-- User/Action Button now links to new event page -->
+            <a href="newevent.html" 
+               class="bg-accent-orange text-white text-sm font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-orange-600 transition duration-150">
                 + New Event
-            </button>
+            </a>
         </div>
     </header>
 
@@ -103,7 +105,7 @@
         <!-- Recent Activity and Interactive Alerts Section (Two Columns on Desktop) -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-            <!-- Left Column: Recent Activity (2/3 width on large screens) -->
+            <!-- Left Column: Recent Activity -->
             <section class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
                 <h3 class="text-xl font-semibold text-gray-800 mb-4">Recent Activity</h3>
                 <ul class="divide-y divide-gray-100">
@@ -146,13 +148,13 @@
                 </button>
             </section>
 
-            <!-- Right Column: Critical Alerts (1/3 width on large screens) -->
+            <!-- Right Column: Critical Alerts -->
             <section class="lg:col-span-1 bg-white rounded-xl shadow-lg p-6">
                 <h3 class="text-xl font-semibold text-gray-800 mb-4">Critical Alerts</h3>
 
                 <!-- Accordion Component -->
                 <div class="space-y-3">
-                    <!-- Accordion Item 1 (Clickable Dropdown) -->
+                    <!-- Accordion Item 1 -->
                     <div class="border border-gray-200 rounded-lg">
                         <button id="accordion-btn" class="flex justify-between items-center w-full p-4 font-semibold text-left text-red-600 bg-red-50 hover:bg-red-100 rounded-lg focus:outline-none" onclick="toggleAccordion('content1', 'icon1')">
                             <span>3 Shifts Pending Staffing</span>
@@ -191,23 +193,16 @@
         </div>
     </footer>
 
-    <!-- JavaScript for Accordion Dropdown Functionality -->
+    <!-- JavaScript for Accordion Dropdown -->
     <script>
-        /**
-         * Toggles the visibility of an accordion content block.
-         * @param {string} contentId - The ID of the content div to toggle.
-         * @param {string} iconId - The ID of the SVG icon to rotate.
-         */
         function toggleAccordion(contentId, iconId) {
             const content = document.getElementById(contentId);
             const icon = document.getElementById(iconId);
 
             if (content.style.maxHeight) {
-                // If it is open, close it
                 content.style.maxHeight = null;
                 icon.classList.remove('rotated-icon');
             } else {
-                // Close all other open accordions before opening the new one
                 document.querySelectorAll('.accordion-content').forEach(item => {
                     if (item.id !== contentId && item.style.maxHeight) {
                         item.style.maxHeight = null;
@@ -219,7 +214,6 @@
                     }
                 });
 
-                // Open the selected content
                 content.style.maxHeight = content.scrollHeight + "px";
                 icon.classList.add('rotated-icon');
             }
@@ -227,4 +221,3 @@
     </script>
 </body>
 </html>
-
