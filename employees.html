@@ -106,7 +106,12 @@
                             <h3 class="details-name" id="detailName">Select a teammate</h3>
                             <p class="details-role" id="detailRole">Profile details will appear here.</p>
                         </div>
-                        <span class="badge" id="detailStatus">—</span>
+                        <div class="details-header__meta">
+                            <span class="badge" id="detailStatus">—</span>
+                            <button class="button danger small" type="button" id="removeEmployeeButton" disabled>
+                                Remove teammate
+                            </button>
+                        </div>
                     </div>
 
                     <div class="details-section">
@@ -419,7 +424,7 @@
             });
         }
 
-        const employees = [
+        let employees = [
             {
                 id: 'john-doe',
                 name: 'John Doe',
@@ -552,6 +557,7 @@
         const detailNotes = document.getElementById('detailNotes');
         const detailDocs = document.getElementById('detailDocs');
         const detailAssignments = document.getElementById('detailAssignments');
+        const removeEmployeeButton = document.getElementById('removeEmployeeButton');
         const characterCount = document.getElementById('characterCount');
         const blastMessage = document.getElementById('blastMessage');
         const blastSubject = document.getElementById('blastSubject');
@@ -611,6 +617,58 @@
             return employees.find((person) => person.id === selectedEmployeeId);
         }
 
+        function clearEmployeeDetails() {
+            if (!detailName || !detailRole || !detailStatus) {
+                return;
+            }
+
+            detailName.textContent = 'Select a teammate';
+            detailRole.textContent = 'Profile details will appear here.';
+            detailStatus.textContent = '—';
+            detailStatus.className = 'badge';
+
+            if (detailEmail) {
+                detailEmail.textContent = 'team@bartending2u.com';
+                detailEmail.href = 'mailto:team@bartending2u.com';
+            }
+
+            if (detailPhone) {
+                detailPhone.textContent = '(555) 123-4567';
+                detailPhone.href = 'tel:+15551234567';
+            }
+
+            if (detailLocation) {
+                detailLocation.textContent = 'Houston Metro';
+            }
+
+            if (detailNotes) {
+                detailNotes.textContent = 'Document specialties, awards, and go-to pairings for your star team members.';
+            }
+
+            if (detailAssignments) {
+                detailAssignments.innerHTML = '';
+                const pill = document.createElement('li');
+                pill.className = 'text-muted';
+                pill.textContent = 'Assignments will populate once you select a teammate.';
+                detailAssignments.appendChild(pill);
+            }
+
+            if (detailDocs) {
+                detailDocs.innerHTML = '';
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 4;
+                cell.className = 'text-muted';
+                cell.textContent = 'Select a teammate to review documentation.';
+                row.appendChild(cell);
+                detailDocs.appendChild(row);
+            }
+
+            if (removeEmployeeButton) {
+                removeEmployeeButton.disabled = true;
+            }
+        }
+
         function isSmsSelected() {
             const checked = document.querySelector('input[name="blastType"]:checked');
             return checked ? checked.value === 'sms' : false;
@@ -638,6 +696,8 @@
                 emptyState.className = 'empty-state';
                 emptyState.textContent = 'No teammates match your filters just yet.';
                 employeeList.appendChild(emptyState);
+                selectedEmployeeId = null;
+                clearEmployeeDetails();
                 return;
             }
 
@@ -683,7 +743,10 @@
             const previousId = selectedEmployeeId;
             selectedEmployeeId = id;
             const employee = getSelectedEmployee();
-            if (!employee || !employeeDetails) return;
+            if (!employee || !employeeDetails) {
+                clearEmployeeDetails();
+                return;
+            }
 
             const cards = employeeList.querySelectorAll('.person-card');
             cards.forEach((card) => {
@@ -767,6 +830,10 @@
                     detailAssignments.appendChild(pill);
                 }
             }
+
+            if (removeEmployeeButton) {
+                removeEmployeeButton.disabled = false;
+            }
         }
 
         function applyFilters() {
@@ -801,6 +868,29 @@
                 applyFilters();
             });
         });
+
+        function removeSelectedEmployee() {
+            const employee = getSelectedEmployee();
+            if (!employee) {
+                return;
+            }
+
+            const confirmed = window.confirm(`Remove ${employee.name} from your roster? This action cannot be undone.`);
+            if (!confirmed) {
+                return;
+            }
+
+            employees = employees.filter((person) => person.id !== employee.id);
+            selectedEmployeeId = null;
+            setAlert(docAlert, '');
+            applyFilters();
+            buildComplianceLists();
+            updateBlastPreview();
+        }
+
+        if (removeEmployeeButton) {
+            removeEmployeeButton.addEventListener('click', removeSelectedEmployee);
+        }
 
         function buildComplianceLists() {
             const tabcExpiring = [];

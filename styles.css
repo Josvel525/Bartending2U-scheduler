@@ -513,6 +513,12 @@ tr:hover td {
   transition: transform 0.2s ease, box-shadow 0.3s ease, background 0.3s ease;
 }
 
+.button.small {
+  padding: 0.45rem 0.75rem;
+  font-size: 0.8rem;
+  border-radius: 10px;
+}
+
 .button.primary {
   background: var(--primary-600);
   color: #fff;
@@ -531,6 +537,22 @@ tr:hover td {
 
 .button.ghost:hover {
   background: rgba(37, 99, 235, 0.18);
+}
+
+.button.danger {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger-500);
+}
+
+.button.danger:hover,
+.button.danger:focus {
+  background: rgba(239, 68, 68, 0.18);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
 .form-grid {
@@ -821,6 +843,17 @@ textarea {
   justify-content: space-between;
   gap: 1rem;
   align-items: flex-start;
+}
+
+.details-header__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.details-header__meta .badge {
+  align-self: flex-end;
 }
 
 .details-name {
