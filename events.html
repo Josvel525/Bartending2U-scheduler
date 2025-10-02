@@ -55,10 +55,10 @@
                 </div>
             </div>
             <div class="tab-bar">
-                <button class="tab active" type="button">All</button>
-                <button class="tab" type="button">Confirmed</button>
-                <button class="tab" type="button">Pending</button>
-                <button class="tab" type="button">Drafts</button>
+                <button class="tab active" type="button" data-filter="all">All</button>
+                <button class="tab" type="button" data-filter="confirmed">Confirmed</button>
+                <button class="tab" type="button" data-filter="pending">Pending</button>
+                <button class="tab" type="button" data-filter="drafts">Drafts</button>
             </div>
             <div class="table-wrapper">
                 <table>
@@ -73,56 +73,7 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>Corporate Party</td>
-                            <td>Oct 5, 2025</td>
-                            <td>Downtown Houston</td>
-                            <td>Signature Cocktail Bar</td>
-                            <td><span class="badge success">Confirmed</span></td>
-                            <td><span class="badge success">Fully staffed</span></td>
-                            <td class="table-actions">
-                                <a class="card-action" href="#">View</a>
-                                <a class="card-action" href="#">Staff</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Wedding Reception</td>
-                            <td>Oct 15, 2025</td>
-                            <td>The Grand Hall</td>
-                            <td>Premium Mixology</td>
-                            <td><span class="badge warning">Awaiting deposit</span></td>
-                            <td><span class="badge warning">Needs 2 bartenders</span></td>
-                            <td class="table-actions">
-                                <a class="card-action" href="#">Send reminder</a>
-                                <a class="card-action" href="#">Assign</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Holiday Gala</td>
-                            <td>Nov 30, 2025</td>
-                            <td>Skyline Ballroom</td>
-                            <td>Craft Experience</td>
-                            <td><span class="badge danger">Contract overdue</span></td>
-                            <td><span class="badge warning">Partial coverage</span></td>
-                            <td class="table-actions">
-                                <a class="card-action" href="#">Follow up</a>
-                                <a class="card-action" href="#">View notes</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Mixology Workshop</td>
-                            <td>Dec 3, 2025</td>
-                            <td>Private Residence</td>
-                            <td>Interactive Class</td>
-                            <td><span class="badge success">Confirmed</span></td>
-                            <td><span class="badge success">Ready</span></td>
-                            <td class="table-actions">
-                                <a class="card-action" href="#">Checklist</a>
-                                <a class="card-action" href="#">Prep sheet</a>
-                            </td>
-                        </tr>
-                    </tbody>
+                    <tbody id="eventsTableBody"></tbody>
                 </table>
             </div>
         </section>
@@ -134,28 +85,28 @@
                     <p class="card-subtitle">Capture the essentials, assign talent, and keep clients delighted.</p>
                 </div>
             </div>
-            <form>
+            <form id="eventForm">
                 <div class="form-grid">
                     <div class="form-field">
                         <label for="eventName">Event name</label>
-                        <input id="eventName" type="text" placeholder="E.g. Winter Soirée" />
+                        <input id="eventName" name="name" type="text" placeholder="E.g. Winter Soirée" required />
                     </div>
                     <div class="form-field">
                         <label for="eventDate">Date</label>
-                        <input id="eventDate" type="date" />
+                        <input id="eventDate" name="date" type="date" required />
                     </div>
                     <div class="form-field">
                         <label for="eventTime">Start time</label>
-                        <input id="eventTime" type="time" />
+                        <input id="eventTime" name="time" type="time" />
                     </div>
                     <div class="form-field">
                         <label for="eventLocation">Location</label>
-                        <input id="eventLocation" type="text" placeholder="Venue or address" />
+                        <input id="eventLocation" name="location" type="text" placeholder="Venue or address" />
                     </div>
                     <div class="form-field">
                         <label for="eventPackage">Service package</label>
-                        <select id="eventPackage">
-                            <option selected disabled>Select package</option>
+                        <select id="eventPackage" name="package" required>
+                            <option value="" selected disabled>Select package</option>
                             <option>Signature Cocktail Bar</option>
                             <option>Premium Mixology</option>
                             <option>Interactive Workshop</option>
@@ -164,12 +115,40 @@
                     </div>
                     <div class="form-field">
                         <label for="guestCount">Guest count</label>
-                        <input id="guestCount" type="number" min="0" placeholder="Expected attendees" />
+                        <input id="guestCount" name="guestCount" type="number" min="0" placeholder="Expected attendees" />
+                    </div>
+                    <div class="form-field">
+                        <label for="eventPayout">Estimated payout (USD)</label>
+                        <input id="eventPayout" name="payout" type="number" min="0" step="50" placeholder="0" />
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="eventStatus">Event status</label>
+                        <select id="eventStatus" name="status" required>
+                            <option value="" disabled>Select status</option>
+                            <option value="Confirmed" data-level="success" selected>Confirmed</option>
+                            <option value="Awaiting deposit" data-level="warning">Awaiting deposit</option>
+                            <option value="Contract overdue" data-level="danger">Contract overdue</option>
+                            <option value="Proposal sent" data-level="info">Proposal sent</option>
+                            <option value="Draft" data-level="neutral">Draft</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="eventStaffing">Staffing status</label>
+                        <select id="eventStaffing" name="staffingStatus" required>
+                            <option value="" disabled>Select staffing</option>
+                            <option value="Fully staffed" data-level="success" selected>Fully staffed</option>
+                            <option value="Ready" data-level="success">Ready</option>
+                            <option value="Needs 1 bartender" data-level="warning">Needs 1 bartender</option>
+                            <option value="Needs 2 bartenders" data-level="warning">Needs 2 bartenders</option>
+                            <option value="Unassigned" data-level="danger">Unassigned</option>
+                        </select>
                     </div>
                 </div>
                 <div class="form-field">
                     <label for="eventNotes">Notes & client preferences</label>
-                    <textarea id="eventNotes" placeholder="Share tastings, specialty cocktails, or logistics." ></textarea>
+                    <textarea id="eventNotes" name="notes" placeholder="Share tastings, specialty cocktails, or logistics."></textarea>
                 </div>
                 <div class="table-actions" style="justify-content: flex-end;">
                     <button class="button ghost" type="reset">Clear</button>
@@ -181,6 +160,238 @@
 
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
+    <script src="storage.js"></script>
+    <script>
+        const navToggle = document.getElementById('mobileNavToggle');
+        const nav = document.getElementById('primaryNav');
+
+        if (navToggle && nav) {
+            navToggle.addEventListener('click', () => {
+                nav.classList.toggle('open');
+            });
+        }
+
+        const store = window.B2UStore;
+        const tableBody = document.getElementById('eventsTableBody');
+        const form = document.getElementById('eventForm');
+        const tabs = document.querySelectorAll('.tab');
+        let activeFilter = 'all';
+
+        function formatDate(dateStr, timeStr) {
+            if (!dateStr) {
+                return 'Date TBC';
+            }
+
+            const date = new Date(`${dateStr}T${timeStr || '12:00'}`);
+            if (Number.isNaN(date.getTime())) {
+                return 'Date TBC';
+            }
+
+            return new Intl.DateTimeFormat('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: timeStr ? 'numeric' : undefined,
+                minute: timeStr ? '2-digit' : undefined,
+            }).format(date);
+        }
+
+        function formatCurrency(amount) {
+            if (!amount && amount !== 0) {
+                return '$0';
+            }
+
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                maximumFractionDigits: 0,
+            }).format(amount);
+        }
+
+        function createBadge(text, level) {
+            const badge = document.createElement('span');
+            badge.className = `badge ${level || 'neutral'}`;
+            badge.textContent = text;
+            return badge;
+        }
+
+        function getEventTimestamp(event) {
+            if (!event || !event.date) {
+                return Number.MAX_SAFE_INTEGER;
+            }
+
+            const timestamp = new Date(`${event.date}T${event.time || '00:00'}`).getTime();
+            return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
+        }
+
+        function filterEvents(events) {
+            switch (activeFilter) {
+                case 'confirmed':
+                    return events.filter((event) => event.statusLevel === 'success');
+                case 'pending':
+                    return events.filter((event) => event.statusLevel !== 'success');
+                case 'drafts':
+                    return events.filter((event) => (event.status || '').toLowerCase().includes('draft'));
+                default:
+                    return events;
+            }
+        }
+
+        function renderEvents() {
+            if (!tableBody) {
+                return;
+            }
+
+            tableBody.innerHTML = '';
+
+            if (!store) {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 7;
+                cell.className = 'empty-state';
+                cell.textContent = 'Storage service unavailable. Refresh to retry.';
+                row.appendChild(cell);
+                tableBody.appendChild(row);
+                return;
+            }
+
+            const events = filterEvents(
+                store
+                    .getEvents()
+                    .slice()
+                    .sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b))
+            );
+
+            if (events.length === 0) {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 7;
+                cell.className = 'empty-state';
+                cell.textContent = 'No events match this filter yet. Save one below to get started.';
+                row.appendChild(cell);
+                tableBody.appendChild(row);
+                return;
+            }
+
+            events.forEach((event) => {
+                const row = document.createElement('tr');
+
+                const nameCell = document.createElement('td');
+                nameCell.textContent = event.name;
+
+                const dateCell = document.createElement('td');
+                dateCell.textContent = formatDate(event.date, event.time);
+
+                const locationCell = document.createElement('td');
+                locationCell.textContent = event.location || 'Location TBC';
+
+                const packageCell = document.createElement('td');
+                const packageParts = [];
+                if (event.package) {
+                    packageParts.push(event.package);
+                }
+                if (event.guestCount) {
+                    packageParts.push(`${event.guestCount} guests`);
+                }
+                if (event.payout) {
+                    packageParts.push(formatCurrency(event.payout));
+                }
+                packageCell.textContent = packageParts.join(' · ') || 'Package TBC';
+
+                const statusCell = document.createElement('td');
+                statusCell.appendChild(createBadge(event.status || 'Pending', event.statusLevel));
+
+                const staffingCell = document.createElement('td');
+                staffingCell.appendChild(createBadge(event.staffingStatus || 'Unassigned', event.staffingLevel));
+
+                const actionsCell = document.createElement('td');
+                actionsCell.className = 'table-actions';
+
+                const viewLink = document.createElement('a');
+                viewLink.className = 'card-action';
+                viewLink.href = '#new-event';
+                viewLink.textContent = 'View';
+
+                const removeButton = document.createElement('button');
+                removeButton.type = 'button';
+                removeButton.className = 'card-action link-button';
+                removeButton.dataset.removeEvent = event.id;
+                removeButton.textContent = 'Remove';
+
+                actionsCell.appendChild(viewLink);
+                actionsCell.appendChild(removeButton);
+
+                row.appendChild(nameCell);
+                row.appendChild(dateCell);
+                row.appendChild(locationCell);
+                row.appendChild(packageCell);
+                row.appendChild(statusCell);
+                row.appendChild(staffingCell);
+                row.appendChild(actionsCell);
+                tableBody.appendChild(row);
+            });
+        }
+
+        if (tabs.length) {
+            tabs.forEach((tab) => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach((button) => button.classList.remove('active'));
+                    tab.classList.add('active');
+                    activeFilter = tab.dataset.filter || 'all';
+                    renderEvents();
+                });
+            });
+        }
+
+        if (tableBody) {
+            tableBody.addEventListener('click', (event) => {
+                const target = event.target.closest('[data-remove-event]');
+                if (!target || !store) {
+                    return;
+                }
+
+                store.removeEvent(target.dataset.removeEvent);
+                renderEvents();
+            });
+        }
+
+        if (form && store) {
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const formData = new FormData(form);
+                const statusOption = form.eventStatus.options[form.eventStatus.selectedIndex];
+                const staffingOption = form.eventStaffing.options[form.eventStaffing.selectedIndex];
+
+                const eventPayload = {
+                    name: (formData.get('name') || '').trim() || 'Untitled event',
+                    date: formData.get('date') || '',
+                    time: formData.get('time') || '',
+                    location: (formData.get('location') || '').trim(),
+                    package: formData.get('package') || '',
+                    guestCount: Number(formData.get('guestCount') || 0),
+                    payout: Number(formData.get('payout') || 0),
+                    status: formData.get('status') || 'Draft',
+                    statusLevel: statusOption ? statusOption.dataset.level : undefined,
+                    staffingStatus: formData.get('staffingStatus') || 'Unassigned',
+                    staffingLevel: staffingOption ? staffingOption.dataset.level : undefined,
+                    notes: (formData.get('notes') || '').trim(),
+                };
+
+                store.addEvent(eventPayload);
+                form.reset();
+                if (form.eventStatus) {
+                    form.eventStatus.value = 'Confirmed';
+                }
+                if (form.eventStaffing) {
+                    form.eventStaffing.value = 'Fully staffed';
+                }
+                renderEvents();
+            });
+        }
+
+        renderEvents();
+    </script>
     <script src="app.js"></script>
 </body>
 </html>
