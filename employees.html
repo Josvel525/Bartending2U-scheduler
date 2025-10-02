@@ -30,7 +30,7 @@
                 <a class="nav-link" href="settings.html">Settings</a>
             </nav>
 
-            <a class="cta-button" href="#add-employee">+ Add Team Member</a>
+            <a class="cta-button" href="#add-employee" data-subsection-target="add-employee">+ Add Team Member</a>
         </div>
     </header>
 
@@ -42,30 +42,32 @@
                 <p class="lead-text">Track availability, assign shifts, and empower your crew to deliver world-class service.</p>
             </div>
             <div class="hero-actions">
-                <a class="button primary" href="#add-employee">Invite teammate</a>
+                <a class="button primary" href="#add-employee" data-subsection-target="add-employee">Add teammate</a>
                 <a class="secondary-link" href="events.html">Match to events →</a>
             </div>
         </section>
 
-        <section class="card-grid stats-grid">
+        <section id="team-snapshot" class="card-grid stats-grid" data-subsection="Team snapshot">
             <article class="stat-card">
                 <span class="stat-card__label">Active staff</span>
-                <span class="stat-card__value">14</span>
-                <span class="stat-card__meta success">10 available this week</span>
+                <span class="stat-card__value" id="activeStaffStat">0</span>
+                <span class="stat-card__meta success" id="availableStaffMeta">0 available this week</span>
             </article>
             <article class="stat-card">
                 <span class="stat-card__label">Roles covered</span>
-                <span class="stat-card__value" style="font-size:1.8rem;">5</span>
-                <span class="stat-card__meta">Bartenders, Mixologists, Leads…</span>
+                <span class="stat-card__value" id="rolesCoveredStat" style="font-size:1.8rem;">0</span>
+                <span class="stat-card__meta" id="rolesCoveredMeta">Add team members to broaden expertise.</span>
+                <span class="stat-card__value" style="font-size:1.8rem;">4</span>
+                <span class="stat-card__meta">Bartender, Barback, Server, Support</span>
             </article>
             <article class="stat-card">
                 <span class="stat-card__label">Upcoming PTO</span>
-                <span class="stat-card__value" style="color: var(--warning-500);">3</span>
-                <span class="stat-card__meta warning">Plan coverage</span>
+                <span class="stat-card__value" id="upcomingPtoStat" style="color: var(--warning-500);">0</span>
+                <span class="stat-card__meta warning" id="upcomingPtoMeta">Plan coverage</span>
             </article>
         </section>
 
-        <section class="content-card">
+        <section id="team-directory" class="content-card" data-subsection="Team directory">
             <div class="card-header">
                 <div>
                     <h2 class="card-title">Team directory</h2>
@@ -166,12 +168,43 @@
                         <h4>Notes & strengths</h4>
                         <p class="details-notes" id="detailNotes">Document specialties, awards, and go-to pairings for your star team members.</p>
                     </div>
+            <div class="list-grid" id="teamList"></div>
+            <div class="list-grid">
+                <article class="person-card">
+                    <h3 class="person-card__name">John Doe</h3>
+                    <p class="person-card__role">Bartender · Lead flair specialist</p>
+                    <div class="person-card__status"><span class="badge success">Available</span></div>
+                </article>
+                <article class="person-card">
+                    <h3 class="person-card__name">Jane Smith</h3>
+                    <p class="person-card__role">Server · Guest experience lead</p>
+                    <div class="person-card__status"><span class="badge warning">On PTO</span></div>
+                </article>
+                <article class="person-card">
+                    <h3 class="person-card__name">Alex Rivera</h3>
+                    <p class="person-card__role">Bartender · Bilingual</p>
+                    <div class="person-card__status"><span class="badge success">Available</span></div>
+                </article>
+                <article class="person-card">
+                    <h3 class="person-card__name">Priya Singh</h3>
+                    <p class="person-card__role">Barback · Seasonal cocktail prep</p>
+                    <div class="person-card__status"><span class="badge success">Available</span></div>
+                </article>
+                <article class="person-card">
+                    <h3 class="person-card__name">Jamie Lee</h3>
+                    <p class="person-card__role">General support staff · Prep specialist</p>
+                    <div class="person-card__status"><span class="badge warning">Limited hours</span></div>
+                </article>
+                <article class="person-card">
+                    <h3 class="person-card__name">Marcus Allen</h3>
+                    <p class="person-card__role">Barback · Logistics</p>
+                    <div class="person-card__status"><span class="badge success">Available</span></div>
                 </article>
             </div>
         </section>
 
         <section class="split-layout">
-            <article class="content-card">
+            <article id="upcoming-shifts" class="content-card" data-subsection="Upcoming shifts">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Upcoming shifts</h2>
@@ -179,82 +212,75 @@
                     </div>
                     <a class="card-action" href="calendar.html">View schedule →</a>
                 </div>
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <div class="timeline-item__left">
-                            <span class="timeline-icon">🍸</span>
-                            <div>
-                                <h3 class="person-card__name">Corporate Party</h3>
-                                <p class="card-subtitle">John Doe · Alex Rivera · Oct 5 · 6:00 PM call time</p>
-                            </div>
-                        </div>
-                        <span class="timeline-item__meta"><span class="badge success">Ready</span></span>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-item__left">
-                            <span class="timeline-icon">🥂</span>
-                            <div>
-                                <h3 class="person-card__name">Wedding Reception</h3>
-                                <p class="card-subtitle">Needs 2 bartenders · Oct 15</p>
-                            </div>
-                        </div>
-                        <span class="timeline-item__meta"><span class="badge warning">Staff</span></span>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-item__left">
-                            <span class="timeline-icon">📅</span>
-                            <div>
-                                <h3 class="person-card__name">Mixology Workshop</h3>
-                                <p class="card-subtitle">Priya Singh · Jamie Lee · Oct 18</p>
-                            </div>
-                        </div>
-                        <span class="timeline-item__meta"><span class="badge success">Confirmed</span></span>
-                    </div>
-                </div>
+                <div class="timeline" id="upcomingShifts"></div>
             </article>
 
-            <article id="add-employee" class="content-card">
+            <article id="add-employee" class="content-card" data-subsection="Add team member">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Add team member</h2>
-                        <p class="card-subtitle">Invite freelancers or seasonal staff to upcoming shifts.</p>
+                        <p class="card-subtitle">Add new hires instantly and optionally invite them to the portal.</p>
                     </div>
                 </div>
                 <form id="addEmployeeForm">
+                <form id="teamForm">
+                <form>
+                    <p class="form-helper-text">Team members are added to your roster immediately. Check the box below if you'd like to send them a portal invite so they can review shifts, pay, and resources.</p>
                     <div class="form-grid">
                         <div class="form-field">
                             <label for="teamName">Name</label>
-                            <input id="teamName" type="text" placeholder="Full name" />
+                            <input id="teamName" name="name" type="text" placeholder="Full name" required />
                         </div>
                         <div class="form-field">
                             <label for="teamRole">Role</label>
                             <select id="teamRole">
+                            <select id="teamRole" name="role" required>
                                 <option value="" selected disabled>Select role</option>
                                 <option>Bartender</option>
                                 <option>Mixologist</option>
                                 <option>Bar Lead</option>
                                 <option>Support / Barback</option>
+                                <option>Event Captain</option>
+                                <option>Barback</option>
+                                <option>Server</option>
+                                <option>General Support Staff</option>
                             </select>
                         </div>
                         <div class="form-field">
                             <label for="teamEmail">Email</label>
-                            <input id="teamEmail" type="email" placeholder="name@bartending2u.com" />
+                            <input id="teamEmail" name="email" type="email" placeholder="name@bartending2u.com" />
                         </div>
                         <div class="form-field">
                             <label for="teamPhone">Phone</label>
-                            <input id="teamPhone" type="tel" placeholder="(555) 123-4567" />
+                            <input id="teamPhone" name="phone" type="tel" placeholder="(555) 123-4567" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamStatus">Status</label>
+                            <select id="teamStatus" name="status" required>
+                                <option value="Available" data-level="success" selected>Available</option>
+                                <option value="On PTO" data-level="warning">On PTO</option>
+                                <option value="Limited hours" data-level="warning">Limited hours</option>
+                                <option value="Booked" data-level="danger">Booked</option>
+                            </select>
                         </div>
                     </div>
                     <div class="form-field">
                         <label for="teamNotes">Specialties & certifications</label>
-                        <textarea id="teamNotes" placeholder="E.g. flair bartending, wine pairing, bilingual"></textarea>
+                        <textarea id="teamNotes" name="notes" placeholder="E.g. flair bartending, wine pairing, bilingual"></textarea>
+                    </div>
+                    <div class="form-field">
+                        <label class="checkbox-field" for="sendPortalInvite">
+                            <input id="sendPortalInvite" type="checkbox" />
+                            Send portal invite so they can view shifts and pay updates
+                        </label>
                     </div>
                     <div class="table-actions" style="justify-content: flex-end;">
                         <button class="button ghost" type="reset">Clear</button>
-                        <button class="button primary" type="submit">Invite</button>
+                        <button class="button primary" type="submit">Add team member</button>
                     </div>
                 </form>
                 <p class="form-alert" id="addEmployeeAlert" role="status" aria-live="polite"></p>
+
             </article>
         </section>
 
@@ -340,6 +366,7 @@
 
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
+    <script src="storage.js"></script>
     <script>
         const navToggle = document.getElementById('mobileNavToggle');
         const nav = document.getElementById('primaryNav');
@@ -1008,6 +1035,287 @@
         updateCharacterCount();
         updateBlastTypeVisibility();
         updateBlastPreview();
+        const store = window.B2UStore;
+        const teamList = document.getElementById('teamList');
+        const teamForm = document.getElementById('teamForm');
+        const upcomingShifts = document.getElementById('upcomingShifts');
+
+        function createBadge(text, level) {
+            const badge = document.createElement('span');
+            badge.className = `badge ${level || 'neutral'}`;
+            badge.textContent = text;
+            return badge;
+        }
+
+        function getStatusLevel(value) {
+            if (!value) {
+                return 'neutral';
+            }
+            const normalized = value.toLowerCase();
+            if (normalized.includes('available') || normalized.includes('ready')) return 'success';
+            if (normalized.includes('pto') || normalized.includes('limited')) return 'warning';
+            if (normalized.includes('booked')) return 'danger';
+            return 'info';
+        }
+
+        function getEventTimestamp(event) {
+            if (!event || !event.date) {
+                return Number.MAX_SAFE_INTEGER;
+            }
+            const timestamp = new Date(`${event.date}T${event.time || '00:00'}`).getTime();
+            return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
+        }
+
+        function formatEventDate(dateStr, timeStr) {
+            if (!dateStr) {
+                return 'Date TBC';
+            }
+            const date = new Date(`${dateStr}T${timeStr || '12:00'}`);
+            if (Number.isNaN(date.getTime())) {
+                return 'Date TBC';
+            }
+            return new Intl.DateTimeFormat('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: timeStr ? 'numeric' : undefined,
+                minute: timeStr ? '2-digit' : undefined,
+            }).format(date);
+        }
+
+        function renderTeamList(employees) {
+            if (!teamList) {
+                return;
+            }
+
+            teamList.innerHTML = '';
+
+            if (!store) {
+                const message = document.createElement('p');
+                message.className = 'empty-state';
+                message.textContent = 'Unable to load staff directory. Refresh the page to retry.';
+                teamList.appendChild(message);
+                return;
+            }
+
+            if (employees.length === 0) {
+                const message = document.createElement('p');
+                message.className = 'empty-state';
+                message.textContent = 'Invite your first bartender or mixologist to build the roster.';
+                teamList.appendChild(message);
+                return;
+            }
+
+            employees
+                .slice()
+                .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+                .forEach((employee) => {
+                    const card = document.createElement('article');
+                    card.className = 'person-card';
+                    card.dataset.employeeId = employee.id;
+
+                    const name = document.createElement('h3');
+                    name.className = 'person-card__name';
+                    name.textContent = employee.name || 'Unnamed team member';
+
+                    const role = document.createElement('p');
+                    role.className = 'person-card__role';
+                    role.textContent = employee.role || 'Role pending';
+
+                    const statusWrapper = document.createElement('div');
+                    statusWrapper.className = 'person-card__status';
+                    statusWrapper.appendChild(createBadge(employee.status || 'Available', employee.statusLevel || getStatusLevel(employee.status)));
+
+                    card.appendChild(name);
+                    card.appendChild(role);
+                    card.appendChild(statusWrapper);
+
+                    const contactBits = [employee.email, employee.phone].filter(Boolean);
+                    if (contactBits.length) {
+                        const contact = document.createElement('p');
+                        contact.className = 'card-subtitle';
+                        contact.textContent = contactBits.join(' • ');
+                        card.appendChild(contact);
+                    }
+
+                    if (employee.notes) {
+                        const notes = document.createElement('p');
+                        notes.className = 'card-subtitle';
+                        notes.textContent = employee.notes;
+                        card.appendChild(notes);
+                    }
+
+                    const actions = document.createElement('div');
+                    actions.className = 'person-card__actions';
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.className = 'card-action link-button';
+                    removeButton.dataset.removeEmployee = employee.id;
+                    removeButton.textContent = 'Remove';
+                    actions.appendChild(removeButton);
+                    card.appendChild(actions);
+
+                    teamList.appendChild(card);
+                });
+        }
+
+        function updateStats(employees) {
+            const activeStaff = document.getElementById('activeStaffStat');
+            const availableMeta = document.getElementById('availableStaffMeta');
+            const rolesStat = document.getElementById('rolesCoveredStat');
+            const rolesMeta = document.getElementById('rolesCoveredMeta');
+            const ptoStat = document.getElementById('upcomingPtoStat');
+            const ptoMeta = document.getElementById('upcomingPtoMeta');
+
+            const total = employees.length;
+            const available = employees.filter((employee) => (employee.statusLevel || getStatusLevel(employee.status)) === 'success').length;
+
+            const roles = new Set();
+            employees.forEach((employee) => {
+                if (employee.role) {
+                    const roleName = employee.role.split('·')[0].trim();
+                    roles.add(roleName);
+                }
+            });
+
+            const ptoCount = employees.filter((employee) => (employee.status || '').toLowerCase().includes('pto')).length;
+
+            if (activeStaff) {
+                activeStaff.textContent = total;
+            }
+            if (availableMeta) {
+                availableMeta.textContent = `${available} available this week`;
+            }
+            if (rolesStat) {
+                rolesStat.textContent = roles.size;
+            }
+            if (rolesMeta) {
+                rolesMeta.textContent = roles.size ? Array.from(roles).join(', ') : 'Add team members to broaden expertise.';
+            }
+            if (ptoStat) {
+                ptoStat.textContent = ptoCount;
+            }
+            if (ptoMeta) {
+                ptoMeta.textContent = ptoCount ? 'Coordinate coverage for upcoming absences.' : 'All clear for now.';
+            }
+        }
+
+        function renderUpcomingShifts(events) {
+            if (!upcomingShifts) {
+                return;
+            }
+
+            upcomingShifts.innerHTML = '';
+
+            if (!store) {
+                const message = document.createElement('p');
+                message.className = 'empty-state';
+                message.textContent = 'Unable to load schedule previews.';
+                upcomingShifts.appendChild(message);
+                return;
+            }
+
+            const upcomingEvents = events
+                .slice()
+                .sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b))
+                .filter((event) => getEventTimestamp(event) >= Date.now())
+                .slice(0, 4);
+
+            if (upcomingEvents.length === 0) {
+                const message = document.createElement('p');
+                message.className = 'empty-state';
+                message.textContent = 'Schedule a new event to see staffing assignments here.';
+                upcomingShifts.appendChild(message);
+                return;
+            }
+
+            upcomingEvents.forEach((event) => {
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
+
+                const left = document.createElement('div');
+                left.className = 'timeline-item__left';
+
+                const icon = document.createElement('span');
+                icon.className = 'timeline-icon';
+                icon.textContent = '🍸';
+                left.appendChild(icon);
+
+                const copy = document.createElement('div');
+                const title = document.createElement('h3');
+                title.className = 'person-card__name';
+                title.textContent = event.name;
+                const subtitle = document.createElement('p');
+                subtitle.className = 'card-subtitle';
+                const location = event.location ? ` · ${event.location}` : '';
+                subtitle.textContent = `${formatEventDate(event.date, event.time)}${location}`;
+                copy.appendChild(title);
+                copy.appendChild(subtitle);
+                left.appendChild(copy);
+
+                const meta = document.createElement('span');
+                meta.className = 'timeline-item__meta';
+                meta.appendChild(createBadge(event.staffingStatus || 'Staffing pending', event.staffingLevel || getStatusLevel(event.staffingStatus)));
+
+                item.appendChild(left);
+                item.appendChild(meta);
+                upcomingShifts.appendChild(item);
+            });
+        }
+
+        function refresh() {
+            if (!store) {
+                renderTeamList([]);
+                renderUpcomingShifts([]);
+                updateStats([]);
+                return;
+            }
+
+            const employees = store.getEmployees();
+            const events = store.getEvents();
+            renderTeamList(employees);
+            updateStats(employees);
+            renderUpcomingShifts(events);
+        }
+
+        if (teamList) {
+            teamList.addEventListener('click', (event) => {
+                const target = event.target.closest('[data-remove-employee]');
+                if (!target || !store) {
+                    return;
+                }
+
+                store.removeEmployee(target.dataset.removeEmployee);
+                refresh();
+            });
+        }
+
+        if (teamForm && store) {
+            teamForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const data = new FormData(teamForm);
+                const statusOption = teamForm.teamStatus.options[teamForm.teamStatus.selectedIndex];
+
+                store.addEmployee({
+                    name: (data.get('name') || '').trim() || 'Unnamed team member',
+                    role: data.get('role') || '',
+                    email: (data.get('email') || '').trim(),
+                    phone: (data.get('phone') || '').trim(),
+                    status: data.get('status') || 'Available',
+                    statusLevel: statusOption ? statusOption.dataset.level : undefined,
+                    notes: (data.get('notes') || '').trim(),
+                });
+
+                teamForm.reset();
+                if (teamForm.teamStatus) {
+                    teamForm.teamStatus.value = 'Available';
+                }
+                refresh();
+            });
+        }
+
+        refresh();
     </script>
+    <script src="app.js"></script>
 </body>
 </html>
