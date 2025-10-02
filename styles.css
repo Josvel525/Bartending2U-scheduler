@@ -1423,6 +1423,23 @@ textarea {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.compliance-item:hover,
+.compliance-item:focus-visible {
+  border-color: rgba(99, 102, 241, 0.4);
+  box-shadow: 0 12px 24px -16px rgba(30, 41, 59, 0.45);
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.compliance-item.is-active {
+  border-color: rgba(99, 102, 241, 0.7);
+  box-shadow: 0 14px 28px -14px rgba(30, 41, 59, 0.5);
+  background: rgba(99, 102, 241, 0.08);
+  transform: translateY(-2px);
 }
 
 .compliance-item h3 {
@@ -1436,11 +1453,37 @@ textarea {
 }
 
 .compliance-list {
+  display: none;
+}
+
+.compliance-detail-panel {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  background: rgba(15, 23, 42, 0.03);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.compliance-detail-panel.has-selection {
+  border-color: rgba(99, 102, 241, 0.5);
+  box-shadow: 0 18px 34px -20px rgba(30, 41, 59, 0.55);
+}
+
+.compliance-detail-summary {
+  margin: 0;
+}
+
+.compliance-detail-list {
+  list-style: disc;
+  padding-left: 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  font-size: 0.9rem;
-  color: var(--slate-600);
+  font-size: 0.92rem;
+  color: var(--slate-700);
 }
 
 .communication-form {
