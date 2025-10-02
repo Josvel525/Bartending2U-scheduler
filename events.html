@@ -68,61 +68,14 @@
                             <th>Date</th>
                             <th>Location</th>
                             <th>Package</th>
+                            <th>Guests</th>
+                            <th>Payout</th>
                             <th>Status</th>
                             <th>Staffing</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td>Corporate Party</td>
-                            <td>Oct 5, 2025</td>
-                            <td>Downtown Houston</td>
-                            <td>Signature Cocktail Bar</td>
-                            <td><span class="badge success">Confirmed</span></td>
-                            <td><span class="badge success">Fully staffed</span></td>
-                            <td class="table-actions">
-                                <a class="card-action" href="#">View</a>
-                                <a class="card-action" href="#">Staff</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Wedding Reception</td>
-                            <td>Oct 15, 2025</td>
-                            <td>The Grand Hall</td>
-                            <td>Premium Mixology</td>
-                            <td><span class="badge warning">Awaiting deposit</span></td>
-                            <td><span class="badge warning">Needs 2 bartenders</span></td>
-                            <td class="table-actions">
-                                <a class="card-action" href="#">Send reminder</a>
-                                <a class="card-action" href="#">Assign</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Holiday Gala</td>
-                            <td>Nov 30, 2025</td>
-                            <td>Skyline Ballroom</td>
-                            <td>Craft Experience</td>
-                            <td><span class="badge danger">Contract overdue</span></td>
-                            <td><span class="badge warning">Partial coverage</span></td>
-                            <td class="table-actions">
-                                <a class="card-action" href="#">Follow up</a>
-                                <a class="card-action" href="#">View notes</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td>Mixology Workshop</td>
-                            <td>Dec 3, 2025</td>
-                            <td>Private Residence</td>
-                            <td>Interactive Class</td>
-                            <td><span class="badge success">Confirmed</span></td>
-                            <td><span class="badge success">Ready</span></td>
-                            <td class="table-actions">
-                                <a class="card-action" href="#">Checklist</a>
-                                <a class="card-action" href="#">Prep sheet</a>
-                            </td>
-                        </tr>
-                    </tbody>
+                    <tbody id="eventsTableBody"></tbody>
                 </table>
             </div>
         </section>
@@ -134,28 +87,28 @@
                     <p class="card-subtitle">Capture the essentials, assign talent, and keep clients delighted.</p>
                 </div>
             </div>
-            <form>
+            <form id="eventForm">
                 <div class="form-grid">
                     <div class="form-field">
                         <label for="eventName">Event name</label>
-                        <input id="eventName" type="text" placeholder="E.g. Winter Soirée" />
+                        <input id="eventName" name="eventName" type="text" placeholder="E.g. Winter Soirée" required />
                     </div>
                     <div class="form-field">
                         <label for="eventDate">Date</label>
-                        <input id="eventDate" type="date" />
+                        <input id="eventDate" name="eventDate" type="date" required />
                     </div>
                     <div class="form-field">
                         <label for="eventTime">Start time</label>
-                        <input id="eventTime" type="time" />
+                        <input id="eventTime" name="eventTime" type="time" />
                     </div>
                     <div class="form-field">
                         <label for="eventLocation">Location</label>
-                        <input id="eventLocation" type="text" placeholder="Venue or address" />
+                        <input id="eventLocation" name="eventLocation" type="text" placeholder="Venue or address" />
                     </div>
                     <div class="form-field">
                         <label for="eventPackage">Service package</label>
-                        <select id="eventPackage">
-                            <option selected disabled>Select package</option>
+                        <select id="eventPackage" name="eventPackage" required>
+                            <option value="" disabled selected>Select package</option>
                             <option>Signature Cocktail Bar</option>
                             <option>Premium Mixology</option>
                             <option>Interactive Workshop</option>
@@ -164,12 +117,38 @@
                     </div>
                     <div class="form-field">
                         <label for="guestCount">Guest count</label>
-                        <input id="guestCount" type="number" min="0" placeholder="Expected attendees" />
+                        <input id="guestCount" name="guestCount" type="number" min="0" placeholder="Expected attendees" />
+                    </div>
+                    <div class="form-field">
+                        <label for="eventPayout">Estimated payout (USD)</label>
+                        <input id="eventPayout" name="eventPayout" type="number" min="0" step="50" placeholder="0" />
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="eventStatus">Event status</label>
+                        <select id="eventStatus" name="eventStatus" required>
+                            <option value="Confirmed" data-level="success" selected>Confirmed</option>
+                            <option value="Awaiting deposit" data-level="warning">Awaiting deposit</option>
+                            <option value="Contract overdue" data-level="danger">Contract overdue</option>
+                            <option value="Proposal sent" data-level="info">Proposal sent</option>
+                            <option value="Draft" data-level="neutral">Draft</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="eventStaffing">Staffing status</label>
+                        <select id="eventStaffing" name="eventStaffing" required>
+                            <option value="Unassigned" data-level="danger" selected>Unassigned</option>
+                            <option value="Needs 1 bartender" data-level="warning">Needs 1 bartender</option>
+                            <option value="Needs 2 bartenders" data-level="warning">Needs 2 bartenders</option>
+                            <option value="Ready" data-level="success">Ready</option>
+                            <option value="Fully staffed" data-level="success">Fully staffed</option>
+                        </select>
                     </div>
                 </div>
                 <div class="form-field">
                     <label for="eventNotes">Notes & client preferences</label>
-                    <textarea id="eventNotes" placeholder="Share tastings, specialty cocktails, or logistics." ></textarea>
+                    <textarea id="eventNotes" name="eventNotes" placeholder="Share tastings, specialty cocktails, or logistics." ></textarea>
                 </div>
                 <div class="table-actions" style="justify-content: flex-end;">
                     <button class="button ghost" type="reset">Clear</button>
@@ -181,23 +160,8 @@
 
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
-    <script>
-        const navToggle = document.getElementById('mobileNavToggle');
-        const nav = document.getElementById('primaryNav');
-
-        if (navToggle && nav) {
-            navToggle.addEventListener('click', () => {
-                nav.classList.toggle('open');
-            });
-        }
-
-        const tabs = document.querySelectorAll('.tab');
-        tabs.forEach((tab) => {
-            tab.addEventListener('click', () => {
-                tabs.forEach((button) => button.classList.remove('active'));
-                tab.classList.add('active');
-            });
-        });
-    </script>
+    <script src="scripts/data-store.js"></script>
+    <script src="scripts/common.js"></script>
+    <script src="scripts/events.js"></script>
 </body>
 </html>
