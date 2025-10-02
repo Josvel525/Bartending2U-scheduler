@@ -860,6 +860,17 @@ textarea {
   margin-bottom: 0.5rem;
 }
 
+.form-mode-indicator {
+  margin-top: 0.35rem;
+  font-weight: 600;
+  color: var(--primary-600);
+  font-size: 0.9rem;
+}
+
+.form-mode-indicator:empty {
+  display: none;
+}
+
 .preferences-list {
   display: flex;
   flex-direction: column;

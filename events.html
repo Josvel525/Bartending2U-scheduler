@@ -144,9 +144,11 @@
                 <div>
                     <h2 class="card-title">Create new event</h2>
                     <p class="card-subtitle">Capture the essentials, assign talent, and keep clients delighted.</p>
+                    <p class="form-mode-indicator" id="eventFormModeIndicator" aria-live="polite"></p>
                 </div>
             </div>
             <form id="eventForm">
+                <input id="eventId" name="id" type="hidden" />
                 <div class="form-grid">
                     <div class="form-field">
                         <label for="eventName">Event name</label>
@@ -237,7 +239,14 @@
         const tableBody = document.getElementById('eventsTableBody');
         const form = document.getElementById('eventForm');
         const tabs = document.querySelectorAll('.tab');
+        const submitButton = form ? form.querySelector('[type="submit"]') : null;
+        const modeIndicator = document.getElementById('eventFormModeIndicator');
+        const hiddenIdField = document.getElementById('eventId');
         let activeFilter = 'all';
+        let editingEventId = null;
+
+        const defaultStatusValue = 'Confirmed';
+        const defaultStaffingValue = 'Fully staffed';
 
         function formatDate(dateStr, timeStr) {
             if (!dateStr) {
@@ -374,6 +383,12 @@
                 viewLink.href = '#new-event';
                 viewLink.textContent = 'View';
 
+                const editButton = document.createElement('button');
+                editButton.type = 'button';
+                editButton.className = 'card-action link-button';
+                editButton.dataset.editEvent = event.id;
+                editButton.textContent = 'Modify';
+
                 const removeButton = document.createElement('button');
                 removeButton.type = 'button';
                 removeButton.className = 'card-action link-button';
@@ -381,6 +396,7 @@
                 removeButton.textContent = 'Remove';
 
                 actionsCell.appendChild(viewLink);
+                actionsCell.appendChild(editButton);
                 actionsCell.appendChild(removeButton);
 
                 row.appendChild(nameCell);
@@ -407,14 +423,144 @@
 
         if (tableBody) {
             tableBody.addEventListener('click', (event) => {
-                const target = event.target.closest('[data-remove-event]');
-                if (!target || !store) {
+                const removeTarget = event.target.closest('[data-remove-event]');
+                const editTarget = event.target.closest('[data-edit-event]');
+
+                if (removeTarget && store) {
+                    store.removeEvent(removeTarget.dataset.removeEvent);
+                    renderEvents();
+                    if (editingEventId === removeTarget.dataset.removeEvent) {
+                        exitEditMode();
+                        applyDefaultSelects();
+                    }
                     return;
                 }
 
-                store.removeEvent(target.dataset.removeEvent);
-                renderEvents();
+                if (editTarget && store) {
+                    const existingEvent = store
+                        .getEvents()
+                        .find((item) => item.id === editTarget.dataset.editEvent);
+
+                    if (!existingEvent) {
+                        return;
+                    }
+
+                    enterEditMode(existingEvent);
+                }
             });
+        }
+
+        function applyDefaultSelects() {
+            if (!form) {
+                return;
+            }
+
+            if (form.eventStatus) {
+                form.eventStatus.value = defaultStatusValue;
+            }
+            if (form.eventStaffing) {
+                form.eventStaffing.value = defaultStaffingValue;
+            }
+        }
+
+        function ensureOption(select, value, level) {
+            if (!select || value === undefined || value === null || value === '') {
+                return;
+            }
+
+            const option = Array.from(select.options || []).find((opt) => opt.value === value);
+            if (option) {
+                if (level && option.dataset) {
+                    option.dataset.level = level;
+                }
+                select.value = value;
+                return;
+            }
+
+            const newOption = document.createElement('option');
+            newOption.value = value;
+            newOption.textContent = value;
+            if (level) {
+                newOption.dataset.level = level;
+            }
+            select.appendChild(newOption);
+            select.value = value;
+        }
+
+        function updateModeIndicator(message) {
+            if (!modeIndicator) {
+                return;
+            }
+
+            modeIndicator.textContent = message || '';
+        }
+
+        function exitEditMode() {
+            editingEventId = null;
+            if (hiddenIdField) {
+                hiddenIdField.value = '';
+            }
+            if (submitButton) {
+                submitButton.textContent = 'Save event';
+            }
+            if (form) {
+                form.dataset.mode = 'create';
+            }
+            updateModeIndicator('');
+        }
+
+        function enterEditMode(eventData) {
+            if (!form) {
+                return;
+            }
+
+            editingEventId = eventData.id;
+            if (hiddenIdField) {
+                hiddenIdField.value = eventData.id;
+            }
+
+            form.dataset.mode = 'edit';
+
+            if (form.eventName) {
+                form.eventName.value = eventData.name || '';
+            }
+            if (form.eventDate) {
+                form.eventDate.value = eventData.date || '';
+            }
+            if (form.eventTime) {
+                form.eventTime.value = eventData.time || '';
+            }
+            if (form.eventLocation) {
+                form.eventLocation.value = eventData.location || '';
+            }
+            if (form.eventPackage) {
+                ensureOption(form.eventPackage, eventData.package);
+            }
+            if (form.guestCount) {
+                form.guestCount.value = eventData.guestCount != null ? eventData.guestCount : '';
+            }
+            if (form.eventPayout) {
+                form.eventPayout.value = eventData.payout != null ? eventData.payout : '';
+            }
+            if (form.eventStatus) {
+                ensureOption(form.eventStatus, eventData.status, eventData.statusLevel);
+            }
+            if (form.eventStaffing) {
+                ensureOption(form.eventStaffing, eventData.staffingStatus, eventData.staffingLevel);
+            }
+            if (form.eventNotes) {
+                form.eventNotes.value = eventData.notes || '';
+            }
+
+            if (submitButton) {
+                submitButton.textContent = 'Update event';
+            }
+
+            const nameText = eventData.name ? `Editing "${eventData.name}"` : 'Editing existing event';
+            updateModeIndicator(nameText);
+            if (typeof window !== 'undefined') {
+                window.location.hash = '#new-event';
+            }
         }
 
         if (form && store) {
@@ -422,8 +568,10 @@
                 event.preventDefault();
 
                 const formData = new FormData(form);
-                const statusOption = form.eventStatus.options[form.eventStatus.selectedIndex];
-                const staffingOption = form.eventStaffing.options[form.eventStaffing.selectedIndex];
+                const statusSelect = form.eventStatus;
+                const staffingSelect = form.eventStaffing;
+                const statusOption = statusSelect ? statusSelect.options[statusSelect.selectedIndex] : null;
+                const staffingOption = staffingSelect ? staffingSelect.options[staffingSelect.selectedIndex] : null;
 
                 const eventPayload = {
                     name: (formData.get('name') || '').trim() || 'Untitled event',
@@ -433,22 +581,37 @@
                     package: formData.get('package') || '',
                     guestCount: Number(formData.get('guestCount') || 0),
                     payout: Number(formData.get('payout') || 0),
-                    status: formData.get('status') || 'Draft',
+                    status: formData.get('status') || (statusSelect ? statusSelect.value : 'Draft'),
                     statusLevel: statusOption ? statusOption.dataset.level : undefined,
-                    staffingStatus: formData.get('staffingStatus') || 'Unassigned',
+                    staffingStatus:
+                        formData.get('staffingStatus') || (staffingSelect ? staffingSelect.value : 'Unassigned'),
                     staffingLevel: staffingOption ? staffingOption.dataset.level : undefined,
                     notes: (formData.get('notes') || '').trim(),
                 };
 
-                store.addEvent(eventPayload);
+                if (editingEventId) {
+                    store.updateEvent(editingEventId, eventPayload);
+                } else {
+                    store.addEvent(eventPayload);
+                }
+
                 form.reset();
-                if (form.eventStatus) {
-                    form.eventStatus.value = 'Confirmed';
-                }
-                if (form.eventStaffing) {
-                    form.eventStaffing.value = 'Fully staffed';
-                }
+                exitEditMode();
+                applyDefaultSelects();
                 renderEvents();
+            });
+
+            form.addEventListener('reset', () => {
+                const resetHandler = () => {
+                    exitEditMode();
+                    applyDefaultSelects();
+                };
+
+                if (typeof window !== 'undefined' && window.requestAnimationFrame) {
+                    window.requestAnimationFrame(resetHandler);
+                } else {
+                    resetHandler();
+                }
             });
         }
 
