@@ -817,6 +817,10 @@ tr:hover td {
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
 }
 
+.form-field.full-width {
+  grid-column: 1 / -1;
+}
+
 .form-field {
   display: flex;
   flex-direction: column;
@@ -1199,6 +1203,10 @@ textarea {
   font-size: 0.95rem;
   font-weight: 600;
   color: var(--slate-700);
+}
+
+.details-list dd.multiline {
+  white-space: pre-line;
 }
 
 .details-pills {
