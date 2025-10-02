@@ -1,37 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Settings - Bartending2u</title>
-<link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Settings - Bartending2U</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<header>
-<h1>Settings</h1>
-<nav>
-<ul>
-<li><a href="index.html">Dashboard</a></li>
-<li><a href="events.html">Events</a></li>
-<li><a href="employees.html">Employees</a></li>
-<li><a href="calendar.html">Calendar</a></li>
-<li><a href="settings.html">Settings</a></li>
-</ul>
-</nav>
-</header>
-<main>
-<h2>Account Settings</h2>
-<form>
-<label>Business Name: <input type="text" value="Bartending2u" /></label><br />
-<label>Email: <input type="email" value="info@bartending2u.com" /></label><br />
-<label>Password: <input type="password" /></label><br />
-<button type="submit">Save Settings</button>
-</form>
+    <header class="top-bar">
+        <div class="top-bar__inner">
+            <div class="brand">
+                <img src="IMG_9047.png" alt="Bartending2U logo" />
+                <div class="brand__text">
+                    <span class="brand__subtitle">Bartending2U</span>
+                    <span class="brand__title">Scheduling Suite</span>
+                </div>
+            </div>
 
+            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation">☰</button>
 
-<h2>Preferences</h2>
-<label><input type="checkbox" checked /> Enable Notifications</label><br />
-<label><input type="checkbox" /> Dark Mode</label>
-</main>
+            <nav class="nav-links" id="primaryNav">
+                <a class="nav-link" href="index.html">Dashboard</a>
+                <a class="nav-link" href="events.html">Events</a>
+                <a class="nav-link" href="employees.html">Employees</a>
+                <a class="nav-link" href="calendar.html">Calendar</a>
+                <a class="nav-link active" href="settings.html">Settings</a>
+            </nav>
+
+            <a class="cta-button" href="events.html">+ New Event</a>
+        </div>
+    </header>
+
+    <main class="page-content">
+        <section class="page-header">
+            <div>
+                <p class="page-eyebrow">Settings</p>
+                <h1 class="page-title">Fine-tune your workspace</h1>
+                <p class="lead-text">Update company info, adjust notifications, and align the platform with your brand.</p>
+            </div>
+            <div class="hero-actions">
+                <a class="button primary" href="#account-settings">Save changes</a>
+                <a class="secondary-link" href="index.html">Return to dashboard →</a>
+            </div>
+        </section>
+
+        <section id="account-settings" class="content-card">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">Account preferences</h2>
+                    <p class="card-subtitle">Keep your contact information and login credentials current.</p>
+                </div>
+            </div>
+            <form>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="businessName">Business name</label>
+                        <input id="businessName" type="text" value="Bartending2U" />
+                    </div>
+                    <div class="form-field">
+                        <label for="businessEmail">Contact email</label>
+                        <input id="businessEmail" type="email" value="info@bartending2u.com" />
+                    </div>
+                    <div class="form-field">
+                        <label for="businessPhone">Phone number</label>
+                        <input id="businessPhone" type="tel" placeholder="(555) 987-6543" />
+                    </div>
+                    <div class="form-field">
+                        <label for="timezone">Timezone</label>
+                        <select id="timezone">
+                            <option>Central (CST)</option>
+                            <option>Eastern (EST)</option>
+                            <option>Pacific (PST)</option>
+                            <option>Mountain (MST)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="password">Password</label>
+                        <input id="password" type="password" placeholder="••••••••" />
+                    </div>
+                    <div class="form-field">
+                        <label for="passwordConfirm">Confirm password</label>
+                        <input id="passwordConfirm" type="password" placeholder="••••••••" />
+                    </div>
+                </div>
+                <div class="table-actions" style="justify-content: flex-end;">
+                    <button class="button ghost" type="reset">Reset</button>
+                    <button class="button primary" type="submit">Update account</button>
+                </div>
+            </form>
+        </section>
+
+        <section class="split-layout">
+            <article class="content-card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Notification settings</h2>
+                        <p class="card-subtitle">Choose how and when you hear about bookings, staffing, and prep.</p>
+                    </div>
+                </div>
+                <div class="preferences-list">
+                    <label class="checkbox-field"><input type="checkbox" checked /> Email me about new bookings</label>
+                    <label class="checkbox-field"><input type="checkbox" checked /> Send staffing alerts via SMS</label>
+                    <label class="checkbox-field"><input type="checkbox" /> Weekly performance digest</label>
+                    <label class="checkbox-field"><input type="checkbox" checked /> Daily prep checklist at 9 AM</label>
+                </div>
+            </article>
+
+            <article class="content-card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Branding</h2>
+                        <p class="card-subtitle">Customize the look and feel for client-facing touchpoints.</p>
+                    </div>
+                </div>
+                <form>
+                    <div class="form-field">
+                        <label for="brandColor">Primary brand color</label>
+                        <input id="brandColor" type="color" value="#2563eb" />
+                    </div>
+                    <div class="form-field">
+                        <label for="accentColor">Accent color</label>
+                        <input id="accentColor" type="color" value="#f97316" />
+                    </div>
+                    <div class="form-field">
+                        <label for="brandMessage">Client welcome message</label>
+                        <textarea id="brandMessage" placeholder="Add a personal touch for proposals and confirmations."></textarea>
+                    </div>
+                    <div class="table-actions" style="justify-content: flex-end;">
+                        <button class="button ghost" type="reset">Revert</button>
+                        <button class="button primary" type="submit">Save branding</button>
+                    </div>
+                </form>
+            </article>
+        </section>
+    </main>
+
+    <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
+
+    <script>
+        const navToggle = document.getElementById('mobileNavToggle');
+        const nav = document.getElementById('primaryNav');
+
+        if (navToggle && nav) {
+            navToggle.addEventListener('click', () => {
+                nav.classList.toggle('open');
+            });
+        }
+    </script>
 </body>
 </html>

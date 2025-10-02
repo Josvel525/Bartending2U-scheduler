@@ -1,31 +1,235 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Calendar - Bartending2u</title>
-<link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Calendar - Bartending2U</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<header>
-<h1>Event Calendar</h1>
-<nav>
-<ul>
-<li><a href="index.html">Dashboard</a></li>
-<li><a href="events.html">Events</a></li>
-<li><a href="employees.html">Employees</a></li>
-<li><a href="calendar.html">Calendar</a></li>
-<li><a href="settings.html">Settings</a></li>
-</ul>
-</nav>
-</header>
-<main>
-<h2>Monthly Overview</h2>
-<p>(Future feature: interactive calendar to view events by day)</p>
-<ul>
-<li>Oct 5: Corporate Party</li>
-<li>Oct 15: Wedding Reception</li>
-</ul>
-</main>
+    <header class="top-bar">
+        <div class="top-bar__inner">
+            <div class="brand">
+                <img src="IMG_9047.png" alt="Bartending2U logo" />
+                <div class="brand__text">
+                    <span class="brand__subtitle">Bartending2U</span>
+                    <span class="brand__title">Scheduling Suite</span>
+                </div>
+            </div>
+
+            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation">☰</button>
+
+            <nav class="nav-links" id="primaryNav">
+                <a class="nav-link" href="index.html">Dashboard</a>
+                <a class="nav-link" href="events.html">Events</a>
+                <a class="nav-link" href="employees.html">Employees</a>
+                <a class="nav-link active" href="calendar.html">Calendar</a>
+                <a class="nav-link" href="settings.html">Settings</a>
+            </nav>
+
+            <a class="cta-button" href="events.html">+ New Event</a>
+        </div>
+    </header>
+
+    <main class="page-content">
+        <section class="page-header">
+            <div>
+                <p class="page-eyebrow">Calendar</p>
+                <h1 class="page-title">Plan every pour & prep</h1>
+                <p class="lead-text">Visualize your bookings, staffing, and prep milestones across the month. Drag-and-drop coming soon.</p>
+            </div>
+            <div class="hero-actions">
+                <a class="button primary" href="events.html">Review events</a>
+                <a class="secondary-link" href="settings.html">Calendar settings →</a>
+            </div>
+        </section>
+
+        <section class="content-card">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">October 2025 overview</h2>
+                    <p class="card-subtitle">Hover over a day to reveal assignments and prep checklists.</p>
+                </div>
+            </div>
+            <div class="calendar-grid">
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Mon 1</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Tue 2</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Wed 3</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Thu 4</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Fri 5</span>
+                    <div class="calendar-event">Corporate Party</div>
+                    <p class="card-subtitle">Call time 6:00 PM · 4 staff</p>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Sat 6</span>
+                    <div class="calendar-event">Tasting Prep</div>
+                    <p class="card-subtitle">Inventory pull · Syrups ready</p>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Sun 7</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Mon 8</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Tue 9</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Wed 10</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Thu 11</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Fri 12</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Sat 13</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Sun 14</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Mon 15</span>
+                    <div class="calendar-event">Wedding Reception</div>
+                    <p class="card-subtitle">Needs staffing</p>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Tue 16</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Wed 17</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Thu 18</span>
+                    <div class="calendar-event">Mixology Workshop</div>
+                    <p class="card-subtitle">Priya · Jamie · 5:30 PM</p>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Fri 19</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Sat 20</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Sun 21</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Mon 22</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Tue 23</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Wed 24</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Thu 25</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Fri 26</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Sat 27</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Sun 28</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Mon 29</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Tue 30</span>
+                </div>
+                <div class="calendar-cell">
+                    <span class="calendar-cell__date">Wed 31</span>
+                    <div class="calendar-event">Inventory Audit</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="split-layout">
+            <article class="content-card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Prep checklist</h2>
+                        <p class="card-subtitle">Ensure every garnish, glass, and batch is ready ahead of time.</p>
+                    </div>
+                </div>
+                <div class="preferences-list">
+                    <label class="checkbox-field"><input type="checkbox" checked /> Confirm rental deliveries</label>
+                    <label class="checkbox-field"><input type="checkbox" /> Send staff arrival reminders</label>
+                    <label class="checkbox-field"><input type="checkbox" checked /> Prep signature syrups</label>
+                    <label class="checkbox-field"><input type="checkbox" /> Load ingredient crates</label>
+                </div>
+            </article>
+
+            <article class="content-card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Week at a glance</h2>
+                        <p class="card-subtitle">Quick summary of guests, staffing, and prep hours.</p>
+                    </div>
+                </div>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Event</th>
+                                <th>Guests</th>
+                                <th>Team</th>
+                                <th>Prep hours</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Corporate Party</td>
+                                <td>120</td>
+                                <td>4</td>
+                                <td>6</td>
+                            </tr>
+                            <tr>
+                                <td>Wedding Reception</td>
+                                <td>180</td>
+                                <td>Pending</td>
+                                <td>8</td>
+                            </tr>
+                            <tr>
+                                <td>Mixology Workshop</td>
+                                <td>25</td>
+                                <td>2</td>
+                                <td>3</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </article>
+        </section>
+    </main>
+
+    <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
+
+    <script>
+        const navToggle = document.getElementById('mobileNavToggle');
+        const nav = document.getElementById('primaryNav');
+
+        if (navToggle && nav) {
+            navToggle.addEventListener('click', () => {
+                nav.classList.toggle('open');
+            });
+        }
+    </script>
 </body>
 </html>
