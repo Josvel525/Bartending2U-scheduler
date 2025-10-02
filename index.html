@@ -47,7 +47,7 @@
             </div>
         </section>
 
-        <section class="card-grid stats-grid">
+        <section id="dashboard-stats" class="card-grid stats-grid" data-subsection="At-a-glance">
             <article class="stat-card">
                 <span class="stat-card__label">Total events</span>
                 <span class="stat-card__value">12</span>
@@ -71,7 +71,7 @@
         </section>
 
         <section class="split-layout">
-            <article class="content-card">
+            <article id="recent-activity" class="content-card" data-subsection="Recent activity">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Recent activity</h2>
@@ -123,7 +123,7 @@
                 </div>
             </article>
 
-            <article class="content-card">
+            <article id="critical-alerts" class="content-card" data-subsection="Critical alerts">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Critical alerts</h2>
@@ -230,37 +230,6 @@
 
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
-    <script>
-        const navToggle = document.getElementById('mobileNavToggle');
-        const nav = document.getElementById('primaryNav');
-
-        if (navToggle && nav) {
-            navToggle.addEventListener('click', () => {
-                nav.classList.toggle('open');
-            });
-        }
-
-        const accordionTriggers = document.querySelectorAll('.accordion-trigger');
-        accordionTriggers.forEach((trigger) => {
-            const targetId = trigger.getAttribute('data-accordion-target');
-            const content = document.getElementById(targetId);
-            if (!content) return;
-
-            if (content.dataset.open === 'true') {
-                content.style.maxHeight = content.scrollHeight + 'px';
-            }
-
-            trigger.addEventListener('click', () => {
-                const isExpanded = trigger.getAttribute('aria-expanded') === 'true';
-                trigger.setAttribute('aria-expanded', String(!isExpanded));
-
-                if (!isExpanded) {
-                    content.style.maxHeight = content.scrollHeight + 'px';
-                } else {
-                    content.style.maxHeight = '0px';
-                }
-            });
-        });
-    </script>
+    <script src="app.js"></script>
 </body>
 </html>
