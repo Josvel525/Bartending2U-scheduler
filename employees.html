@@ -1,44 +1,210 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Employees - Bartending2u</title>
-<link rel="stylesheet" href="styles.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Employees - Bartending2U</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<header>
-<h1>Employee Management</h1>
-<nav>
-<ul>
-<li><a href="index.html">Dashboard</a></li>
-<li><a href="events.html">Events</a></li>
-<li><a href="employees.html">Employees</a></li>
-<li><a href="calendar.html">Calendar</a></li>
-<li><a href="settings.html">Settings</a></li>
-</ul>
-</nav>
-</header>
-<main>
-<h2>Employee Directory</h2>
-<ul>
-<li>John Doe - Bartender - Available</li>
-<li>Jane Smith - Mixologist - On Leave</li>
-</ul>
+    <header class="top-bar">
+        <div class="top-bar__inner">
+            <div class="brand">
+                <img src="IMG_9047.png" alt="Bartending2U logo" />
+                <div class="brand__text">
+                    <span class="brand__subtitle">Bartending2U</span>
+                    <span class="brand__title">Scheduling Suite</span>
+                </div>
+            </div>
 
+            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation">☰</button>
 
-<h2>Add New Employee</h2>
-<form>
-<label>Name: <input type="text" /></label><br />
-<label>Role: <input type="text" /></label><br />
-<label>Status:
-<select>
-<option>Available</option>
-<option>On Leave</option>
-</select>
-</label><br />
-<button type="submit">Add Employee</button>
-</form>
-</main>
+            <nav class="nav-links" id="primaryNav">
+                <a class="nav-link" href="index.html">Dashboard</a>
+                <a class="nav-link" href="events.html">Events</a>
+                <a class="nav-link active" href="employees.html">Employees</a>
+                <a class="nav-link" href="calendar.html">Calendar</a>
+                <a class="nav-link" href="settings.html">Settings</a>
+            </nav>
+
+            <a class="cta-button" href="#add-employee">+ Add Team Member</a>
+        </div>
+    </header>
+
+    <main class="page-content">
+        <section class="page-header">
+            <div>
+                <p class="page-eyebrow">Team</p>
+                <h1 class="page-title">Manage bartenders & mixologists</h1>
+                <p class="lead-text">Track availability, assign shifts, and empower your crew to deliver world-class service.</p>
+            </div>
+            <div class="hero-actions">
+                <a class="button primary" href="#add-employee">Invite teammate</a>
+                <a class="secondary-link" href="events.html">Match to events →</a>
+            </div>
+        </section>
+
+        <section class="card-grid stats-grid">
+            <article class="stat-card">
+                <span class="stat-card__label">Active staff</span>
+                <span class="stat-card__value">14</span>
+                <span class="stat-card__meta success">10 available this week</span>
+            </article>
+            <article class="stat-card">
+                <span class="stat-card__label">Roles covered</span>
+                <span class="stat-card__value" style="font-size:1.8rem;">5</span>
+                <span class="stat-card__meta">Bartenders, Mixologists, Leads…</span>
+            </article>
+            <article class="stat-card">
+                <span class="stat-card__label">Upcoming PTO</span>
+                <span class="stat-card__value" style="color: var(--warning-500);">3</span>
+                <span class="stat-card__meta warning">Plan coverage</span>
+            </article>
+        </section>
+
+        <section class="content-card">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">Team directory</h2>
+                    <p class="card-subtitle">Search, sort, and understand everyone’s strengths at a glance.</p>
+                </div>
+            </div>
+            <div class="list-grid">
+                <article class="person-card">
+                    <h3 class="person-card__name">John Doe</h3>
+                    <p class="person-card__role">Bar Lead · Flair certified</p>
+                    <div class="person-card__status"><span class="badge success">Available</span></div>
+                </article>
+                <article class="person-card">
+                    <h3 class="person-card__name">Jane Smith</h3>
+                    <p class="person-card__role">Mixologist · Mocktail specialist</p>
+                    <div class="person-card__status"><span class="badge warning">On PTO</span></div>
+                </article>
+                <article class="person-card">
+                    <h3 class="person-card__name">Alex Rivera</h3>
+                    <p class="person-card__role">Bartender · Bilingual</p>
+                    <div class="person-card__status"><span class="badge success">Available</span></div>
+                </article>
+                <article class="person-card">
+                    <h3 class="person-card__name">Priya Singh</h3>
+                    <p class="person-card__role">Mixology Lead · Seasonal menu</p>
+                    <div class="person-card__status"><span class="badge success">Available</span></div>
+                </article>
+                <article class="person-card">
+                    <h3 class="person-card__name">Jamie Lee</h3>
+                    <p class="person-card__role">Support · Prep specialist</p>
+                    <div class="person-card__status"><span class="badge warning">Limited hours</span></div>
+                </article>
+                <article class="person-card">
+                    <h3 class="person-card__name">Marcus Allen</h3>
+                    <p class="person-card__role">Barback</p>
+                    <div class="person-card__status"><span class="badge success">Available</span></div>
+                </article>
+            </div>
+        </section>
+
+        <section class="split-layout">
+            <article class="content-card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Upcoming shifts</h2>
+                        <p class="card-subtitle">Double-check assignments and respond to swap requests quickly.</p>
+                    </div>
+                    <a class="card-action" href="calendar.html">View schedule →</a>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-item__left">
+                            <span class="timeline-icon">🍸</span>
+                            <div>
+                                <h3 class="person-card__name">Corporate Party</h3>
+                                <p class="card-subtitle">John Doe · Alex Rivera · Oct 5 · 6:00 PM call time</p>
+                            </div>
+                        </div>
+                        <span class="timeline-item__meta"><span class="badge success">Ready</span></span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-item__left">
+                            <span class="timeline-icon">🥂</span>
+                            <div>
+                                <h3 class="person-card__name">Wedding Reception</h3>
+                                <p class="card-subtitle">Needs 2 bartenders · Oct 15</p>
+                            </div>
+                        </div>
+                        <span class="timeline-item__meta"><span class="badge warning">Staff</span></span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-item__left">
+                            <span class="timeline-icon">📅</span>
+                            <div>
+                                <h3 class="person-card__name">Mixology Workshop</h3>
+                                <p class="card-subtitle">Priya Singh · Jamie Lee · Oct 18</p>
+                            </div>
+                        </div>
+                        <span class="timeline-item__meta"><span class="badge success">Confirmed</span></span>
+                    </div>
+                </div>
+            </article>
+
+            <article id="add-employee" class="content-card">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Add team member</h2>
+                        <p class="card-subtitle">Invite freelancers or seasonal staff to upcoming shifts.</p>
+                    </div>
+                </div>
+                <form>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="teamName">Name</label>
+                            <input id="teamName" type="text" placeholder="Full name" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamRole">Role</label>
+                            <select id="teamRole">
+                                <option selected disabled>Select role</option>
+                                <option>Bartender</option>
+                                <option>Mixologist</option>
+                                <option>Bar Lead</option>
+                                <option>Support / Barback</option>
+                            </select>
+                        </div>
+                        <div class="form-field">
+                            <label for="teamEmail">Email</label>
+                            <input id="teamEmail" type="email" placeholder="name@bartending2u.com" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamPhone">Phone</label>
+                            <input id="teamPhone" type="tel" placeholder="(555) 123-4567" />
+                        </div>
+                    </div>
+                    <div class="form-field">
+                        <label for="teamNotes">Specialties & certifications</label>
+                        <textarea id="teamNotes" placeholder="E.g. flair bartending, wine pairing, bilingual"></textarea>
+                    </div>
+                    <div class="table-actions" style="justify-content: flex-end;">
+                        <button class="button ghost" type="reset">Clear</button>
+                        <button class="button primary" type="submit">Invite</button>
+                    </div>
+                </form>
+            </article>
+        </section>
+    </main>
+
+    <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
+
+    <script>
+        const navToggle = document.getElementById('mobileNavToggle');
+        const nav = document.getElementById('primaryNav');
+
+        if (navToggle && nav) {
+            navToggle.addEventListener('click', () => {
+                nav.classList.toggle('open');
+            });
+        }
+    </script>
 </body>
 </html>
