@@ -71,141 +71,20 @@
                     <a class="card-action" href="#new-lead" data-subsection-target="new-lead">Add lead</a>
                 </div>
             </div>
-            <div class="lead-pipeline__layout">
-                <div class="table-wrapper">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Lead</th>
-                                <th>Event type</th>
-                                <th>Ideal date</th>
-                                <th>Estimated value</th>
-                                <th>Status</th>
-                                <th>Next touchpoint</th>
-                            </tr>
-                        </thead>
-                        <tbody id="leadTableBody">
-                            <tr class="lead-table__empty">
-                                <td colspan="6">No leads logged yet.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
-                <aside class="lead-detail" id="leadDetailPanel" aria-live="polite">
-                    <div class="lead-detail__empty" data-lead-empty>
-                        <h3>Select a lead to view the full history</h3>
-                        <p>Keep prospects moving by logging every touchpoint and updating the next best action.</p>
-                    </div>
-                    <div class="lead-detail__content" data-lead-content hidden>
-                        <header class="lead-detail__header">
-                            <div>
-                                <span class="badge" data-lead-field="status"></span>
-                                <h3 class="lead-detail__title" data-lead-field="name"></h3>
-                                <p class="lead-detail__subtitle" data-lead-field="company"></p>
-                            </div>
-                            <button class="button ghost small" type="button" data-lead-close>
-                                Close
-                            </button>
-                        </header>
-
-                        <div class="lead-detail__meta-grid">
-                            <article class="lead-detail__meta">
-                                <span class="lead-detail__meta-label">Next touchpoint</span>
-                                <p class="lead-detail__meta-value" data-lead-field="nextTouchpoint"></p>
-                            </article>
-                            <article class="lead-detail__meta">
-                                <span class="lead-detail__meta-label">Event date</span>
-                                <p class="lead-detail__meta-value" data-lead-field="eventDate"></p>
-                            </article>
-                            <article class="lead-detail__meta">
-                                <span class="lead-detail__meta-label">Est. value</span>
-                                <p class="lead-detail__meta-value" data-lead-field="estimatedValue"></p>
-                            </article>
-                            <article class="lead-detail__meta">
-                                <span class="lead-detail__meta-label">Last follow-up</span>
-                                <p class="lead-detail__meta-value" data-lead-field="lastFollowUp"></p>
-                            </article>
-                        </div>
-
-                        <section class="lead-detail__section lead-detail__contact">
-                            <h4 class="lead-detail__section-title">Contact</h4>
-                            <ul class="lead-detail__contact-list">
-                                <li>
-                                    <span>Email</span>
-                                    <a data-lead-field="email" href="#"></a>
-                                </li>
-                                <li>
-                                    <span>Phone</span>
-                                    <a data-lead-field="phone" href="#"></a>
-                                </li>
-                                <li>
-                                    <span>Source</span>
-                                    <p data-lead-field="source"></p>
-                                </li>
-                            </ul>
-                        </section>
-
-                        <section class="lead-detail__section">
-                            <h4 class="lead-detail__section-title">Notes</h4>
-                            <p class="lead-detail__notes" data-lead-field="notes"></p>
-                        </section>
-
-                        <section class="lead-detail__section">
-                            <div class="lead-detail__section-heading">
-                                <h4 class="lead-detail__section-title">Follow-up history</h4>
-                                <span class="lead-detail__history-count" data-lead-field="activityCount"></span>
-                            </div>
-                            <ul class="lead-activity-list" id="leadActivityList"></ul>
-                        </section>
-
-                        <section class="lead-detail__section">
-                            <h4 class="lead-detail__section-title">Log a follow-up</h4>
-                            <form class="lead-follow-up-form" id="leadFollowUpForm">
-                                <div class="form-grid">
-                                    <div class="form-field">
-                                        <label for="followUpMethod">Method</label>
-                                        <select id="followUpMethod" required>
-                                            <option value="Email">Email</option>
-                                            <option value="Phone">Phone call</option>
-                                            <option value="SMS">Text message</option>
-                                            <option value="Video call">Video call</option>
-                                            <option value="In-person">In-person meeting</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-field">
-                                        <label for="followUpSchedule">Schedule next touchpoint</label>
-                                        <input id="followUpSchedule" type="datetime-local" />
-                                        <p class="form-helper-text">Optional: set when you plan to follow up next.</p>
-                                    </div>
-                                </div>
-
-                                <div class="form-field">
-                                    <label for="followUpMessage">Message sent</label>
-                                    <textarea
-                                        id="followUpMessage"
-                                        placeholder="Summarise what you sent or discussed."
-                                        required
-                                    ></textarea>
-                                </div>
-
-                                <div class="form-field">
-                                    <label for="followUpNextStep">Update next step</label>
-                                    <input
-                                        id="followUpNextStep"
-                                        type="text"
-                                        placeholder="E.g. Send revised proposal on Friday"
-                                    />
-                                </div>
-
-                                <div class="lead-follow-up-form__actions">
-                                    <p class="lead-follow-up-form__feedback" data-follow-up-feedback aria-live="polite"></p>
-                                    <button class="button primary" type="submit">Send follow-up</button>
-                                </div>
-                            </form>
-                        </section>
-                    </div>
-                </aside>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Lead</th>
+                            <th>Event type</th>
+                            <th>Ideal date</th>
+                            <th>Estimated value</th>
+                            <th>Status</th>
+                            <th>Next touchpoint</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leadPipelineTableBody"></tbody>
+                </table>
             </div>
         </section>
 
@@ -369,10 +248,23 @@
         </section>
     </main>
 
+    <div id="leadModal" class="modal" hidden>
+        <div class="modal__backdrop" data-lead-modal-dismiss></div>
+        <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="leadModalTitle">
+            <button class="modal__close" type="button" aria-label="Close" data-lead-modal-dismiss>&times;</button>
+            <div class="modal__header">
+                <h3 class="modal__title" id="leadModalTitle"></h3>
+                <p class="modal__subtitle" id="leadModalSubtitle"></p>
+            </div>
+            <div class="modal__content" id="leadModalContent"></div>
+        </div>
+    </div>
+
     <footer class="app-footer">© 2025 Bartending2U. Turning prospects into unforgettable celebrations.</footer>
 
     <script src="storage.js"></script>
     <script src="leads.js"></script>
     <script src="scripts.js"></script>
+    <script src="leads.js"></script>
 </body>
 </html>

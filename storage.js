@@ -403,13 +403,12 @@
             event || {}
         );
 
-        if (!Array.isArray(base.assignedStaffIds)) {
-            base.assignedStaffIds = [];
-        }
-
-        if (!Array.isArray(base.assignedTeam)) {
-            base.assignedTeam = [];
-        }
+        base.assignedStaffIds = Array.isArray(base.assignedStaffIds)
+            ? base.assignedStaffIds.filter(Boolean)
+            : [];
+        base.assignedTeam = Array.isArray(base.assignedTeam) ? base.assignedTeam.filter(Boolean) : [];
+        base.checklist = normaliseChecklist(base.checklist);
+        base.prepSheet = sanitisePrepSheet(base.prepSheet);
 
         base.checklist = normaliseChecklist(base.checklist);
         base.prepSheet = sanitisePrepSheet(base.prepSheet);
@@ -506,7 +505,7 @@
             try {
                 const raw = global.localStorage.getItem(STORAGE_KEY);
                 if (raw) {
-                    cache = normalise(JSON.parse(raw));
+                    cache = normaliseData(JSON.parse(raw));
                     return cache;
                 }
 
@@ -607,11 +606,19 @@
             }
 
             const current = snapshot.events[index];
+            const patch = typeof updates === 'function' ? updates(clone(current)) : updates || {};
+            const nextEvent = normaliseEvent(
+                Object.assign({}, current, patch, {
+                    updatedAt: Date.now(),
+                })
+            );
+
+            snapshot.events[index] = nextEvent;
             const patch = typeof updates === 'function' ? updates(clone(current)) : updates;
             const nextEvent = normaliseEvent(Object.assign({}, current, patch, { updatedAt: Date.now() }));
             snapshot.events[index] = nextEvent;
             writeRaw(snapshot);
-            return clone(nextEvent);
+            return clone(nextEvent.prepSheet);
         },
         removeEvent(eventId) {
             if (!eventId) {
