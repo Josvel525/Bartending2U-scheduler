@@ -20,7 +20,17 @@
                 </div>
             </div>
 
-            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation">☰</button>
+            <button
+                class="mobile-nav-toggle"
+                id="mobileNavToggle"
+                type="button"
+                aria-label="Toggle navigation"
+                aria-expanded="false"
+                data-mobile-nav-toggle
+            >
+                <span class="mobile-nav-toggle__icon" aria-hidden="true">☰</span>
+                <span class="sr-only">Toggle navigation</span>
+            </button>
 
             <nav class="nav-links" id="primaryNav">
                 <a class="nav-link" href="index.html">Dashboard</a>
@@ -30,7 +40,7 @@
                 <a class="nav-link" href="settings.html">Settings</a>
             </nav>
 
-            <a class="cta-button" href="#add-employee">+ Add Team Member</a>
+            <a class="cta-button" href="#add-employee" data-subsection-target="add-employee">+ Add Team Member</a>
         </div>
     </header>
 
@@ -42,45 +52,144 @@
                 <p class="lead-text">Track availability, assign shifts, and empower your crew to deliver world-class service.</p>
             </div>
             <div class="hero-actions">
-                <a class="button primary" href="#add-employee">Invite teammate</a>
+                <a class="button primary" href="#add-employee" data-subsection-target="add-employee">Add teammate</a>
                 <a class="secondary-link" href="events.html">Match to events →</a>
             </div>
         </section>
 
-        <section class="card-grid stats-grid">
+        <section id="team-snapshot" class="card-grid stats-grid" data-subsection="Team snapshot">
             <article class="stat-card">
                 <span class="stat-card__label">Active staff</span>
-                <span class="stat-card__value">14</span>
-                <span class="stat-card__meta success">10 available this week</span>
+                <span class="stat-card__value" id="activeStaffStat">0</span>
+                <span class="stat-card__meta success" id="availableStaffMeta">0 available this week</span>
             </article>
             <article class="stat-card">
                 <span class="stat-card__label">Roles covered</span>
-                <span class="stat-card__value" style="font-size:1.8rem;">5</span>
-                <span class="stat-card__meta">Bartenders, Mixologists, Leads…</span>
+                <span class="stat-card__value" id="rolesCoveredStat" style="font-size:1.8rem;">0</span>
+                <span class="stat-card__meta" id="rolesCoveredMeta">Add team members to broaden expertise.</span>
+                <span class="stat-card__value" style="font-size:1.8rem;">4</span>
+                <span class="stat-card__meta">Bartender, Barback, Server, Support</span>
             </article>
             <article class="stat-card">
                 <span class="stat-card__label">Upcoming PTO</span>
-                <span class="stat-card__value" style="color: var(--warning-500);">3</span>
-                <span class="stat-card__meta warning">Plan coverage</span>
+                <span class="stat-card__value" id="upcomingPtoStat" style="color: var(--warning-500);">0</span>
+                <span class="stat-card__meta warning" id="upcomingPtoMeta">Plan coverage</span>
             </article>
         </section>
 
-        <section class="content-card">
+        <section id="team-directory" class="content-card" data-subsection="Team directory">
             <div class="card-header">
                 <div>
                     <h2 class="card-title">Team directory</h2>
-                    <p class="card-subtitle">Search, sort, and understand everyone’s strengths at a glance.</p>
+                    <p class="card-subtitle">Search, open a profile, and keep documentation up to date.</p>
                 </div>
             </div>
+            <div class="directory-layout">
+                <aside class="directory-sidebar">
+                    <div class="directory-toolbar">
+                        <label class="input-with-icon">
+                            <span class="input-icon" aria-hidden="true">🔍</span>
+                            <input id="employeeSearch" type="search" placeholder="Search by name, role, or skill" />
+                        </label>
+                        <div class="filter-chips" role="group" aria-label="Filter by availability">
+                            <button class="chip active" data-filter="all" type="button">All</button>
+                            <button class="chip" data-filter="available" type="button">Available</button>
+                            <button class="chip" data-filter="pto" type="button">On PTO</button>
+                        </div>
+                    </div>
+                    <div class="directory-list" id="employeeList" aria-live="polite"></div>
+                </aside>
+
+                <article class="directory-details" id="employeeDetails" aria-live="polite">
+                    <div class="details-header">
+                        <div>
+                            <h3 class="details-name" id="detailName">Select a teammate</h3>
+                            <p class="details-role" id="detailRole">Profile details will appear here.</p>
+                        </div>
+                        <span class="badge" id="detailStatus">—</span>
+                    </div>
+
+                    <div class="details-section">
+                        <h4>Contact</h4>
+                        <dl class="details-list">
+                            <div>
+                                <dt>Email</dt>
+                                <dd><a id="detailEmail" href="mailto:team@bartending2u.com">team@bartending2u.com</a></dd>
+                            </div>
+                            <div>
+                                <dt>Phone</dt>
+                                <dd><a id="detailPhone" href="tel:+15551234567">(555) 123-4567</a></dd>
+                            </div>
+                            <div>
+                                <dt>Primary location</dt>
+                                <dd id="detailLocation">Houston Metro</dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <div class="details-section">
+                        <h4>Upcoming assignments</h4>
+                        <ul class="details-pills" id="detailAssignments">
+                            <li class="text-muted">Assignments will populate once you select a teammate.</li>
+                        </ul>
+                    </div>
+
+                    <div class="details-section">
+                        <h4>Documentation & certifications</h4>
+                        <table class="doc-table" aria-describedby="documentation-helper">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Document</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Expires</th>
+                                    <th scope="col">File</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailDocs"></tbody>
+                        </table>
+                        <p class="helper-text" id="documentation-helper">Track TABC certificates, liability waivers, and other compliance paperwork.</p>
+                    </div>
+
+                    <div class="details-section">
+                        <h4>Upload new documentation</h4>
+                        <form class="upload-form" id="uploadForm">
+                            <label class="form-field">
+                                <span>Document type</span>
+                                <select id="docTypeSelect">
+                                    <option>TABC Certificate</option>
+                                    <option>W-9</option>
+                                    <option>Liability Waiver</option>
+                                    <option>Food Handler</option>
+                                </select>
+                            </label>
+                            <label class="form-field">
+                                <span>Attach file</span>
+                                <input type="file" id="docFile" />
+                            </label>
+                            <div class="table-actions" style="justify-content:flex-end;">
+                                <button class="button ghost" type="reset">Clear</button>
+                                <button class="button primary" type="submit">Record document</button>
+                            </div>
+                        </form>
+                        <p class="form-alert" id="docAlert" role="status" aria-live="polite"></p>
+                    </div>
+
+                    <div class="details-section">
+                        <h4>Notes & strengths</h4>
+                        <p class="details-notes" id="detailNotes">Document specialties, awards, and go-to pairings for your star team members.</p>
+                    </div>
+            <div class="list-grid" id="teamList"></div>
             <div class="list-grid">
                 <article class="person-card">
                     <h3 class="person-card__name">John Garcia</h3>
                     <p class="person-card__role">Bar Lead · Flair certified</p>
+                    <h3 class="person-card__name">John Doe</h3>
+                    <p class="person-card__role">Bartender · Lead flair specialist</p>
                     <div class="person-card__status"><span class="badge success">Available</span></div>
                 </article>
                 <article class="person-card">
                     <h3 class="person-card__name">Jane Smith</h3>
-                    <p class="person-card__role">Mixologist · Mocktail specialist</p>
+                    <p class="person-card__role">Server · Guest experience lead</p>
                     <div class="person-card__status"><span class="badge warning">On PTO</span></div>
                 </article>
                 <article class="person-card">
@@ -90,24 +199,24 @@
                 </article>
                 <article class="person-card">
                     <h3 class="person-card__name">Priya Singh</h3>
-                    <p class="person-card__role">Mixology Lead · Seasonal menu</p>
+                    <p class="person-card__role">Barback · Seasonal cocktail prep</p>
                     <div class="person-card__status"><span class="badge success">Available</span></div>
                 </article>
                 <article class="person-card">
                     <h3 class="person-card__name">Jamie Lee</h3>
-                    <p class="person-card__role">Support · Prep specialist</p>
+                    <p class="person-card__role">General support staff · Prep specialist</p>
                     <div class="person-card__status"><span class="badge warning">Limited hours</span></div>
                 </article>
                 <article class="person-card">
                     <h3 class="person-card__name">Marcus Allen</h3>
-                    <p class="person-card__role">Barback</p>
+                    <p class="person-card__role">Barback · Logistics</p>
                     <div class="person-card__status"><span class="badge success">Available</span></div>
                 </article>
             </div>
         </section>
 
         <section class="split-layout">
-            <article class="content-card">
+            <article id="upcoming-shifts" class="content-card" data-subsection="Upcoming shifts">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Upcoming shifts</h2>
@@ -147,55 +256,162 @@
                         <span class="timeline-item__meta"><span class="badge success">Confirmed</span></span>
                     </div>
                 </div>
+                <div class="timeline" id="upcomingShifts"></div>
             </article>
 
-            <article id="add-employee" class="content-card">
+            <article id="add-employee" class="content-card" data-subsection="Add team member">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Add team member</h2>
-                        <p class="card-subtitle">Invite freelancers or seasonal staff to upcoming shifts.</p>
+                        <p class="card-subtitle">Add new hires instantly and optionally invite them to the portal.</p>
                     </div>
                 </div>
+                <form id="addEmployeeForm">
+                <form id="teamForm">
                 <form>
+                    <p class="form-helper-text">Team members are added to your roster immediately. Check the box below if you'd like to send them a portal invite so they can review shifts, pay, and resources.</p>
                     <div class="form-grid">
                         <div class="form-field">
                             <label for="teamName">Name</label>
-                            <input id="teamName" type="text" placeholder="Full name" />
+                            <input id="teamName" name="name" type="text" placeholder="Full name" required />
                         </div>
                         <div class="form-field">
                             <label for="teamRole">Role</label>
                             <select id="teamRole">
-                                <option selected disabled>Select role</option>
+                            <select id="teamRole" name="role" required>
+                                <option value="" selected disabled>Select role</option>
                                 <option>Bartender</option>
                                 <option>Mixologist</option>
                                 <option>Bar Lead</option>
                                 <option>Support / Barback</option>
+                                <option>Event Captain</option>
+                                <option>Barback</option>
+                                <option>Server</option>
+                                <option>General Support Staff</option>
                             </select>
                         </div>
                         <div class="form-field">
                             <label for="teamEmail">Email</label>
-                            <input id="teamEmail" type="email" placeholder="name@bartending2u.com" />
+                            <input id="teamEmail" name="email" type="email" placeholder="name@bartending2u.com" />
                         </div>
                         <div class="form-field">
                             <label for="teamPhone">Phone</label>
-                            <input id="teamPhone" type="tel" placeholder="(555) 123-4567" />
+                            <input id="teamPhone" name="phone" type="tel" placeholder="(555) 123-4567" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamStatus">Status</label>
+                            <select id="teamStatus" name="status" required>
+                                <option value="Available" data-level="success" selected>Available</option>
+                                <option value="On PTO" data-level="warning">On PTO</option>
+                                <option value="Limited hours" data-level="warning">Limited hours</option>
+                                <option value="Booked" data-level="danger">Booked</option>
+                            </select>
                         </div>
                     </div>
                     <div class="form-field">
                         <label for="teamNotes">Specialties & certifications</label>
-                        <textarea id="teamNotes" placeholder="E.g. flair bartending, wine pairing, bilingual"></textarea>
+                        <textarea id="teamNotes" name="notes" placeholder="E.g. flair bartending, wine pairing, bilingual"></textarea>
+                    </div>
+                    <div class="form-field">
+                        <label class="checkbox-field" for="sendPortalInvite">
+                            <input id="sendPortalInvite" type="checkbox" />
+                            Send portal invite so they can view shifts and pay updates
+                        </label>
                     </div>
                     <div class="table-actions" style="justify-content: flex-end;">
                         <button class="button ghost" type="reset">Clear</button>
-                        <button class="button primary" type="submit">Invite</button>
+                        <button class="button primary" type="submit">Add team member</button>
                     </div>
                 </form>
+                <p class="form-alert" id="addEmployeeAlert" role="status" aria-live="polite"></p>
+
             </article>
+        </section>
+
+        <section class="content-card compliance-card">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">Compliance snapshot</h2>
+                    <p class="card-subtitle">Stay ahead of renewals and remind staff before credentials expire.</p>
+                </div>
+            </div>
+            <div class="compliance-grid" id="complianceGrid">
+                <article class="compliance-item">
+                    <h3>TABC certificates</h3>
+                    <p class="compliance-summary"><strong>12</strong> active · <span class="text-warning">2 expiring this month</span></p>
+                    <ul class="compliance-list" id="tabcExpiring"></ul>
+                </article>
+                <article class="compliance-item">
+                    <h3>Food handler</h3>
+                    <p class="compliance-summary"><strong>9</strong> verified · <span class="text-muted">3 pending upload</span></p>
+                    <ul class="compliance-list" id="foodHandlerPending"></ul>
+                </article>
+                <article class="compliance-item">
+                    <h3>Documents needing attention</h3>
+                    <p class="compliance-summary"><span class="text-warning">Follow up this week</span></p>
+                    <ul class="compliance-list" id="documentsAttention"></ul>
+                </article>
+            </div>
+        </section>
+
+        <section class="content-card communication-card" id="communicationCenter">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">Communication center</h2>
+                    <p class="card-subtitle">Send an email blast or SMS update to the exact crew you need.</p>
+                </div>
+            </div>
+            <form class="communication-form" id="communicationForm">
+                <div class="blast-type-toggle" role="radiogroup" aria-label="Select blast type">
+                    <label class="chip-toggle">
+                        <input type="radio" name="blastType" value="email" checked />
+                        <span>Email blast</span>
+                    </label>
+                    <label class="chip-toggle">
+                        <input type="radio" name="blastType" value="sms" />
+                        <span>Text blast</span>
+                    </label>
+                </div>
+                <div class="form-grid">
+                    <label class="form-field">
+                        <span>Audience</span>
+                        <select id="blastAudience">
+                            <option value="all">Entire team</option>
+                            <option value="available">Only available staff</option>
+                            <option value="lead">Bar leads</option>
+                            <option value="upcoming">Assigned to upcoming shifts</option>
+                        </select>
+                    </label>
+                    <label class="form-field" id="subjectField">
+                        <span>Email subject</span>
+                        <input type="text" id="blastSubject" placeholder="Shift update: Corporate party load-in" />
+                    </label>
+                    <label class="form-field">
+                        <span>Message</span>
+                        <textarea id="blastMessage" rows="5" placeholder="Team, here are the key details for this weekend's events…"></textarea>
+                        <small class="helper-text" id="characterCount">Characters: 0 / 160</small>
+                    </label>
+                    <label class="form-field">
+                        <span>Send when</span>
+                        <input type="datetime-local" id="blastSendAt" />
+                    </label>
+                </div>
+                <div class="table-actions" style="justify-content: space-between;">
+                    <div class="helper-text" id="blastPreview">Preview includes 0 recipients based on filters.</div>
+                    <div class="action-buttons">
+                        <button class="button ghost" type="reset">Reset</button>
+                        <button class="button primary" type="submit">Send blast</button>
+                    </div>
+                </div>
+            </form>
+            <p class="form-alert" id="blastAlert" role="status" aria-live="polite"></p>
         </section>
     </main>
 
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
+    <script src="scripts.js"></script>
+    <script src="storage.js"></script>
     <script>
         const navToggle = document.getElementById('mobileNavToggle');
         const nav = document.getElementById('primaryNav');
@@ -205,6 +421,946 @@
                 nav.classList.toggle('open');
             });
         }
+
+        const employees = [
+            {
+                id: 'john-doe',
+                name: 'John Doe',
+                role: 'Bar Lead',
+                specialties: 'Flair certified · High-volume service',
+                status: 'available',
+                statusLabel: 'Available',
+                location: 'Houston, TX',
+                email: 'john.doe@bartending2u.com',
+                phone: '(713) 555-0114',
+                notes: 'Lead trainer for new hires. Loves crafting signature welcome cocktails.',
+                assignments: [
+                    'Corporate Party — Oct 5 (Lead bartender)',
+                    'VIP Lounge — Oct 12 (Setup & close)'
+                ],
+                documents: [
+                    { type: 'TABC Certificate', status: 'Active', expires: '2025-05-12', url: '#', attention: false },
+                    { type: 'Liability Waiver', status: 'On file', expires: '—', url: '#', attention: false }
+                ]
+            },
+            {
+                id: 'jane-smith',
+                name: 'Jane Smith',
+                role: 'Mixologist',
+                specialties: 'Mocktail specialist · Low ABV menus',
+                status: 'pto',
+                statusLabel: 'On PTO',
+                location: 'Austin, TX',
+                email: 'jane.smith@bartending2u.com',
+                phone: '(512) 555-0199',
+                notes: 'Certified sommelier. Currently on PTO returning Oct 14.',
+                assignments: [
+                    'Mocktail Workshop — Oct 22 (Program design)'
+                ],
+                documents: [
+                    { type: 'TABC Certificate', status: 'Expiring soon', expires: '2024-10-30', url: '#', attention: true },
+                    { type: 'Food Handler', status: 'Submitted', expires: '2026-02-01', url: '#', attention: false }
+                ]
+            },
+            {
+                id: 'alex-rivera',
+                name: 'Alex Rivera',
+                role: 'Bartender',
+                specialties: 'Bilingual · Large format batching',
+                status: 'available',
+                statusLabel: 'Available',
+                location: 'Dallas, TX',
+                email: 'alex.rivera@bartending2u.com',
+                phone: '(469) 555-0147',
+                notes: 'Lead for sports stadium activations. Fluent in Spanish and English.',
+                assignments: [
+                    'Corporate Party — Oct 5 (Support)',
+                    'Wedding Reception — Oct 15 (Bartender)'
+                ],
+                documents: [
+                    { type: 'TABC Certificate', status: 'Active', expires: '2026-01-19', url: '#', attention: false },
+                    { type: 'Food Handler', status: 'Pending upload', expires: '—', url: '#', attention: true }
+                ]
+            },
+            {
+                id: 'priya-singh',
+                name: 'Priya Singh',
+                role: 'Mixology Lead',
+                specialties: 'Seasonal menu design · Training',
+                status: 'available',
+                statusLabel: 'Available',
+                location: 'Houston, TX',
+                email: 'priya.singh@bartending2u.com',
+                phone: '(832) 555-0177',
+                notes: 'Hosts quarterly workshops and champions zero-proof menu innovation.',
+                assignments: [
+                    'Mixology Workshop — Oct 18 (Instructor)',
+                    'Holiday Menu Lab — Nov 2 (Designer)'
+                ],
+                documents: [
+                    { type: 'TABC Certificate', status: 'Active', expires: '2025-11-08', url: '#', attention: false },
+                    { type: 'W-9', status: 'On file', expires: '—', url: '#', attention: false }
+                ]
+            },
+            {
+                id: 'jamie-lee',
+                name: 'Jamie Lee',
+                role: 'Support',
+                specialties: 'Prep specialist · Logistics',
+                status: 'limited',
+                statusLabel: 'Limited hours',
+                location: 'San Antonio, TX',
+                email: 'jamie.lee@bartending2u.com',
+                phone: '(210) 555-0188',
+                notes: 'Available for load-ins and barback duties Thursdays through Sundays.',
+                assignments: [
+                    'Mixology Workshop — Oct 18 (Support)'
+                ],
+                documents: [
+                    { type: 'TABC Certificate', status: 'Needs renewal', expires: '2024-09-25', url: '#', attention: true },
+                    { type: 'Liability Waiver', status: 'On file', expires: '—', url: '#', attention: false }
+                ]
+            },
+            {
+                id: 'marcus-allen',
+                name: 'Marcus Allen',
+                role: 'Barback',
+                specialties: 'Inventory & breakdown',
+                status: 'available',
+                statusLabel: 'Available',
+                location: 'Houston, TX',
+                email: 'marcus.allen@bartending2u.com',
+                phone: '(713) 555-0160',
+                notes: 'Great with tight timelines and closing shifts. CDL certified.',
+                assignments: [
+                    'Wedding Reception — Oct 15 (Barback)',
+                    'Corporate Holiday Preview — Oct 28 (Inventory)'
+                ],
+                documents: [
+                    { type: 'Food Handler', status: 'Active', expires: '2025-03-15', url: '#', attention: false }
+                ]
+            }
+        ];
+
+        const employeeList = document.getElementById('employeeList');
+        const employeeDetails = document.getElementById('employeeDetails');
+        const employeeSearch = document.getElementById('employeeSearch');
+        const filterChips = document.querySelectorAll('.filter-chips .chip');
+        const detailName = document.getElementById('detailName');
+        const detailRole = document.getElementById('detailRole');
+        const detailStatus = document.getElementById('detailStatus');
+        const detailEmail = document.getElementById('detailEmail');
+        const detailPhone = document.getElementById('detailPhone');
+        const detailLocation = document.getElementById('detailLocation');
+        const detailNotes = document.getElementById('detailNotes');
+        const detailDocs = document.getElementById('detailDocs');
+        const detailAssignments = document.getElementById('detailAssignments');
+        const characterCount = document.getElementById('characterCount');
+        const blastMessage = document.getElementById('blastMessage');
+        const blastSubject = document.getElementById('blastSubject');
+        const subjectField = document.getElementById('subjectField');
+        const blastTypeRadios = document.querySelectorAll('input[name="blastType"]');
+        const blastAudience = document.getElementById('blastAudience');
+        const blastPreview = document.getElementById('blastPreview');
+        const blastAlert = document.getElementById('blastAlert');
+        const communicationForm = document.getElementById('communicationForm');
+        const docForm = document.getElementById('uploadForm');
+        const docTypeSelect = document.getElementById('docTypeSelect');
+        const docFile = document.getElementById('docFile');
+        const docAlert = document.getElementById('docAlert');
+        const addEmployeeForm = document.getElementById('addEmployeeForm');
+        const addEmployeeAlert = document.getElementById('addEmployeeAlert');
+        const teamNameInput = document.getElementById('teamName');
+        const teamRoleInput = document.getElementById('teamRole');
+        const teamEmailInput = document.getElementById('teamEmail');
+        const teamPhoneInput = document.getElementById('teamPhone');
+        const teamNotesInput = document.getElementById('teamNotes');
+
+        const complianceLists = {
+            tabcExpiring: document.getElementById('tabcExpiring'),
+            foodHandlerPending: document.getElementById('foodHandlerPending'),
+            documentsAttention: document.getElementById('documentsAttention')
+        };
+
+        const statusClasses = {
+            available: 'badge success',
+            pto: 'badge warning',
+            limited: 'badge warning'
+        };
+
+        const SMS_LIMIT = 160;
+
+        let selectedEmployeeId = null;
+
+        function setAlert(element, message, tone = 'info') {
+            if (!element) return;
+            element.textContent = message;
+            element.className = 'form-alert';
+
+            if (!message) {
+                return;
+            }
+
+            if (tone === 'success') {
+                element.classList.add('text-success');
+            } else if (tone === 'danger') {
+                element.classList.add('text-danger');
+            } else {
+                element.classList.add('text-muted');
+            }
+        }
+
+        function getSelectedEmployee() {
+            return employees.find((person) => person.id === selectedEmployeeId);
+        }
+
+        function isSmsSelected() {
+            const checked = document.querySelector('input[name="blastType"]:checked');
+            return checked ? checked.value === 'sms' : false;
+        }
+
+        function generateEmployeeId(name) {
+            const base = name
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+            const suffix = Date.now().toString(36);
+            return `${base || 'teammate'}-${suffix}`;
+        }
+
+        let activeFilter = 'all';
+        let suppressBlastAlertClear = false;
+        let suppressDocAlertClear = false;
+
+        function renderEmployeeList(list) {
+            if (!employeeList) return;
+            employeeList.innerHTML = '';
+
+            if (list.length === 0) {
+                const emptyState = document.createElement('p');
+                emptyState.className = 'empty-state';
+                emptyState.textContent = 'No teammates match your filters just yet.';
+                employeeList.appendChild(emptyState);
+                return;
+            }
+
+            let hasActive = false;
+
+            list.forEach((employee) => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'person-card';
+                button.dataset.id = employee.id;
+                button.innerHTML = `
+                    <div>
+                        <h3 class="person-card__name">${employee.name}</h3>
+                        <p class="person-card__role">${employee.role} · ${employee.specialties}</p>
+                    </div>
+                    <div class="person-card__status"><span class="${statusClasses[employee.status] || 'badge'}">${employee.statusLabel}</span></div>
+                `;
+
+                button.addEventListener('click', () => selectEmployee(employee.id));
+
+                if (employee.id === selectedEmployeeId) {
+                    button.classList.add('is-active');
+                    hasActive = true;
+                }
+
+                employeeList.appendChild(button);
+            });
+
+            if (hasActive) {
+                selectEmployee(selectedEmployeeId);
+                return;
+            }
+
+            selectedEmployeeId = list[0].id;
+            const firstCard = employeeList.querySelector('.person-card');
+            if (firstCard) {
+                firstCard.classList.add('is-active');
+            }
+            selectEmployee(selectedEmployeeId);
+        }
+
+        function selectEmployee(id) {
+            const previousId = selectedEmployeeId;
+            selectedEmployeeId = id;
+            const employee = getSelectedEmployee();
+            if (!employee || !employeeDetails) return;
+
+            const cards = employeeList.querySelectorAll('.person-card');
+            cards.forEach((card) => {
+                card.classList.toggle('is-active', card.dataset.id === id);
+            });
+
+            if (previousId !== id) {
+                setAlert(docAlert, '');
+            }
+
+            detailName.textContent = employee.name;
+            detailRole.textContent = `${employee.role} · ${employee.specialties}`;
+            detailStatus.textContent = employee.statusLabel;
+            detailStatus.className = statusClasses[employee.status] || 'badge';
+            detailEmail.textContent = employee.email;
+            detailEmail.href = `mailto:${employee.email}`;
+            detailPhone.textContent = employee.phone;
+            const digits = employee.phone.replace(/[^0-9]/g, '');
+            detailPhone.href = digits ? `tel:+1${digits}` : '#';
+            detailLocation.textContent = employee.location;
+            detailNotes.textContent = employee.notes;
+
+            detailDocs.innerHTML = '';
+            if (employee.documents && employee.documents.length) {
+                employee.documents.forEach((doc) => {
+                    const row = document.createElement('tr');
+
+                    const typeCell = document.createElement('td');
+                    typeCell.textContent = doc.type;
+                    row.appendChild(typeCell);
+
+                    const statusCell = document.createElement('td');
+                    const statusBadge = document.createElement('span');
+                    statusBadge.className = `badge ${doc.attention ? 'warning' : 'success'}`;
+                    statusBadge.textContent = doc.status;
+                    statusCell.appendChild(statusBadge);
+                    row.appendChild(statusCell);
+
+                    const expiresCell = document.createElement('td');
+                    expiresCell.textContent = doc.expires && doc.expires.trim() ? doc.expires : '—';
+                    row.appendChild(expiresCell);
+
+                    const fileCell = document.createElement('td');
+                    if (doc.url) {
+                        const link = document.createElement('a');
+                        link.href = doc.url;
+                        link.textContent = doc.fileName || 'View';
+                        fileCell.appendChild(link);
+                    } else if (doc.fileName) {
+                        fileCell.textContent = doc.fileName;
+                    } else {
+                        fileCell.textContent = '—';
+                        fileCell.classList.add('text-muted');
+                    }
+
+                    row.appendChild(fileCell);
+                    detailDocs.appendChild(row);
+                });
+            } else {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 4;
+                cell.className = 'text-muted';
+                cell.textContent = 'No documentation on file yet.';
+                row.appendChild(cell);
+                detailDocs.appendChild(row);
+            }
+
+            if (detailAssignments) {
+                detailAssignments.innerHTML = '';
+                if (employee.assignments && employee.assignments.length) {
+                    employee.assignments.forEach((assignment) => {
+                        const pill = document.createElement('li');
+                        pill.textContent = assignment;
+                        detailAssignments.appendChild(pill);
+                    });
+                } else {
+                    const pill = document.createElement('li');
+                    pill.className = 'text-muted';
+                    pill.textContent = 'No upcoming assignments yet.';
+                    detailAssignments.appendChild(pill);
+                }
+            }
+        }
+
+        function applyFilters() {
+            const query = employeeSearch ? employeeSearch.value.toLowerCase().trim() : '';
+            const filtered = employees.filter((employee) => {
+                const matchesStatus =
+                    activeFilter === 'all' ||
+                    (activeFilter === 'available' && employee.status === 'available') ||
+                    (activeFilter === 'pto' && employee.status === 'pto');
+
+                const matchesQuery =
+                    !query ||
+                    employee.name.toLowerCase().includes(query) ||
+                    employee.role.toLowerCase().includes(query) ||
+                    employee.specialties.toLowerCase().includes(query);
+
+                return matchesStatus && matchesQuery;
+            });
+
+            renderEmployeeList(filtered);
+        }
+
+        if (employeeSearch) {
+            employeeSearch.addEventListener('input', applyFilters);
+        }
+
+        filterChips.forEach((chip) => {
+            chip.addEventListener('click', () => {
+                activeFilter = chip.dataset.filter;
+                filterChips.forEach((btn) => btn.classList.remove('active'));
+                chip.classList.add('active');
+                applyFilters();
+            });
+        });
+
+        function buildComplianceLists() {
+            const tabcExpiring = [];
+            const foodPending = [];
+            const needsAttention = [];
+
+            employees.forEach((employee) => {
+                (employee.documents || []).forEach((doc) => {
+                    if (doc.type === 'TABC Certificate' && doc.attention) {
+                        tabcExpiring.push(`${employee.name} — renew by ${doc.expires}`);
+                    }
+                    if (doc.type === 'Food Handler' && doc.attention) {
+                        foodPending.push(`${employee.name} — pending upload`);
+                    }
+                    if (doc.attention) {
+                        needsAttention.push(`${doc.type} · ${employee.name}`);
+                    }
+                });
+            });
+
+            const complianceMap = {
+                tabcExpiring,
+                foodHandlerPending: foodPending,
+                documentsAttention: needsAttention
+            };
+
+            Object.entries(complianceMap).forEach(([key, items]) => {
+                const listElement = complianceLists[key];
+                if (!listElement) return;
+                listElement.innerHTML = '';
+
+                if (!items.length) {
+                    const li = document.createElement('li');
+                    li.className = 'text-muted';
+                    li.textContent = 'Nothing pending right now.';
+                    listElement.appendChild(li);
+                    return;
+                }
+
+                items.forEach((item) => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    listElement.appendChild(li);
+                });
+            });
+        }
+
+        function updateCharacterCount() {
+            if (!blastMessage || !characterCount) return;
+            const length = blastMessage.value.length;
+            const smsSelected = isSmsSelected();
+            const limitText = smsSelected ? ` / ${SMS_LIMIT}` : '';
+            characterCount.textContent = `Characters: ${length}${limitText}`;
+            characterCount.classList.toggle('text-warning', smsSelected && length > SMS_LIMIT);
+        }
+
+        if (blastMessage) {
+            blastMessage.addEventListener('input', updateCharacterCount);
+        }
+
+        function getAudienceCount() {
+            if (!blastAudience) {
+                return employees.length;
+            }
+
+            switch (blastAudience.value) {
+                case 'available':
+                    return employees.filter((employee) => employee.status === 'available').length;
+                case 'lead':
+                    return employees.filter((employee) => employee.role.toLowerCase().includes('lead')).length;
+                case 'upcoming':
+                    return employees.filter((employee) => employee.assignments && employee.assignments.length).length;
+                case 'all':
+                default:
+                    return employees.length;
+            }
+        }
+
+        function updateBlastPreview() {
+            if (!blastPreview) return;
+            const count = getAudienceCount();
+            const suffix = count === 1 ? '' : 's';
+            blastPreview.textContent = `Preview includes ${count} recipient${suffix} based on filters.`;
+        }
+
+        if (blastAudience) {
+            blastAudience.addEventListener('change', () => {
+                updateBlastPreview();
+                setAlert(blastAlert, '');
+            });
+        }
+
+        function updateBlastTypeVisibility() {
+            if (!subjectField) return;
+            const checked = document.querySelector('input[name="blastType"]:checked');
+            const isEmail = checked ? checked.value === 'email' : true;
+            subjectField.style.display = isEmail ? '' : 'none';
+            updateCharacterCount();
+        }
+
+        blastTypeRadios.forEach((radio) => {
+            radio.addEventListener('change', () => {
+                setAlert(blastAlert, '');
+                updateBlastTypeVisibility();
+            });
+        });
+
+        if (docForm) {
+            docForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const employee = getSelectedEmployee();
+
+                if (!employee) {
+                    setAlert(docAlert, 'Select a teammate before recording documentation.', 'danger');
+                    return;
+                }
+
+                const type = docTypeSelect ? docTypeSelect.value.trim() : '';
+                const file = docFile ? docFile.files[0] : null;
+
+                if (!type || !file) {
+                    setAlert(docAlert, 'Choose a document type and attach a file.', 'danger');
+                    return;
+                }
+
+                const fileName = file.name;
+                const isTabc = type.toLowerCase().includes('tabc');
+                const newDoc = {
+                    type,
+                    status: isTabc ? 'Needs review' : 'Submitted',
+                    expires: isTabc ? 'To be confirmed' : '—',
+                    attention: true,
+                    fileName,
+                    url: ''
+                };
+
+                employee.documents = employee.documents || [];
+                employee.documents.push(newDoc);
+
+                selectEmployee(employee.id);
+                suppressDocAlertClear = true;
+                docForm.reset();
+                setAlert(docAlert, `${type} saved for ${employee.name}.`, 'success');
+                buildComplianceLists();
+            });
+
+            docForm.addEventListener('reset', () => {
+                if (!suppressDocAlertClear) {
+                    setAlert(docAlert, '');
+                }
+                suppressDocAlertClear = false;
+            });
+        }
+
+        if (addEmployeeForm) {
+            addEmployeeForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const name = teamNameInput ? teamNameInput.value.trim() : '';
+                const role = teamRoleInput ? teamRoleInput.value.trim() : '';
+                const email = teamEmailInput ? teamEmailInput.value.trim() : '';
+                const phone = teamPhoneInput ? teamPhoneInput.value.trim() : '';
+                const notes = teamNotesInput ? teamNotesInput.value.trim() : '';
+
+                if (!name || !email) {
+                    setAlert(addEmployeeAlert, 'Please add a name and email before inviting a teammate.', 'danger');
+                    return;
+                }
+
+                const summaryRaw = notes
+                    ? notes
+                          .split(/[\n\r]+/)[0]
+                          .split('.')
+                          .shift()
+                          .trim()
+                    : '';
+                const specialties = summaryRaw
+                    ? summaryRaw.length > 60
+                        ? `${summaryRaw.slice(0, 57)}…`
+                        : summaryRaw
+                    : 'Ready for assignments';
+                const detailNotes = notes || 'Add notes so dispatch knows their strengths.';
+
+                const newEmployee = {
+                    id: generateEmployeeId(name),
+                    name,
+                    role: role || 'Bartender',
+                    specialties,
+                    status: 'available',
+                    statusLabel: 'Available',
+                    location: 'TBD',
+                    email,
+                    phone: phone || '—',
+                    notes: detailNotes,
+                    assignments: [],
+                    documents: []
+                };
+
+                employees.push(newEmployee);
+                selectedEmployeeId = newEmployee.id;
+                addEmployeeForm.reset();
+                setAlert(addEmployeeAlert, `${name} has been added to the roster.`, 'success');
+
+                activeFilter = 'all';
+                filterChips.forEach((btn) => btn.classList.toggle('active', btn.dataset.filter === 'all'));
+                if (employeeSearch) {
+                    employeeSearch.value = '';
+                }
+
+                renderEmployeeList(employees);
+                buildComplianceLists();
+                updateBlastPreview();
+            });
+
+            addEmployeeForm.addEventListener('reset', () => setAlert(addEmployeeAlert, ''));
+        }
+
+        if (communicationForm) {
+            communicationForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const blastType = isSmsSelected() ? 'sms' : 'email';
+                const message = blastMessage ? blastMessage.value.trim() : '';
+                const subject = blastSubject ? blastSubject.value.trim() : '';
+                const audienceLabel = blastAudience
+                    ? blastAudience.options[blastAudience.selectedIndex]?.textContent || 'selected staff'
+                    : 'selected staff';
+
+                if (!message) {
+                    setAlert(blastAlert, 'Message cannot be empty.', 'danger');
+                    return;
+                }
+
+                if (blastType === 'sms' && message.length > SMS_LIMIT) {
+                    setAlert(blastAlert, `Text blasts are limited to ${SMS_LIMIT} characters.`, 'danger');
+                    return;
+                }
+
+                if (blastType === 'email' && !subject) {
+                    setAlert(blastAlert, 'Add a subject for your email blast.', 'danger');
+                    return;
+                }
+
+                const recipientCount = getAudienceCount();
+                const suffix = recipientCount === 1 ? '' : 's';
+                const typeLabel = blastType === 'email' ? 'Email' : 'Text';
+
+                setAlert(
+                    blastAlert,
+                    `${typeLabel} blast scheduled for ${recipientCount} teammate${suffix} in "${audienceLabel.trim()}".`,
+                    'success'
+                );
+
+                suppressBlastAlertClear = true;
+                communicationForm.reset();
+            });
+
+            communicationForm.addEventListener('reset', () => {
+                if (!suppressBlastAlertClear) {
+                    setAlert(blastAlert, '');
+                }
+                suppressBlastAlertClear = false;
+                setTimeout(() => {
+                    updateBlastTypeVisibility();
+                    updateCharacterCount();
+                    updateBlastPreview();
+                }, 0);
+            });
+        }
+
+        // Initialize directory
+        renderEmployeeList(employees);
+        buildComplianceLists();
+        updateCharacterCount();
+        updateBlastTypeVisibility();
+        updateBlastPreview();
+        const store = window.B2UStore;
+        const teamList = document.getElementById('teamList');
+        const teamForm = document.getElementById('teamForm');
+        const upcomingShifts = document.getElementById('upcomingShifts');
+
+        function createBadge(text, level) {
+            const badge = document.createElement('span');
+            badge.className = `badge ${level || 'neutral'}`;
+            badge.textContent = text;
+            return badge;
+        }
+
+        function getStatusLevel(value) {
+            if (!value) {
+                return 'neutral';
+            }
+            const normalized = value.toLowerCase();
+            if (normalized.includes('available') || normalized.includes('ready')) return 'success';
+            if (normalized.includes('pto') || normalized.includes('limited')) return 'warning';
+            if (normalized.includes('booked')) return 'danger';
+            return 'info';
+        }
+
+        function getEventTimestamp(event) {
+            if (!event || !event.date) {
+                return Number.MAX_SAFE_INTEGER;
+            }
+            const timestamp = new Date(`${event.date}T${event.time || '00:00'}`).getTime();
+            return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
+        }
+
+        function formatEventDate(dateStr, timeStr) {
+            if (!dateStr) {
+                return 'Date TBC';
+            }
+            const date = new Date(`${dateStr}T${timeStr || '12:00'}`);
+            if (Number.isNaN(date.getTime())) {
+                return 'Date TBC';
+            }
+            return new Intl.DateTimeFormat('en-US', {
+                month: 'short',
+                day: 'numeric',
+                hour: timeStr ? 'numeric' : undefined,
+                minute: timeStr ? '2-digit' : undefined,
+            }).format(date);
+        }
+
+        function renderTeamList(employees) {
+            if (!teamList) {
+                return;
+            }
+
+            teamList.innerHTML = '';
+
+            if (!store) {
+                const message = document.createElement('p');
+                message.className = 'empty-state';
+                message.textContent = 'Unable to load staff directory. Refresh the page to retry.';
+                teamList.appendChild(message);
+                return;
+            }
+
+            if (employees.length === 0) {
+                const message = document.createElement('p');
+                message.className = 'empty-state';
+                message.textContent = 'Invite your first bartender or mixologist to build the roster.';
+                teamList.appendChild(message);
+                return;
+            }
+
+            employees
+                .slice()
+                .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+                .forEach((employee) => {
+                    const card = document.createElement('article');
+                    card.className = 'person-card';
+                    card.dataset.employeeId = employee.id;
+
+                    const name = document.createElement('h3');
+                    name.className = 'person-card__name';
+                    name.textContent = employee.name || 'Unnamed team member';
+
+                    const role = document.createElement('p');
+                    role.className = 'person-card__role';
+                    role.textContent = employee.role || 'Role pending';
+
+                    const statusWrapper = document.createElement('div');
+                    statusWrapper.className = 'person-card__status';
+                    statusWrapper.appendChild(createBadge(employee.status || 'Available', employee.statusLevel || getStatusLevel(employee.status)));
+
+                    card.appendChild(name);
+                    card.appendChild(role);
+                    card.appendChild(statusWrapper);
+
+                    const contactBits = [employee.email, employee.phone].filter(Boolean);
+                    if (contactBits.length) {
+                        const contact = document.createElement('p');
+                        contact.className = 'card-subtitle';
+                        contact.textContent = contactBits.join(' • ');
+                        card.appendChild(contact);
+                    }
+
+                    if (employee.notes) {
+                        const notes = document.createElement('p');
+                        notes.className = 'card-subtitle';
+                        notes.textContent = employee.notes;
+                        card.appendChild(notes);
+                    }
+
+                    const actions = document.createElement('div');
+                    actions.className = 'person-card__actions';
+                    const removeButton = document.createElement('button');
+                    removeButton.type = 'button';
+                    removeButton.className = 'card-action link-button';
+                    removeButton.dataset.removeEmployee = employee.id;
+                    removeButton.textContent = 'Remove';
+                    actions.appendChild(removeButton);
+                    card.appendChild(actions);
+
+                    teamList.appendChild(card);
+                });
+        }
+
+        function updateStats(employees) {
+            const activeStaff = document.getElementById('activeStaffStat');
+            const availableMeta = document.getElementById('availableStaffMeta');
+            const rolesStat = document.getElementById('rolesCoveredStat');
+            const rolesMeta = document.getElementById('rolesCoveredMeta');
+            const ptoStat = document.getElementById('upcomingPtoStat');
+            const ptoMeta = document.getElementById('upcomingPtoMeta');
+
+            const total = employees.length;
+            const available = employees.filter((employee) => (employee.statusLevel || getStatusLevel(employee.status)) === 'success').length;
+
+            const roles = new Set();
+            employees.forEach((employee) => {
+                if (employee.role) {
+                    const roleName = employee.role.split('·')[0].trim();
+                    roles.add(roleName);
+                }
+            });
+
+            const ptoCount = employees.filter((employee) => (employee.status || '').toLowerCase().includes('pto')).length;
+
+            if (activeStaff) {
+                activeStaff.textContent = total;
+            }
+            if (availableMeta) {
+                availableMeta.textContent = `${available} available this week`;
+            }
+            if (rolesStat) {
+                rolesStat.textContent = roles.size;
+            }
+            if (rolesMeta) {
+                rolesMeta.textContent = roles.size ? Array.from(roles).join(', ') : 'Add team members to broaden expertise.';
+            }
+            if (ptoStat) {
+                ptoStat.textContent = ptoCount;
+            }
+            if (ptoMeta) {
+                ptoMeta.textContent = ptoCount ? 'Coordinate coverage for upcoming absences.' : 'All clear for now.';
+            }
+        }
+
+        function renderUpcomingShifts(events) {
+            if (!upcomingShifts) {
+                return;
+            }
+
+            upcomingShifts.innerHTML = '';
+
+            if (!store) {
+                const message = document.createElement('p');
+                message.className = 'empty-state';
+                message.textContent = 'Unable to load schedule previews.';
+                upcomingShifts.appendChild(message);
+                return;
+            }
+
+            const upcomingEvents = events
+                .slice()
+                .sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b))
+                .filter((event) => getEventTimestamp(event) >= Date.now())
+                .slice(0, 4);
+
+            if (upcomingEvents.length === 0) {
+                const message = document.createElement('p');
+                message.className = 'empty-state';
+                message.textContent = 'Schedule a new event to see staffing assignments here.';
+                upcomingShifts.appendChild(message);
+                return;
+            }
+
+            upcomingEvents.forEach((event) => {
+                const item = document.createElement('div');
+                item.className = 'timeline-item';
+
+                const left = document.createElement('div');
+                left.className = 'timeline-item__left';
+
+                const icon = document.createElement('span');
+                icon.className = 'timeline-icon';
+                icon.textContent = '🍸';
+                left.appendChild(icon);
+
+                const copy = document.createElement('div');
+                const title = document.createElement('h3');
+                title.className = 'person-card__name';
+                title.textContent = event.name;
+                const subtitle = document.createElement('p');
+                subtitle.className = 'card-subtitle';
+                const location = event.location ? ` · ${event.location}` : '';
+                subtitle.textContent = `${formatEventDate(event.date, event.time)}${location}`;
+                copy.appendChild(title);
+                copy.appendChild(subtitle);
+                left.appendChild(copy);
+
+                const meta = document.createElement('span');
+                meta.className = 'timeline-item__meta';
+                meta.appendChild(createBadge(event.staffingStatus || 'Staffing pending', event.staffingLevel || getStatusLevel(event.staffingStatus)));
+
+                item.appendChild(left);
+                item.appendChild(meta);
+                upcomingShifts.appendChild(item);
+            });
+        }
+
+        function refresh() {
+            if (!store) {
+                renderTeamList([]);
+                renderUpcomingShifts([]);
+                updateStats([]);
+                return;
+            }
+
+            const employees = store.getEmployees();
+            const events = store.getEvents();
+            renderTeamList(employees);
+            updateStats(employees);
+            renderUpcomingShifts(events);
+        }
+
+        if (teamList) {
+            teamList.addEventListener('click', (event) => {
+                const target = event.target.closest('[data-remove-employee]');
+                if (!target || !store) {
+                    return;
+                }
+
+                store.removeEmployee(target.dataset.removeEmployee);
+                refresh();
+            });
+        }
+
+        if (teamForm && store) {
+            teamForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const data = new FormData(teamForm);
+                const statusOption = teamForm.teamStatus.options[teamForm.teamStatus.selectedIndex];
+
+                store.addEmployee({
+                    name: (data.get('name') || '').trim() || 'Unnamed team member',
+                    role: data.get('role') || '',
+                    email: (data.get('email') || '').trim(),
+                    phone: (data.get('phone') || '').trim(),
+                    status: data.get('status') || 'Available',
+                    statusLevel: statusOption ? statusOption.dataset.level : undefined,
+                    notes: (data.get('notes') || '').trim(),
+                });
+
+                teamForm.reset();
+                if (teamForm.teamStatus) {
+                    teamForm.teamStatus.value = 'Available';
+                }
+                refresh();
+            });
+        }
+
+        refresh();
     </script>
+    <script src="app.js"></script>
 </body>
 </html>

@@ -20,7 +20,17 @@
                 </div>
             </div>
 
-            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation">☰</button>
+            <button
+                class="mobile-nav-toggle"
+                id="mobileNavToggle"
+                type="button"
+                aria-label="Toggle navigation"
+                aria-expanded="false"
+                data-mobile-nav-toggle
+            >
+                <span class="mobile-nav-toggle__icon" aria-hidden="true">☰</span>
+                <span class="sr-only">Toggle navigation</span>
+            </button>
 
             <nav class="nav-links" id="primaryNav">
                 <a class="nav-link" href="index.html">Dashboard</a>
@@ -42,12 +52,12 @@
                 <p class="lead-text">Update company info, adjust notifications, and align the platform with your brand.</p>
             </div>
             <div class="hero-actions">
-                <a class="button primary" href="#account-settings">Save changes</a>
+                <a class="button primary" href="#account-settings" data-subsection-target="account-settings">Save changes</a>
                 <a class="secondary-link" href="index.html">Return to dashboard →</a>
             </div>
         </section>
 
-        <section id="account-settings" class="content-card">
+        <section id="account-settings" class="content-card" data-subsection="Account preferences">
             <div class="card-header">
                 <div>
                     <h2 class="card-title">Account preferences</h2>
@@ -96,7 +106,7 @@
         </section>
 
         <section class="split-layout">
-            <article class="content-card">
+            <article id="notification-settings" class="content-card" data-subsection="Notification settings">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Notification settings</h2>
@@ -111,7 +121,7 @@
                 </div>
             </article>
 
-            <article class="content-card">
+            <article id="branding-settings" class="content-card" data-subsection="Branding">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Branding</h2>
@@ -142,15 +152,7 @@
 
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
-    <script>
-        const navToggle = document.getElementById('mobileNavToggle');
-        const nav = document.getElementById('primaryNav');
-
-        if (navToggle && nav) {
-            navToggle.addEventListener('click', () => {
-                nav.classList.toggle('open');
-            });
-        }
-    </script>
+    <script src="scripts.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>

@@ -20,7 +20,17 @@
                 </div>
             </div>
 
-            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation">☰</button>
+            <button
+                class="mobile-nav-toggle"
+                id="mobileNavToggle"
+                type="button"
+                aria-label="Toggle navigation"
+                aria-expanded="false"
+                data-mobile-nav-toggle
+            >
+                <span class="mobile-nav-toggle__icon" aria-hidden="true">☰</span>
+                <span class="sr-only">Toggle navigation</span>
+            </button>
 
             <nav class="nav-links" id="primaryNav">
                 <a class="nav-link active" href="index.html">Dashboard</a>
@@ -40,6 +50,8 @@
                 <p class="page-eyebrow">Dashboard</p>
                 <h1 class="page-title">Welcome back, John Garcia!</h1>
                 <p class="lead-text">Stay ahead of every tasting, private party, and corporate gathering with a real-time pulse on staffing and logistics.</p>
+                <h1 class="page-title">Welcome back, Admin!</h1>
+                <p class="lead-text">Keep tabs on staffing and logistics for every upcoming event.</p>
             </div>
             <div class="hero-actions">
                 <a class="button primary" href="events.html">Schedule an Event</a>
@@ -47,31 +59,31 @@
             </div>
         </section>
 
-        <section class="card-grid stats-grid">
+        <section id="dashboard-stats" class="card-grid stats-grid" data-subsection="At-a-glance">
             <article class="stat-card">
                 <span class="stat-card__label">Total events</span>
-                <span class="stat-card__value">12</span>
+                <span class="stat-card__value" id="totalEventsStat">0</span>
                 <span class="stat-card__meta success">+2 vs last week</span>
             </article>
             <article class="stat-card">
                 <span class="stat-card__label">Team availability</span>
-                <span class="stat-card__value">8 / 10</span>
-                <span class="stat-card__meta warning">2 on PTO</span>
+                <span class="stat-card__value" id="teamAvailabilityStat">0 / 0</span>
+                <span class="stat-card__meta warning">Live availability updates</span>
             </article>
             <article class="stat-card">
                 <span class="stat-card__label">Next event</span>
-                <span class="stat-card__value" style="font-size:1.6rem;">Corporate Party</span>
-                <span class="stat-card__meta">Oct 5 · 7:00 PM</span>
+                <span class="stat-card__value" id="nextEventName" style="font-size:1.6rem;">No events scheduled</span>
+                <span class="stat-card__meta" id="nextEventMeta">Add an event to build your schedule.</span>
             </article>
             <article class="stat-card">
                 <span class="stat-card__label">Action needed</span>
-                <span class="stat-card__value" style="color: var(--danger-500);">3</span>
+                <span class="stat-card__value" id="actionNeededStat" style="color: var(--danger-500);">0</span>
                 <span class="stat-card__meta danger">Unassigned shifts</span>
             </article>
         </section>
 
         <section class="split-layout">
-            <article class="content-card">
+            <article id="recent-activity" class="content-card" data-subsection="Recent activity">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Recent activity</h2>
@@ -121,9 +133,10 @@
                         <span class="timeline-item__meta">Yesterday</span>
                     </div>
                 </div>
+                <div class="timeline" id="activityFeed"></div>
             </article>
 
-            <article class="content-card">
+            <article id="critical-alerts" class="content-card" data-subsection="Critical alerts">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Critical alerts</h2>
@@ -138,7 +151,7 @@
                         </button>
                         <div class="accordion-content" id="alert-1" data-open="true">
                             <div class="accordion-content__inner">
-                                <p>Assign barbacks for the Corporate Party cocktail hour. Current schedule has no coverage from 6–7 PM.</p>
+                                <ul id="staffingAlertsList" class="alert-list"></ul>
                                 <a class="card-action" href="employees.html">Review available team →</a>
                             </div>
                         </div>
@@ -193,36 +206,37 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Corporate Party</td>
-                            <td>Oct 5, 2025 · 7:00 PM</td>
-                            <td>Downtown Houston</td>
-                            <td>John D., Alex R.</td>
-                            <td><span class="badge success">Ready</span></td>
-                            <td class="table-actions">
+                            <td data-label="Event">Corporate Party</td>
+                            <td data-label="Date">Oct 5, 2025 · 7:00 PM</td>
+                            <td data-label="Location">Downtown Houston</td>
+                            <td data-label="Team">John D., Alex R.</td>
+                            <td data-label="Status"><span class="badge success">Ready</span></td>
+                            <td class="table-actions" data-label="Actions">
                                 <a class="card-action" href="events.html">View details</a>
                             </td>
                         </tr>
                         <tr>
-                            <td>Wedding Reception</td>
-                            <td>Oct 15, 2025 · 6:00 PM</td>
-                            <td>The Grand Hall</td>
-                            <td>Pending assignments</td>
-                            <td><span class="badge warning">Needs staffing</span></td>
-                            <td class="table-actions">
+                            <td data-label="Event">Wedding Reception</td>
+                            <td data-label="Date">Oct 15, 2025 · 6:00 PM</td>
+                            <td data-label="Location">The Grand Hall</td>
+                            <td data-label="Team">Pending assignments</td>
+                            <td data-label="Status"><span class="badge warning">Needs staffing</span></td>
+                            <td class="table-actions" data-label="Actions">
                                 <a class="card-action" href="employees.html">Assign team</a>
                             </td>
                         </tr>
                         <tr>
-                            <td>Mixology Workshop</td>
-                            <td>Oct 18, 2025 · 5:30 PM</td>
-                            <td>Private Residence</td>
-                            <td>Jamie L., Priya S.</td>
-                            <td><span class="badge success">Confirmed</span></td>
-                            <td class="table-actions">
+                            <td data-label="Event">Mixology Workshop</td>
+                            <td data-label="Date">Oct 18, 2025 · 5:30 PM</td>
+                            <td data-label="Location">Private Residence</td>
+                            <td data-label="Team">Jamie L., Priya S.</td>
+                            <td data-label="Status"><span class="badge success">Confirmed</span></td>
+                            <td class="table-actions" data-label="Actions">
                                 <a class="card-action" href="events.html">Manage</a>
                             </td>
                         </tr>
                     </tbody>
+                    <tbody id="dashboardEventsTable"></tbody>
                 </table>
             </div>
         </section>
@@ -230,6 +244,8 @@
 
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
+    <script src="scripts.js"></script>
+    <script src="storage.js"></script>
     <script>
         const navToggle = document.getElementById('mobileNavToggle');
         const nav = document.getElementById('primaryNav');
@@ -261,6 +277,286 @@
                 }
             });
         });
+
+        const store = window.B2UStore;
+
+        function formatDateTime(dateStr, timeStr) {
+            if (!dateStr) {
+                return 'Date TBC';
+            }
+
+            const safeTime = timeStr ? timeStr : '12:00';
+            const date = new Date(`${dateStr}T${safeTime}`);
+            const dateFormatter = new Intl.DateTimeFormat('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+            });
+            const timeFormatter = new Intl.DateTimeFormat('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+            });
+
+            return `${dateFormatter.format(date)} · ${timeFormatter.format(date)}`;
+        }
+
+        function formatDateOnly(dateStr) {
+            if (!dateStr) {
+                return 'Date TBC';
+            }
+            const date = new Date(`${dateStr}T12:00`);
+            return new Intl.DateTimeFormat('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+            }).format(date);
+        }
+
+        function formatCurrency(amount) {
+            if (!amount && amount !== 0) {
+                return '$0';
+            }
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                maximumFractionDigits: 0,
+            }).format(amount);
+        }
+
+        function formatRelativeTime(timestamp) {
+            if (!timestamp) {
+                return '';
+            }
+
+            const diffMs = Date.now() - timestamp;
+            const minutes = Math.floor(diffMs / (1000 * 60));
+            if (minutes < 1) return 'Just now';
+            if (minutes < 60) return `${minutes} min ago`;
+            const hours = Math.floor(minutes / 60);
+            if (hours < 24) return `${hours} hour${hours === 1 ? '' : 's'} ago`;
+            const days = Math.floor(hours / 24);
+            if (days < 7) return `${days} day${days === 1 ? '' : 's'} ago`;
+            return formatDateOnly(new Date(timestamp).toISOString().slice(0, 10));
+        }
+
+        function getEventTimestamp(event) {
+            if (!event || !event.date) {
+                return Number.MAX_SAFE_INTEGER;
+            }
+
+            const timestamp = new Date(`${event.date}T${event.time || '00:00'}`).getTime();
+            return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
+        }
+
+        function createBadge(text, level) {
+            const badge = document.createElement('span');
+            badge.className = `badge ${level || 'neutral'}`;
+            badge.textContent = text;
+            return badge;
+        }
+
+        function renderActivity(events, employees) {
+            const feed = document.getElementById('activityFeed');
+            if (!feed) {
+                return;
+            }
+
+            feed.innerHTML = '';
+
+            const activityItems = [
+                ...events.map((event) => ({
+                    id: event.id,
+                    createdAt: event.createdAt || 0,
+                    icon: '🍸',
+                    title: `${event.name} saved`,
+                    subtitle: `${formatDateTime(event.date, event.time)} · ${event.location || 'Location TBC'}`,
+                })),
+                ...employees.map((employee) => ({
+                    id: employee.id,
+                    createdAt: employee.createdAt || 0,
+                    icon: '👤',
+                    title: `${employee.name} added`,
+                    subtitle: `${employee.role || 'Role pending'} · ${employee.status || 'Status pending'}`,
+                })),
+            ]
+                .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+                .slice(0, 6);
+
+            if (activityItems.length === 0) {
+                const empty = document.createElement('p');
+                empty.className = 'empty-state';
+                empty.textContent = 'Activities will appear here after you add events or employees.';
+                feed.appendChild(empty);
+                return;
+            }
+
+            activityItems.forEach((item) => {
+                const timelineItem = document.createElement('div');
+                timelineItem.className = 'timeline-item';
+
+                const left = document.createElement('div');
+                left.className = 'timeline-item__left';
+
+                const icon = document.createElement('span');
+                icon.className = 'timeline-icon';
+                icon.textContent = item.icon;
+                left.appendChild(icon);
+
+                const copy = document.createElement('div');
+                const title = document.createElement('h3');
+                title.className = 'person-card__name';
+                title.textContent = item.title;
+                const subtitle = document.createElement('p');
+                subtitle.className = 'card-subtitle';
+                subtitle.textContent = item.subtitle;
+                copy.appendChild(title);
+                copy.appendChild(subtitle);
+                left.appendChild(copy);
+
+                const meta = document.createElement('span');
+                meta.className = 'timeline-item__meta';
+                meta.textContent = formatRelativeTime(item.createdAt);
+
+                timelineItem.appendChild(left);
+                timelineItem.appendChild(meta);
+                feed.appendChild(timelineItem);
+            });
+        }
+
+        function renderDashboardEvents(events) {
+            const tableBody = document.getElementById('dashboardEventsTable');
+            if (!tableBody) {
+                return;
+            }
+
+            tableBody.innerHTML = '';
+
+            if (events.length === 0) {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 6;
+                cell.className = 'empty-state';
+                cell.textContent = 'Log your first event to build this view.';
+                row.appendChild(cell);
+                tableBody.appendChild(row);
+                return;
+            }
+
+            events.slice(0, 5).forEach((event) => {
+                const row = document.createElement('tr');
+
+                const nameCell = document.createElement('td');
+                nameCell.textContent = event.name;
+
+                const dateCell = document.createElement('td');
+                dateCell.textContent = formatDateTime(event.date, event.time);
+
+                const locationCell = document.createElement('td');
+                locationCell.textContent = event.location || 'Location TBC';
+
+                const teamCell = document.createElement('td');
+                teamCell.textContent = event.staffingStatus || 'Staffing pending';
+
+                const statusCell = document.createElement('td');
+                statusCell.appendChild(createBadge(event.status || 'Pending', event.statusLevel));
+
+                const actionsCell = document.createElement('td');
+                actionsCell.className = 'table-actions';
+                const link = document.createElement('a');
+                link.className = 'card-action';
+                link.href = 'events.html';
+                link.textContent = 'View details';
+                actionsCell.appendChild(link);
+
+                row.appendChild(nameCell);
+                row.appendChild(dateCell);
+                row.appendChild(locationCell);
+                row.appendChild(teamCell);
+                row.appendChild(statusCell);
+                row.appendChild(actionsCell);
+                tableBody.appendChild(row);
+            });
+        }
+
+        function renderStaffingAlerts(events) {
+            const alertsList = document.getElementById('staffingAlertsList');
+            if (!alertsList) {
+                return;
+            }
+
+            alertsList.innerHTML = '';
+            const needsAttention = events.filter((event) => event.staffingLevel !== 'success');
+
+            if (needsAttention.length === 0) {
+                const item = document.createElement('li');
+                item.textContent = 'All events are fully staffed. Great job!';
+                alertsList.appendChild(item);
+                return;
+            }
+
+            needsAttention.forEach((event) => {
+                const item = document.createElement('li');
+                item.innerHTML = `<strong>${event.name}</strong> · ${event.staffingStatus || 'Staffing pending'} · ${formatDateOnly(event.date)}`;
+                alertsList.appendChild(item);
+            });
+        }
+
+        function updateStats(events, employees) {
+            const totalEvents = document.getElementById('totalEventsStat');
+            const teamAvailability = document.getElementById('teamAvailabilityStat');
+            const nextEventName = document.getElementById('nextEventName');
+            const nextEventMeta = document.getElementById('nextEventMeta');
+            const actionNeeded = document.getElementById('actionNeededStat');
+
+            if (totalEvents) {
+                totalEvents.textContent = events.length;
+            }
+
+            if (teamAvailability) {
+                const available = employees.filter((employee) => employee.statusLevel === 'success').length;
+                teamAvailability.textContent = `${available} / ${employees.length}`;
+            }
+
+            if (actionNeeded) {
+                const needsStaff = events.filter((event) => event.staffingLevel !== 'success').length;
+                actionNeeded.textContent = needsStaff;
+            }
+
+            if (nextEventName && nextEventMeta) {
+                const upcoming = events
+                    .slice()
+                    .sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b))
+                    .find((event) => getEventTimestamp(event) >= Date.now());
+
+                if (upcoming) {
+                    nextEventName.textContent = upcoming.name;
+                    nextEventMeta.textContent = `${formatDateTime(upcoming.date, upcoming.time)} · ${formatCurrency(upcoming.payout || 0)}`;
+                } else if (events.length > 0) {
+                    const latest = events
+                        .slice()
+                        .sort((a, b) => getEventTimestamp(b) - getEventTimestamp(a))[0];
+                    nextEventName.textContent = latest.name;
+                    nextEventMeta.textContent = `${formatDateTime(latest.date, latest.time)} · Completed`;
+                } else {
+                    nextEventName.textContent = 'No events scheduled';
+                    nextEventMeta.textContent = 'Add an event to build your schedule.';
+                }
+            }
+        }
+
+        if (store) {
+            const events = store.getEvents();
+            const employees = store.getEmployees();
+            renderActivity(events, employees);
+            renderDashboardEvents(
+                events
+                    .slice()
+                    .sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b))
+            );
+            renderStaffingAlerts(events);
+            updateStats(events, employees);
+        }
     </script>
+    <script src="app.js"></script>
 </body>
 </html>
