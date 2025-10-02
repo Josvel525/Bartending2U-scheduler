@@ -171,7 +171,14 @@
             try {
                 const raw = global.localStorage.getItem(STORAGE_KEY);
                 if (!raw) {
-                    cache = clone(defaultData);
+                    const seeded = clone(defaultData);
+                    cache = seeded;
+                    try {
+                        global.localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
+                    } catch (seedError) {
+                        console.warn('Unable to seed scheduler data to localStorage. Falling back to memory store.', seedError);
+                        memoryStore = clone(seeded);
+                    }
                     return cache;
                 }
 
@@ -212,16 +219,10 @@
             return clone(defaultData);
         }
 
-        const normalised = {
-            events: Array.isArray(data.events) ? data.events : [],
-            employees: Array.isArray(data.employees) ? data.employees : [],
+        return {
+            events: Array.isArray(data.events) ? data.events : clone(defaultData.events),
+            employees: Array.isArray(data.employees) ? data.employees : clone(defaultData.employees),
         };
-
-        if (normalised.events.length === 0 && normalised.employees.length === 0) {
-            return clone(defaultData);
-        }
-
-        return normalised;
     }
 
     function generateId(prefix) {
