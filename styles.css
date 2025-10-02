@@ -1186,6 +1186,64 @@ textarea {
   color: var(--slate-700);
 }
 
+.details-section__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.portal-access__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.portal-login-activity {
+  border: 1px solid rgba(148, 163, 184, 0.35);
+  border-radius: 16px;
+  padding: 1rem 1.25rem;
+  background: var(--surface-soft);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.portal-login-activity__title {
+  margin: 0;
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--slate-500);
+}
+
+.portal-login-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.portal-login-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.portal-login-item__meta {
+  font-weight: 600;
+  color: var(--slate-700);
+}
+
+.portal-login-item__details {
+  color: var(--slate-500);
+  font-size: 0.9rem;
+}
+
 .details-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
