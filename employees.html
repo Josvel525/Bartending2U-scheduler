@@ -479,21 +479,46 @@
                 </div>
             </div>
             <div class="compliance-grid" id="complianceGrid">
-                <article class="compliance-item">
+                <article
+                    class="compliance-item"
+                    data-compliance="tabcExpiring"
+                    tabindex="0"
+                    role="button"
+                    aria-expanded="false"
+                >
                     <h3>TABC certificates</h3>
                     <p class="compliance-summary"><strong>12</strong> active · <span class="text-warning">2 expiring this month</span></p>
                     <ul class="compliance-list" id="tabcExpiring"></ul>
                 </article>
-                <article class="compliance-item">
+                <article
+                    class="compliance-item"
+                    data-compliance="foodHandlerPending"
+                    tabindex="0"
+                    role="button"
+                    aria-expanded="false"
+                >
                     <h3>Food handler</h3>
                     <p class="compliance-summary"><strong>9</strong> verified · <span class="text-muted">3 pending upload</span></p>
                     <ul class="compliance-list" id="foodHandlerPending"></ul>
                 </article>
-                <article class="compliance-item">
+                <article
+                    class="compliance-item"
+                    data-compliance="documentsAttention"
+                    tabindex="0"
+                    role="button"
+                    aria-expanded="false"
+                >
                     <h3>Documents needing attention</h3>
                     <p class="compliance-summary"><span class="text-warning">Follow up this week</span></p>
                     <ul class="compliance-list" id="documentsAttention"></ul>
                 </article>
+            </div>
+            <div class="compliance-detail-panel" id="complianceDetailPanel" aria-live="polite">
+                <h3 id="complianceDetailTitle">Select a compliance item</h3>
+                <p class="compliance-detail-summary text-muted" id="complianceDetailSummary">
+                    Choose a category above to review which documents need attention.
+                </p>
+                <ul class="compliance-detail-list" id="complianceDetailList" hidden></ul>
             </div>
         </section>
 
@@ -1063,6 +1088,124 @@
             foodHandlerPending: document.getElementById('foodHandlerPending'),
             documentsAttention: document.getElementById('documentsAttention')
         };
+        const complianceDetailPanel = document.getElementById('complianceDetailPanel');
+        const complianceDetailTitle = document.getElementById('complianceDetailTitle');
+        const complianceDetailSummary = document.getElementById('complianceDetailSummary');
+        const complianceDetailList = document.getElementById('complianceDetailList');
+        const complianceItems = Array.from(document.querySelectorAll('.compliance-item[data-compliance]'));
+        const complianceItemMap = new Map();
+        const complianceData = {};
+        let activeComplianceKey = null;
+
+        complianceItems.forEach((item) => {
+            const key = item.dataset.compliance;
+            if (!key) {
+                return;
+            }
+
+            complianceItemMap.set(key, item);
+
+            item.addEventListener('click', () => {
+                setActiveCompliance(key);
+            });
+
+            item.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    setActiveCompliance(key);
+                }
+            });
+        });
+
+        function renderComplianceDetail() {
+            if (!complianceDetailPanel || !complianceDetailTitle || !complianceDetailList) {
+                return;
+            }
+
+            const key = activeComplianceKey;
+            if (!key) {
+                complianceDetailPanel.classList.remove('has-selection');
+                complianceDetailTitle.textContent = 'Select a compliance item';
+                if (complianceDetailSummary) {
+                    complianceDetailSummary.textContent = 'Choose a category above to review which documents need attention.';
+                    complianceDetailSummary.hidden = false;
+                }
+                complianceDetailList.innerHTML = '';
+                complianceDetailList.hidden = true;
+                return;
+            }
+
+            const item = complianceItemMap.get(key);
+            const heading = item ? item.querySelector('h3') : null;
+            const summary = item ? item.querySelector('.compliance-summary') : null;
+            const entries = complianceData[key] || [];
+
+            complianceDetailPanel.classList.add('has-selection');
+            complianceDetailTitle.textContent = heading ? heading.textContent.trim() : 'Compliance details';
+
+            if (complianceDetailSummary) {
+                if (summary && summary.textContent.trim()) {
+                    complianceDetailSummary.textContent = summary.textContent.trim();
+                    complianceDetailSummary.hidden = false;
+                } else {
+                    complianceDetailSummary.hidden = true;
+                }
+            }
+
+            complianceDetailList.innerHTML = '';
+            complianceDetailList.hidden = false;
+
+            if (!entries.length) {
+                const li = document.createElement('li');
+                li.className = 'text-muted';
+                li.textContent = 'You\'re all caught up for now.';
+                complianceDetailList.appendChild(li);
+                return;
+            }
+
+            entries.forEach((value) => {
+                const li = document.createElement('li');
+                li.textContent = value;
+                complianceDetailList.appendChild(li);
+            });
+        }
+
+        function setActiveCompliance(key) {
+            if (!key) {
+                return;
+            }
+
+            if (activeComplianceKey === key) {
+                const current = complianceItemMap.get(activeComplianceKey);
+                if (current) {
+                    current.classList.remove('is-active');
+                    current.setAttribute('aria-expanded', 'false');
+                }
+                activeComplianceKey = null;
+                renderComplianceDetail();
+                return;
+            }
+
+            if (activeComplianceKey) {
+                const previous = complianceItemMap.get(activeComplianceKey);
+                if (previous) {
+                    previous.classList.remove('is-active');
+                    previous.setAttribute('aria-expanded', 'false');
+                }
+            }
+
+            const nextItem = complianceItemMap.get(key);
+            if (!nextItem) {
+                activeComplianceKey = null;
+                renderComplianceDetail();
+                return;
+            }
+
+            activeComplianceKey = key;
+            nextItem.classList.add('is-active');
+            nextItem.setAttribute('aria-expanded', 'true');
+            renderComplianceDetail();
+        }
 
         const statusClasses = {
             available: 'badge success',
@@ -1869,12 +2012,19 @@
                 const listElement = complianceLists[key];
                 if (!listElement) return;
                 listElement.innerHTML = '';
+                listElement.hidden = true;
+                listElement.setAttribute('aria-hidden', 'true');
+
+                complianceData[key] = [...items];
 
                 if (!items.length) {
                     const li = document.createElement('li');
                     li.className = 'text-muted';
                     li.textContent = 'Nothing pending right now.';
                     listElement.appendChild(li);
+                    if (activeComplianceKey === key) {
+                        renderComplianceDetail();
+                    }
                     return;
                 }
 
@@ -1883,6 +2033,10 @@
                     li.textContent = item;
                     listElement.appendChild(li);
                 });
+
+                if (activeComplianceKey === key) {
+                    renderComplianceDetail();
+                }
             });
         }
 

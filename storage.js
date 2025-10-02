@@ -1,6 +1,8 @@
 (function (global) {
     const STORAGE_KEY = 'bartending2u-scheduler';
 
+    const now = Date.now();
+
     const defaultData = {
         events: [
             {
@@ -20,8 +22,17 @@
                 staffingLevel: 'success',
                 assignedTeam: ['john-doe', 'alex-rivera', 'priya-singh'],
                 notes: 'Deposit received. Call time 6:00 PM.',
-                lastReminderSent: Date.now() - 1000 * 60 * 60 * 24,
-                createdAt: Date.now() - 1000 * 60 * 20,
+                lastReminderSent: now - 1000 * 60 * 60 * 24,
+                createdAt: now - 1000 * 60 * 20,
+                checklist: [
+                    { id: 'chk-evt-1-1', label: 'Confirm final guest count', completed: true },
+                    { id: 'chk-evt-1-2', label: 'Print bar menu cards', completed: false },
+                ],
+                prepSheet: {
+                    menu: 'Seasonal welcome cocktail + corporate-branded old fashioned.',
+                    equipment: '2 portable bars, branded napkins, 150 coupe glasses.',
+                    staffing: 'Lead + 2 bartenders onsite by 5:30 PM.',
+                },
             },
             {
                 id: 'evt-2',
@@ -41,7 +52,16 @@
                 assignedTeam: [],
                 notes: 'Send reminder for deposit. Discuss signature cocktail list.',
                 lastReminderSent: null,
-                createdAt: Date.now() - 1000 * 60 * 60 * 3,
+                createdAt: now - 1000 * 60 * 60 * 3,
+                checklist: [
+                    { id: 'chk-evt-2-1', label: 'Follow up on deposit invoice', completed: false },
+                    { id: 'chk-evt-2-2', label: 'Confirm champagne toast timing', completed: false },
+                ],
+                prepSheet: {
+                    menu: 'Bride + groom his & hers cocktails, late-night espresso bar.',
+                    equipment: 'Champagne tower, coffee urns, ice tubs.',
+                    staffing: 'Need 2 more bartenders for reception coverage.',
+                },
             },
             {
                 id: 'evt-3',
@@ -61,7 +81,16 @@
                 assignedTeam: ['jamie-lee'],
                 notes: 'Client reviewing updated package. Follow up Friday.',
                 lastReminderSent: null,
-                createdAt: Date.now() - 1000 * 60 * 60 * 10,
+                createdAt: now - 1000 * 60 * 60 * 10,
+                checklist: [
+                    { id: 'chk-evt-3-1', label: 'Update proposal with vegan options', completed: false },
+                    { id: 'chk-evt-3-2', label: 'Schedule tasting with chef partner', completed: false },
+                ],
+                prepSheet: {
+                    menu: 'Craft martini flight + winter mocktails.',
+                    equipment: 'Large ice sculptures, stage back-bar, 3 garnish trays.',
+                    staffing: 'Pending confirmation of additional support staff.',
+                },
             },
             {
                 id: 'evt-4',
@@ -80,8 +109,17 @@
                 staffingLevel: 'success',
                 assignedTeam: ['priya-singh'],
                 notes: 'Include mocktail options and allergy-friendly mixers.',
-                lastReminderSent: Date.now() - 1000 * 60 * 60 * 12,
-                createdAt: Date.now() - 1000 * 60 * 5,
+                lastReminderSent: now - 1000 * 60 * 60 * 12,
+                createdAt: now - 1000 * 60 * 5,
+                checklist: [
+                    { id: 'chk-evt-4-1', label: 'Prepare ingredient kits', completed: true },
+                    { id: 'chk-evt-4-2', label: 'Email pre-event survey', completed: false },
+                ],
+                prepSheet: {
+                    menu: 'Hands-on margarita build + zero-proof paloma.',
+                    equipment: 'Cutting boards, shakers for 15 stations, demo monitor.',
+                    staffing: 'Priya onsite at 4:30 PM. Need 1 assistant for setup.',
+                },
             },
         ],
         employees: [
@@ -527,6 +565,148 @@
         return { events, employees };
     }
 
+    function mapStatusLevel(value) {
+        if (!value) {
+            return 'neutral';
+        }
+
+        const lower = String(value).toLowerCase();
+
+        if (lower.includes('confirm') || lower.includes('ready') || lower.includes('won') || lower.includes('staffed')) {
+            return 'success';
+        }
+
+        if (lower.includes('await') || lower.includes('need') || lower.includes('limited') || lower.includes('pto')) {
+            return 'warning';
+        }
+
+        if (lower.includes('overdue') || lower.includes('cancel') || lower.includes('lost')) {
+            return 'danger';
+        }
+
+        return 'info';
+    }
+
+    function normaliseChecklist(checklist) {
+        if (!Array.isArray(checklist)) {
+            return [];
+        }
+
+        return checklist
+            .filter((item) => item && typeof item === 'object' && item.label)
+            .map((item) => ({
+                id: item.id || generateId('chk'),
+                label: String(item.label),
+                completed: Boolean(item.completed),
+            }));
+    }
+
+    function sanitisePrepSheet(prepSheet) {
+        if (!prepSheet || typeof prepSheet !== 'object') {
+            return {
+                menu: '',
+                equipment: '',
+                staffing: '',
+            };
+        }
+
+        return {
+            menu: typeof prepSheet.menu === 'string' ? prepSheet.menu : '',
+            equipment: typeof prepSheet.equipment === 'string' ? prepSheet.equipment : '',
+            staffing: typeof prepSheet.staffing === 'string' ? prepSheet.staffing : '',
+        };
+    }
+
+    function normaliseEvent(event) {
+        const base = Object.assign(
+            {
+                assignedStaffIds: [],
+                assignedTeam: [],
+                requiredStaff: 0,
+                lastReminderSent: null,
+                checklist: [],
+                prepSheet: { menu: '', equipment: '', staffing: '' },
+            },
+            event || {}
+        );
+
+        base.assignedStaffIds = Array.isArray(base.assignedStaffIds)
+            ? base.assignedStaffIds.filter(Boolean)
+            : [];
+        base.assignedTeam = Array.isArray(base.assignedTeam) ? base.assignedTeam.filter(Boolean) : [];
+        base.checklist = normaliseChecklist(base.checklist);
+        base.prepSheet = sanitisePrepSheet(base.prepSheet);
+
+        base.checklist = normaliseChecklist(base.checklist);
+        base.prepSheet = sanitisePrepSheet(base.prepSheet);
+
+        if (!base.statusLevel && base.status) {
+            base.statusLevel = mapStatusLevel(base.status);
+        }
+
+        if (!base.staffingLevel && base.staffingStatus) {
+            base.staffingLevel = mapStatusLevel(base.staffingStatus);
+        }
+
+        return base;
+    }
+
+    function normaliseEmployee(employee) {
+        const base = Object.assign({}, employee || {});
+
+        if (!base.statusLevel && base.status) {
+            base.statusLevel = mapStatusLevel(base.status);
+        }
+
+        return base;
+    }
+
+    function normaliseLead(lead) {
+        const base = Object.assign({}, lead || {});
+
+        if (!base.statusLevel && base.status) {
+            base.statusLevel = mapStatusLevel(base.status);
+        }
+
+        if (!Array.isArray(base.activities)) {
+            base.activities = [];
+        }
+
+        base.activities = base.activities
+            .filter((activity) => activity && typeof activity === 'object')
+            .map((activity) =>
+                Object.assign(
+                    {
+                        id: generateId('act'),
+                        type: 'note',
+                        method: '',
+                        summary: '',
+                        message: '',
+                        createdAt: Date.now(),
+                    },
+                    activity
+                )
+            );
+
+        return base;
+    }
+
+    function normalise(data) {
+        if (!data || typeof data !== 'object') {
+            return clone(defaultData);
+        }
+
+        const eventsSource = Array.isArray(data.events) ? data.events : defaultData.events;
+        const employeesSource = Array.isArray(data.employees) ? data.employees : defaultData.employees;
+        const leadsSource = Array.isArray(data.leads) ? data.leads : defaultData.leads;
+
+        return {
+            events: eventsSource.map((event) => normaliseEvent(event)),
+            employees: employeesSource.map((employee) => normaliseEmployee(employee)),
+            leads: leadsSource.map((lead) => normaliseLead(lead)),
+        };
+    }
+
     function localStorageAvailable() {
         try {
             const storage = global.localStorage;
@@ -543,14 +723,10 @@
     }
 
     const hasLocalStorage = localStorageAvailable();
-    let memoryStore = null;
+    let memoryStore = clone(defaultData);
     let cache = null;
 
     function readRaw() {
-        if (cache) {
-            return cache;
-        }
-
         if (hasLocalStorage) {
             try {
                 const raw = global.localStorage.getItem(STORAGE_KEY);
@@ -559,28 +735,26 @@
                     return cache;
                 }
             } catch (error) {
-                console.warn('Unable to read scheduler data from localStorage. Using in-memory fallback.', error);
+                // Fall through to memory store
             }
         }
 
-        if (!memoryStore) {
-            memoryStore = clone(defaultData);
+        if (!cache) {
+            cache = normalise(memoryStore);
         }
 
-        cache = clone(memoryStore);
         return cache;
     }
 
-    function writeRaw(data) {
-        const payload = normalise(data);
-        cache = clone(payload);
+    function writeRaw(payload) {
+        const normalised = normalise(payload);
+        cache = normalised;
 
         if (hasLocalStorage) {
             try {
-                global.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-                return;
+                global.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalised));
             } catch (error) {
-                console.warn('Unable to save scheduler data to localStorage. Persisting in memory only.', error);
+                // Ignore writes that fail so the UI can keep working with the in-memory cache
             }
         }
 
@@ -600,8 +774,27 @@
         getEvents() {
             return clone(readRaw().events);
         },
+        getEvent(eventId) {
+            if (!eventId) {
+                return null;
+            }
+
+            const event = readRaw().events.find((item) => item.id === eventId);
+            return event ? clone(event) : null;
+        },
         getEmployees() {
             return clone(readRaw().employees);
+        },
+        getLeads() {
+            return clone(readRaw().leads);
+        },
+        getLead(leadId) {
+            if (!leadId) {
+                return null;
+            }
+
+            const lead = readRaw().leads.find((item) => item.id === leadId);
+            return lead ? clone(lead) : null;
         },
         saveSnapshot(next) {
             writeRaw(next);
@@ -668,7 +861,7 @@
 
             snapshot.events[index] = nextEvent;
             writeRaw(snapshot);
-            return clone(nextEvent);
+            return clone(nextEvent.prepSheet);
         },
         addEmployee(employeeInput) {
             const snapshot = readRaw();
@@ -705,9 +898,6 @@
             const snapshot = readRaw();
             snapshot.employees = snapshot.employees.filter((employee) => employee.id !== employeeId);
             writeRaw(snapshot);
-        },
-        clearAll() {
-            writeRaw(clone(defaultData));
         },
     };
 
