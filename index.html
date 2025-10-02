@@ -50,22 +50,22 @@
         <section class="card-grid stats-grid">
             <article class="stat-card">
                 <span class="stat-card__label">Total events</span>
-                <span class="stat-card__value">12</span>
+                <span class="stat-card__value" id="totalEventsStat">0</span>
                 <span class="stat-card__meta success">+2 vs last week</span>
             </article>
             <article class="stat-card">
                 <span class="stat-card__label">Team availability</span>
-                <span class="stat-card__value">8 / 10</span>
-                <span class="stat-card__meta warning">2 on PTO</span>
+                <span class="stat-card__value" id="teamAvailabilityStat">0 / 0</span>
+                <span class="stat-card__meta warning">Live availability updates</span>
             </article>
             <article class="stat-card">
                 <span class="stat-card__label">Next event</span>
-                <span class="stat-card__value" style="font-size:1.6rem;">Corporate Party</span>
-                <span class="stat-card__meta">Oct 5 · 7:00 PM</span>
+                <span class="stat-card__value" id="nextEventName" style="font-size:1.6rem;">No events scheduled</span>
+                <span class="stat-card__meta" id="nextEventMeta">Add an event to build your schedule.</span>
             </article>
             <article class="stat-card">
                 <span class="stat-card__label">Action needed</span>
-                <span class="stat-card__value" style="color: var(--danger-500);">3</span>
+                <span class="stat-card__value" id="actionNeededStat" style="color: var(--danger-500);">0</span>
                 <span class="stat-card__meta danger">Unassigned shifts</span>
             </article>
         </section>
@@ -79,48 +79,7 @@
                     </div>
                     <a class="card-action" href="events.html">View all activity →</a>
                 </div>
-                <div class="timeline">
-                    <div class="timeline-item">
-                        <div class="timeline-item__left">
-                            <span class="timeline-icon">✅</span>
-                            <div>
-                                <h3 class="person-card__name">Wedding Reception booked</h3>
-                                <p class="card-subtitle">Oct 15 · The Grand Hall · Deposit received</p>
-                            </div>
-                        </div>
-                        <span class="timeline-item__meta">2 minutes ago</span>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-item__left">
-                            <span class="timeline-icon">👤</span>
-                            <div>
-                                <h3 class="person-card__name">John Doe assigned</h3>
-                                <p class="card-subtitle">Corporate Party · Bar Lead confirmed</p>
-                            </div>
-                        </div>
-                        <span class="timeline-item__meta">1 hour ago</span>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-item__left">
-                            <span class="timeline-icon">📝</span>
-                            <div>
-                                <h3 class="person-card__name">Availability updated</h3>
-                                <p class="card-subtitle">Jane Smith marked unavailable on Nov 1</p>
-                            </div>
-                        </div>
-                        <span class="timeline-item__meta">4 hours ago</span>
-                    </div>
-                    <div class="timeline-item">
-                        <div class="timeline-item__left">
-                            <span class="timeline-icon">📦</span>
-                            <div>
-                                <h3 class="person-card__name">Inventory check</h3>
-                                <p class="card-subtitle">Glassware restocked · Ready for tasting events</p>
-                            </div>
-                        </div>
-                        <span class="timeline-item__meta">Yesterday</span>
-                    </div>
-                </div>
+                <div class="timeline" id="activityFeed"></div>
             </article>
 
             <article class="content-card">
@@ -138,7 +97,7 @@
                         </button>
                         <div class="accordion-content" id="alert-1" data-open="true">
                             <div class="accordion-content__inner">
-                                <p>Assign barbacks for the Corporate Party cocktail hour. Current schedule has no coverage from 6–7 PM.</p>
+                                <ul id="staffingAlertsList" class="alert-list"></ul>
                                 <a class="card-action" href="employees.html">Review available team →</a>
                             </div>
                         </div>
@@ -230,21 +189,16 @@
 
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
+    <script src="scripts/data-store.js"></script>
+    <script src="scripts/common.js"></script>
     <script>
-        const navToggle = document.getElementById('mobileNavToggle');
-        const nav = document.getElementById('primaryNav');
-
-        if (navToggle && nav) {
-            navToggle.addEventListener('click', () => {
-                nav.classList.toggle('open');
-            });
-        }
-
-        const accordionTriggers = document.querySelectorAll('.accordion-trigger');
-        accordionTriggers.forEach((trigger) => {
+        document.querySelectorAll('.accordion-trigger').forEach((trigger) => {
             const targetId = trigger.getAttribute('data-accordion-target');
             const content = document.getElementById(targetId);
-            if (!content) return;
+
+            if (!content) {
+                return;
+            }
 
             if (content.dataset.open === 'true') {
                 content.style.maxHeight = content.scrollHeight + 'px';
@@ -256,11 +210,14 @@
 
                 if (!isExpanded) {
                     content.style.maxHeight = content.scrollHeight + 'px';
+                    content.dataset.open = 'true';
                 } else {
                     content.style.maxHeight = '0px';
+                    content.dataset.open = 'false';
                 }
             });
         });
     </script>
+    <script src="scripts/dashboard.js"></script>
 </body>
 </html>

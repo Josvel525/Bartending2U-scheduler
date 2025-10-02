@@ -50,114 +50,11 @@
         <section class="content-card">
             <div class="card-header">
                 <div>
-                    <h2 class="card-title">October 2025 overview</h2>
+                    <h2 class="card-title" id="calendarMonthTitle">Monthly overview</h2>
                     <p class="card-subtitle">Hover over a day to reveal assignments and prep checklists.</p>
                 </div>
             </div>
-            <div class="calendar-grid">
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Mon 1</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Tue 2</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Wed 3</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Thu 4</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Fri 5</span>
-                    <div class="calendar-event">Corporate Party</div>
-                    <p class="card-subtitle">Call time 6:00 PM · 4 staff</p>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Sat 6</span>
-                    <div class="calendar-event">Tasting Prep</div>
-                    <p class="card-subtitle">Inventory pull · Syrups ready</p>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Sun 7</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Mon 8</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Tue 9</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Wed 10</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Thu 11</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Fri 12</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Sat 13</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Sun 14</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Mon 15</span>
-                    <div class="calendar-event">Wedding Reception</div>
-                    <p class="card-subtitle">Needs staffing</p>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Tue 16</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Wed 17</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Thu 18</span>
-                    <div class="calendar-event">Mixology Workshop</div>
-                    <p class="card-subtitle">Priya · Jamie · 5:30 PM</p>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Fri 19</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Sat 20</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Sun 21</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Mon 22</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Tue 23</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Wed 24</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Thu 25</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Fri 26</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Sat 27</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Sun 28</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Mon 29</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Tue 30</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Wed 31</span>
-                    <div class="calendar-event">Inventory Audit</div>
-                </div>
-            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
         </section>
 
         <section class="split-layout">
@@ -193,26 +90,7 @@
                                 <th>Prep hours</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            <tr>
-                                <td>Corporate Party</td>
-                                <td>120</td>
-                                <td>4</td>
-                                <td>6</td>
-                            </tr>
-                            <tr>
-                                <td>Wedding Reception</td>
-                                <td>180</td>
-                                <td>Pending</td>
-                                <td>8</td>
-                            </tr>
-                            <tr>
-                                <td>Mixology Workshop</td>
-                                <td>25</td>
-                                <td>2</td>
-                                <td>3</td>
-                            </tr>
-                        </tbody>
+                        <tbody id="weekAtGlanceBody"></tbody>
                     </table>
                 </div>
             </article>
@@ -221,15 +99,8 @@
 
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
-    <script>
-        const navToggle = document.getElementById('mobileNavToggle');
-        const nav = document.getElementById('primaryNav');
-
-        if (navToggle && nav) {
-            navToggle.addEventListener('click', () => {
-                nav.classList.toggle('open');
-            });
-        }
-    </script>
+    <script src="scripts/data-store.js"></script>
+    <script src="scripts/common.js"></script>
+    <script src="scripts/calendar.js"></script>
 </body>
 </html>

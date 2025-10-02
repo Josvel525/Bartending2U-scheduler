@@ -305,6 +305,15 @@ img {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.card-action:hover {
+  color: var(--primary-700);
+  text-decoration: underline;
 }
 
 .timeline {
@@ -368,6 +377,16 @@ img {
   color: var(--warning-500);
 }
 
+.badge.info {
+  background: rgba(37, 99, 235, 0.12);
+  color: var(--primary-600);
+}
+
+.badge.neutral {
+  background: rgba(148, 163, 184, 0.16);
+  color: var(--slate-600);
+}
+
 .split-layout {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -423,6 +442,25 @@ img {
   gap: 0.6rem;
 }
 
+.alert-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.alert-list li {
+  font-size: 0.9rem;
+  color: var(--slate-600);
+  line-height: 1.4;
+}
+
+.alert-list strong {
+  color: var(--slate-900);
+}
+
 .table-wrapper {
   overflow-x: auto;
 }
@@ -463,6 +501,33 @@ tr:hover td {
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+.table-meta {
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--slate-500);
+}
+
+.event-details {
+  background: rgba(15, 23, 42, 0.03);
+}
+
+.event-details__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 1.1rem 0.5rem;
+  color: var(--slate-600);
+  font-size: 0.9rem;
+}
+
+.event-details td {
+  border-bottom: none;
+}
+
+.event-details:hover td {
+  background: none;
 }
 
 .button {
@@ -611,6 +676,13 @@ textarea {
   gap: 0.4rem;
 }
 
+.person-card__top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
 .person-card__name {
   font-size: 1.05rem;
   font-weight: 600;
@@ -623,6 +695,30 @@ textarea {
 
 .person-card__status {
   margin-top: 0.4rem;
+}
+
+.person-card__meta {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: var(--slate-600);
+}
+
+.person-card__meta a {
+  color: var(--primary-600);
+}
+
+.person-card__remove {
+  margin-left: auto;
+  color: var(--danger-500);
+}
+
+.person-card__remove:hover {
+  color: #b91c1c;
 }
 
 .calendar-grid {

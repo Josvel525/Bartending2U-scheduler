@@ -50,17 +50,17 @@
         <section class="card-grid stats-grid">
             <article class="stat-card">
                 <span class="stat-card__label">Active staff</span>
-                <span class="stat-card__value">14</span>
-                <span class="stat-card__meta success">10 available this week</span>
+                <span class="stat-card__value" id="activeStaffCount">0</span>
+                <span class="stat-card__meta success">0 available this week</span>
             </article>
             <article class="stat-card">
                 <span class="stat-card__label">Roles covered</span>
-                <span class="stat-card__value" style="font-size:1.8rem;">5</span>
+                <span class="stat-card__value" id="rolesCovered" style="font-size:1.8rem;">0</span>
                 <span class="stat-card__meta">Bartenders, Mixologists, Leads…</span>
             </article>
             <article class="stat-card">
                 <span class="stat-card__label">Upcoming PTO</span>
-                <span class="stat-card__value" style="color: var(--warning-500);">3</span>
+                <span class="stat-card__value" id="upcomingPto" style="color: var(--warning-500);">0</span>
                 <span class="stat-card__meta warning">Plan coverage</span>
             </article>
         </section>
@@ -72,38 +72,7 @@
                     <p class="card-subtitle">Search, sort, and understand everyone’s strengths at a glance.</p>
                 </div>
             </div>
-            <div class="list-grid">
-                <article class="person-card">
-                    <h3 class="person-card__name">John Doe</h3>
-                    <p class="person-card__role">Bar Lead · Flair certified</p>
-                    <div class="person-card__status"><span class="badge success">Available</span></div>
-                </article>
-                <article class="person-card">
-                    <h3 class="person-card__name">Jane Smith</h3>
-                    <p class="person-card__role">Mixologist · Mocktail specialist</p>
-                    <div class="person-card__status"><span class="badge warning">On PTO</span></div>
-                </article>
-                <article class="person-card">
-                    <h3 class="person-card__name">Alex Rivera</h3>
-                    <p class="person-card__role">Bartender · Bilingual</p>
-                    <div class="person-card__status"><span class="badge success">Available</span></div>
-                </article>
-                <article class="person-card">
-                    <h3 class="person-card__name">Priya Singh</h3>
-                    <p class="person-card__role">Mixology Lead · Seasonal menu</p>
-                    <div class="person-card__status"><span class="badge success">Available</span></div>
-                </article>
-                <article class="person-card">
-                    <h3 class="person-card__name">Jamie Lee</h3>
-                    <p class="person-card__role">Support · Prep specialist</p>
-                    <div class="person-card__status"><span class="badge warning">Limited hours</span></div>
-                </article>
-                <article class="person-card">
-                    <h3 class="person-card__name">Marcus Allen</h3>
-                    <p class="person-card__role">Barback</p>
-                    <div class="person-card__status"><span class="badge success">Available</span></div>
-                </article>
-            </div>
+            <div class="list-grid" id="employeeList"></div>
         </section>
 
         <section class="split-layout">
@@ -156,16 +125,16 @@
                         <p class="card-subtitle">Invite freelancers or seasonal staff to upcoming shifts.</p>
                     </div>
                 </div>
-                <form>
+                <form id="employeeForm">
                     <div class="form-grid">
                         <div class="form-field">
                             <label for="teamName">Name</label>
-                            <input id="teamName" type="text" placeholder="Full name" />
+                            <input id="teamName" name="teamName" type="text" placeholder="Full name" required />
                         </div>
                         <div class="form-field">
                             <label for="teamRole">Role</label>
-                            <select id="teamRole">
-                                <option selected disabled>Select role</option>
+                            <select id="teamRole" name="teamRole" required>
+                                <option value="" selected disabled>Select role</option>
                                 <option>Bartender</option>
                                 <option>Mixologist</option>
                                 <option>Bar Lead</option>
@@ -174,16 +143,25 @@
                         </div>
                         <div class="form-field">
                             <label for="teamEmail">Email</label>
-                            <input id="teamEmail" type="email" placeholder="name@bartending2u.com" />
+                            <input id="teamEmail" name="teamEmail" type="email" placeholder="name@bartending2u.com" />
                         </div>
                         <div class="form-field">
                             <label for="teamPhone">Phone</label>
-                            <input id="teamPhone" type="tel" placeholder="(555) 123-4567" />
+                            <input id="teamPhone" name="teamPhone" type="tel" placeholder="(555) 123-4567" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamStatus">Availability</label>
+                            <select id="teamStatus" name="teamStatus" required>
+                                <option value="Available" data-level="success" selected>Available</option>
+                                <option value="On PTO" data-level="warning">On PTO</option>
+                                <option value="Limited hours" data-level="warning">Limited hours</option>
+                                <option value="Unavailable" data-level="danger">Unavailable</option>
+                            </select>
                         </div>
                     </div>
                     <div class="form-field">
                         <label for="teamNotes">Specialties & certifications</label>
-                        <textarea id="teamNotes" placeholder="E.g. flair bartending, wine pairing, bilingual"></textarea>
+                        <textarea id="teamNotes" name="teamNotes" placeholder="E.g. flair bartending, wine pairing, bilingual"></textarea>
                     </div>
                     <div class="table-actions" style="justify-content: flex-end;">
                         <button class="button ghost" type="reset">Clear</button>
@@ -196,15 +174,8 @@
 
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
-    <script>
-        const navToggle = document.getElementById('mobileNavToggle');
-        const nav = document.getElementById('primaryNav');
-
-        if (navToggle && nav) {
-            navToggle.addEventListener('click', () => {
-                nav.classList.toggle('open');
-            });
-        }
-    </script>
+    <script src="scripts/data-store.js"></script>
+    <script src="scripts/common.js"></script>
+    <script src="scripts/employees.js"></script>
 </body>
 </html>
