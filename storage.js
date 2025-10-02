@@ -24,8 +24,6 @@
                 notes: 'Deposit received. Call time 6:00 PM.',
                 lastReminderSent: now - 1000 * 60 * 60 * 24,
                 createdAt: now - 1000 * 60 * 20,
-                lastReminderSent: Date.now() - 1000 * 60 * 60 * 24,
-                createdAt: Date.now() - 1000 * 60 * 20,
                 checklist: [
                     { id: 'chk-evt-1-1', label: 'Confirm final guest count', completed: true },
                     { id: 'chk-evt-1-2', label: 'Print bar menu cards', completed: false },
@@ -55,7 +53,6 @@
                 notes: 'Send reminder for deposit. Discuss signature cocktail list.',
                 lastReminderSent: null,
                 createdAt: now - 1000 * 60 * 60 * 3,
-                createdAt: Date.now() - 1000 * 60 * 60 * 3,
                 checklist: [
                     { id: 'chk-evt-2-1', label: 'Follow up on deposit invoice', completed: false },
                     { id: 'chk-evt-2-2', label: 'Confirm champagne toast timing', completed: false },
@@ -85,7 +82,6 @@
                 notes: 'Client reviewing updated package. Follow up Friday.',
                 lastReminderSent: null,
                 createdAt: now - 1000 * 60 * 60 * 10,
-                createdAt: Date.now() - 1000 * 60 * 60 * 10,
                 checklist: [
                     { id: 'chk-evt-3-1', label: 'Update proposal with vegan options', completed: false },
                     { id: 'chk-evt-3-2', label: 'Schedule tasting with chef partner', completed: false },
@@ -115,8 +111,6 @@
                 notes: 'Include mocktail options and allergy-friendly mixers.',
                 lastReminderSent: now - 1000 * 60 * 60 * 12,
                 createdAt: now - 1000 * 60 * 5,
-                lastReminderSent: Date.now() - 1000 * 60 * 60 * 12,
-                createdAt: Date.now() - 1000 * 60 * 5,
                 checklist: [
                     { id: 'chk-evt-4-1', label: 'Prepare ingredient kits', completed: true },
                     { id: 'chk-evt-4-2', label: 'Email pre-event survey', completed: false },
@@ -344,20 +338,26 @@
         return JSON.parse(JSON.stringify(data));
     }
 
-    function sanitisePrepSheet(prepSheet) {
-        if (!prepSheet || typeof prepSheet !== 'object') {
-            return {
-                menu: '',
-                equipment: '',
-                staffing: '',
-            };
+    function mapStatusLevel(value) {
+        if (!value) {
+            return 'neutral';
         }
 
-        return {
-            menu: typeof prepSheet.menu === 'string' ? prepSheet.menu : '',
-            equipment: typeof prepSheet.equipment === 'string' ? prepSheet.equipment : '',
-            staffing: typeof prepSheet.staffing === 'string' ? prepSheet.staffing : '',
-        };
+        const lower = String(value).toLowerCase();
+
+        if (lower.includes('confirm') || lower.includes('ready') || lower.includes('won') || lower.includes('staffed')) {
+            return 'success';
+        }
+
+        if (lower.includes('await') || lower.includes('need') || lower.includes('limited') || lower.includes('pto')) {
+            return 'warning';
+        }
+
+        if (lower.includes('overdue') || lower.includes('cancel') || lower.includes('lost')) {
+            return 'danger';
+        }
+
+        return 'info';
     }
 
     function normaliseChecklist(checklist) {
@@ -374,51 +374,20 @@
             }));
     }
 
-    function normaliseEvent(event) {
-        const next = Object.assign({}, event);
-
-        if (!next.statusLevel && next.status) {
-            next.statusLevel = mapStatusLevel(next.status);
+    function sanitisePrepSheet(prepSheet) {
+        if (!prepSheet || typeof prepSheet !== 'object') {
+            return {
+                menu: '',
+                equipment: '',
+                staffing: '',
+            };
         }
 
-        if (!next.staffingLevel && next.staffingStatus) {
-            next.staffingLevel = mapStatusLevel(next.staffingStatus);
-        }
-
-        if (!Array.isArray(next.assignedTeam)) {
-            next.assignedTeam = [];
-        }
-
-        next.checklist = normaliseChecklist(next.checklist);
-        next.prepSheet = sanitisePrepSheet(next.prepSheet);
-
-        return next;
-    function mapStatusLevel(value) {
-        if (!value) {
-            return 'neutral';
-        }
-
-        const lower = String(value).toLowerCase();
-
-        if (lower.includes('unassign') || lower.includes('overdue') || lower.includes('contract')) {
-            return 'danger';
-        }
-
-        if (
-            lower.includes('confirm') ||
-            lower.includes('ready') ||
-            lower.includes('available') ||
-            lower.includes('staffed') ||
-            lower.includes('assign')
-        ) {
-            return 'success';
-        }
-
-        if (lower.includes('need') || lower.includes('limited') || lower.includes('await') || lower.includes('pto')) {
-            return 'warning';
-        }
-
-        return 'info';
+        return {
+            menu: typeof prepSheet.menu === 'string' ? prepSheet.menu : '',
+            equipment: typeof prepSheet.equipment === 'string' ? prepSheet.equipment : '',
+            staffing: typeof prepSheet.staffing === 'string' ? prepSheet.staffing : '',
+        };
     }
 
     function normaliseEvent(event) {
@@ -428,6 +397,8 @@
                 assignedTeam: [],
                 requiredStaff: 0,
                 lastReminderSent: null,
+                checklist: [],
+                prepSheet: { menu: '', equipment: '', staffing: '' },
             },
             event || {}
         );
@@ -439,6 +410,9 @@
         if (!Array.isArray(base.assignedTeam)) {
             base.assignedTeam = [];
         }
+
+        base.checklist = normaliseChecklist(base.checklist);
+        base.prepSheet = sanitisePrepSheet(base.prepSheet);
 
         if (!base.statusLevel && base.status) {
             base.statusLevel = mapStatusLevel(base.status);
@@ -461,6 +435,36 @@
         return base;
     }
 
+    function normaliseLead(lead) {
+        const base = Object.assign({}, lead || {});
+
+        if (!base.statusLevel && base.status) {
+            base.statusLevel = mapStatusLevel(base.status);
+        }
+
+        if (!Array.isArray(base.activities)) {
+            base.activities = [];
+        }
+
+        base.activities = base.activities
+            .filter((activity) => activity && typeof activity === 'object')
+            .map((activity) =>
+                Object.assign(
+                    {
+                        id: generateId('act'),
+                        type: 'note',
+                        method: '',
+                        summary: '',
+                        message: '',
+                        createdAt: Date.now(),
+                    },
+                    activity
+                )
+            );
+
+        return base;
+    }
+
     function normalise(data) {
         if (!data || typeof data !== 'object') {
             return clone(defaultData);
@@ -468,10 +472,12 @@
 
         const eventsSource = Array.isArray(data.events) ? data.events : defaultData.events;
         const employeesSource = Array.isArray(data.employees) ? data.employees : defaultData.employees;
+        const leadsSource = Array.isArray(data.leads) ? data.leads : defaultData.leads;
 
         return {
             events: eventsSource.map((event) => normaliseEvent(event)),
             employees: employeesSource.map((employee) => normaliseEmployee(employee)),
+            leads: leadsSource.map((lead) => normaliseLead(lead)),
         };
     }
 
@@ -492,22 +498,10 @@
     }
 
     const hasLocalStorage = localStorageAvailable();
-    let memoryStore = null;
+    let memoryStore = clone(defaultData);
     let cache = null;
 
-    function mapStatusLevel(value) {
-        if (!value) {
-            return 'neutral';
-        }
-
-        const lower = String(value).toLowerCase();
-
-        if (lower.includes('confirm') || lower.includes('ready') || lower.includes('won') || lower.includes('available')) {
-            return 'success';
-        }
-
-        if (lower.includes('await') || lower.includes('limited') || lower.includes('need') || lower.includes('scheduled')) {
-            return 'warning';
+    function readRaw() {
         if (hasLocalStorage) {
             try {
                 const raw = global.localStorage.getItem(STORAGE_KEY);
@@ -516,182 +510,34 @@
                     return cache;
                 }
 
-                const seeded = normalise(clone(defaultData));
-                global.localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
-                cache = seeded;
+                cache = normalise(clone(defaultData));
+                global.localStorage.setItem(STORAGE_KEY, JSON.stringify(cache));
                 return cache;
             } catch (error) {
-                console.warn('Unable to read scheduler data from localStorage. Using in-memory fallback.', error);
+                // Fall through to memory store
             }
         }
 
-        if (!memoryStore) {
-            memoryStore = normalise(clone(defaultData));
+        if (!cache) {
+            cache = normalise(memoryStore);
         }
 
-        if (lower.includes('overdue') || lower.includes('behind') || lower.includes('lost')) {
-            return 'danger';
-        }
-
-        return 'info';
-    }
-
-    function hydrateLead(lead) {
-        const base = Object.assign(
-            {
-                activities: [],
-                estimatedValue: 0,
-            },
-            lead
-        );
-
-        if (!Array.isArray(base.activities)) {
-            base.activities = [];
-        }
-
-        base.activities = base.activities
-            .map((activity) => {
-                const activityBase = Object.assign(
-                    {
-                        id: generateId('act'),
-                        type: 'note',
-                        createdAt: Date.now(),
-                    },
-                    activity
-                );
-
-                if (!activityBase.method) {
-                    activityBase.method = 'Email';
-                }
-
-                return activityBase;
-            })
-            .sort((a, b) => b.createdAt - a.createdAt);
-
-        if (!base.statusLevel) {
-            base.statusLevel = mapStatusLevel(base.status);
-        }
-
-        return base;
-    }
-
-    function normalise(data) {
-        if (!data || typeof data !== 'object') {
-            return clone(defaultData);
-        }
-
-        const events = Array.isArray(data.events) ? data.events : defaultData.events;
-        const employees = Array.isArray(data.employees) ? data.employees : defaultData.employees;
-        const leads = Array.isArray(data.leads) ? data.leads : defaultData.leads;
-
-        const hydratedEvents = events.map((event) => {
-            const base = Object.assign(
-                {
-                    assignedStaffIds: [],
-                    assignedTeam: [],
-                    requiredStaff: 0,
-                    lastReminderSent: null,
-                },
-                event
-            );
-
-            if (!Array.isArray(base.assignedStaffIds)) {
-                base.assignedStaffIds = [];
-            }
-
-            if (!Array.isArray(base.assignedTeam)) {
-                base.assignedTeam = [];
-            }
-
-            if (!base.statusLevel) {
-                base.statusLevel = mapStatusLevel(base.status);
-            }
-
-            if (!base.staffingLevel) {
-                base.staffingLevel = mapStatusLevel(base.staffingStatus);
-            }
-
-            return base;
-        });
-
-        const hydratedEmployees = employees.map((employee) => {
-            const base = Object.assign({}, employee);
-            if (!base.statusLevel) {
-                base.statusLevel = mapStatusLevel(base.status);
-            }
-            return base;
-        });
-
-        const hydratedLeads = leads.map((lead) => hydrateLead(lead));
-
-        return {
-            events: hydratedEvents,
-            employees: hydratedEmployees,
-            leads: hydratedLeads,
-        };
-    }
-
-    function readRaw() {
-        if (cache) {
-            return cache;
-        }
-
-        if (hasLocalStorage) {
-            try {
-                const raw = global.localStorage.getItem(STORAGE_KEY);
-                if (!raw) {
-                    const seeded = clone(defaultData);
-                    cache = seeded;
-                    global.localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
-                    return cache;
-                }
-
-                const parsed = JSON.parse(raw);
-                cache = normalise(parsed);
-                return cache;
-            } catch (error) {
-                console.warn('Unable to read scheduler data from localStorage. Using in-memory fallback.', error);
-            }
-        }
-
-        if (!memoryStore) {
-            memoryStore = clone(defaultData);
-        }
-
-        cache = clone(memoryStore);
         return cache;
     }
 
-    function writeRaw(data) {
-        const payload = normalise(data);
-        cache = clone(payload);
+    function writeRaw(payload) {
+        const normalised = normalise(payload);
+        cache = normalised;
 
         if (hasLocalStorage) {
             try {
-                global.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-                return;
+                global.localStorage.setItem(STORAGE_KEY, JSON.stringify(normalised));
             } catch (error) {
-                console.warn('Unable to save scheduler data to localStorage. Persisting in memory only.', error);
+                // Ignore writes that fail so the UI can keep working with the in-memory cache
             }
         }
 
-        memoryStore = clone(payload);
-    }
-
-        const normalisedEvents = (Array.isArray(data.events) ? data.events : clone(defaultData.events)).map(normaliseEvent);
-
-        const normalisedEmployees = (Array.isArray(data.employees) ? data.employees : clone(defaultData.employees)).map((employee) => {
-            const next = Object.assign({}, employee);
-            if (!next.statusLevel && next.status) {
-                next.statusLevel = mapStatusLevel(next.status);
-            }
-            return next;
-        });
-
-        return {
-            events: normalisedEvents,
-            employees: normalisedEmployees,
-        };
+        memoryStore = clone(normalised);
     }
 
     function generateId(prefix) {
@@ -725,6 +571,7 @@
             if (!leadId) {
                 return null;
             }
+
             const lead = readRaw().leads.find((item) => item.id === leadId);
             return lead ? clone(lead) : null;
         },
@@ -733,16 +580,6 @@
         },
         addEvent(eventInput) {
             const snapshot = readRaw();
-            const event = Object.assign(
-                {
-                    id: generateId('evt'),
-                    createdAt: Date.now(),
-                    assignedStaffIds: [],
-                    assignedTeam: [],
-                    requiredStaff: 0,
-                    lastReminderSent: null,
-                },
-                eventInput
             const event = normaliseEvent(
                 Object.assign(
                     {
@@ -753,22 +590,9 @@
                 )
             );
 
-            const normalisedEvent = normaliseEvent(event);
-            snapshot.events.push(normalisedEvent);
-            writeRaw(snapshot);
-            return clone(normalisedEvent);
             snapshot.events.push(event);
             writeRaw(snapshot);
             return clone(event);
-        },
-        removeEvent(eventId) {
-            if (!eventId) {
-                return;
-            }
-
-            const snapshot = readRaw();
-            snapshot.events = snapshot.events.filter((event) => event.id !== eventId);
-            writeRaw(snapshot);
         },
         updateEvent(eventId, updates) {
             if (!eventId) {
@@ -784,250 +608,19 @@
 
             const current = snapshot.events[index];
             const patch = typeof updates === 'function' ? updates(clone(current)) : updates;
-            const nextEvent = Object.assign({}, current, patch, {
-                updatedAt: Date.now(),
-            });
-
-            if (Object.prototype.hasOwnProperty.call(patch, 'status')) {
-                nextEvent.statusLevel = mapStatusLevel(nextEvent.status);
-            }
-            if (Object.prototype.hasOwnProperty.call(patch, 'staffingStatus')) {
-                nextEvent.staffingLevel = mapStatusLevel(nextEvent.staffingStatus);
-            const nextEvent = Object.assign({}, current, patch);
-            const normalisedEvent = normaliseEvent(nextEvent);
-            snapshot.events[index] = normalisedEvent;
-            writeRaw(snapshot);
-            return clone(normalisedEvent);
-        },
-        addChecklistItem(eventId, label) {
-            if (!label) {
-                return null;
-            }
-
-            const trimmed = String(label).trim();
-            if (!trimmed) {
-                return null;
-            }
-
-            const snapshot = readRaw();
-            const target = snapshot.events.find((event) => event.id === eventId);
-            if (!target) {
-                return null;
-            }
-
-            const item = {
-                id: generateId('chk'),
-                label: trimmed,
-                completed: false,
-            };
-
-            target.checklist = normaliseChecklist((target.checklist || []).concat(item));
-            writeRaw(snapshot);
-            return clone(item);
-        },
-        updateChecklistItem(eventId, itemId, updates) {
-            const snapshot = readRaw();
-            const target = snapshot.events.find((event) => event.id === eventId);
-            if (!target || !Array.isArray(target.checklist)) {
-                return null;
-            }
-
-            const index = target.checklist.findIndex((item) => item.id === itemId);
-            if (index === -1) {
-                return null;
-            }
-
-            const current = target.checklist[index];
-            const patch = typeof updates === 'function' ? updates(clone(current)) : updates;
-            target.checklist[index] = Object.assign({}, current, patch);
-            target.checklist = normaliseChecklist(target.checklist);
-            writeRaw(snapshot);
-            return clone(target.checklist[index]);
-        },
-        removeChecklistItem(eventId, itemId) {
-            const snapshot = readRaw();
-            const target = snapshot.events.find((event) => event.id === eventId);
-            if (!target || !Array.isArray(target.checklist)) {
-                return;
-            }
-
-            target.checklist = normaliseChecklist(target.checklist.filter((item) => item.id !== itemId));
-            writeRaw(snapshot);
-        },
-        savePrepSheet(eventId, prepSheet) {
-            const snapshot = readRaw();
-            const target = snapshot.events.find((event) => event.id === eventId);
-            if (!target) {
-                return null;
-            }
-
-            target.prepSheet = sanitisePrepSheet(prepSheet);
-            const patch = typeof updates === 'function' ? updates(clone(current)) : updates || {};
-            const nextEvent = normaliseEvent(
-                Object.assign({}, current, patch, {
-                    updatedAt: Date.now(),
-                })
-            );
-
+            const nextEvent = normaliseEvent(Object.assign({}, current, patch, { updatedAt: Date.now() }));
             snapshot.events[index] = nextEvent;
             writeRaw(snapshot);
             return clone(nextEvent);
         },
-        assignStaff(eventId, staffIds) {
-            const ids = Array.isArray(staffIds) ? staffIds.filter(Boolean) : [];
-            const snapshot = readRaw();
-            const index = snapshot.events.findIndex((event) => event.id === eventId);
-
-            if (index === -1) {
-                return null;
-            }
-
-            const current = snapshot.events[index];
-            const required = typeof current.requiredStaff === 'number' ? current.requiredStaff : 0;
-            const assignedCount = ids.length;
-
-            let staffingStatus = 'Unassigned';
-            if (assignedCount === 0) {
-                staffingStatus = required > 0 ? `Needs ${required} staff` : 'Unassigned';
-            } else if (required && assignedCount < required) {
-                const remaining = required - assignedCount;
-                staffingStatus = remaining === 0 ? 'Fully staffed' : `Needs ${remaining} more`;
-            } else if (required && assignedCount >= required) {
-                staffingStatus = 'Fully staffed';
-            } else {
-                staffingStatus = `Assigned ${assignedCount} team`;
-            }
-
-            const nextEvent = Object.assign({}, current, {
-                assignedStaffIds: ids,
-                staffingStatus,
-                staffingLevel: mapStatusLevel(staffingStatus),
-                updatedAt: Date.now(),
-            });
-            const nextEvent = normaliseEvent(
-                Object.assign({}, current, {
-                    assignedStaffIds: ids,
-                    staffingStatus,
-                    staffingLevel: mapStatusLevel(staffingStatus),
-                    updatedAt: Date.now(),
-                })
-            );
-
-            snapshot.events[index] = nextEvent;
-            writeRaw(snapshot);
-            return clone(target.prepSheet);
-        },
-        addEmployee(employeeInput) {
-            const snapshot = readRaw();
-            const employee = normaliseEmployee(
-                Object.assign(
-                    {
-                        id: generateId('emp'),
-                        createdAt: Date.now(),
-                    },
-                    employeeInput || {}
-                )
-            );
-
-            snapshot.employees.push(employee);
-            writeRaw(snapshot);
-            return clone(employee);
-        },
-        removeEmployee(employeeId) {
-            if (!employeeId) {
+        removeEvent(eventId) {
+            if (!eventId) {
                 return;
             }
 
             const snapshot = readRaw();
-            snapshot.employees = snapshot.employees.filter((employee) => employee.id !== employeeId);
+            snapshot.events = snapshot.events.filter((event) => event.id !== eventId);
             writeRaw(snapshot);
-        },
-        addLead(leadInput) {
-            const snapshot = readRaw();
-            const lead = hydrateLead(
-                Object.assign(
-                    {
-                        id: generateId('lead'),
-                        createdAt: Date.now(),
-                        activities: [],
-                    },
-                    leadInput
-                )
-            );
-
-            if (!lead.nextTouchpoint && lead.notes) {
-                lead.nextTouchpoint = 'Schedule follow-up';
-            }
-
-            snapshot.leads.push(lead);
-            writeRaw(snapshot);
-            return clone(lead);
-        },
-        updateLead(leadId, updates) {
-            if (!leadId) {
-                return null;
-            }
-
-            const snapshot = readRaw();
-            const index = snapshot.leads.findIndex((lead) => lead.id === leadId);
-            if (index === -1) {
-                return null;
-            }
-
-            const current = snapshot.leads[index];
-            const patch = typeof updates === 'function' ? updates(clone(current)) : updates;
-            const nextLead = hydrateLead(
-                Object.assign({}, current, patch, {
-                    updatedAt: Date.now(),
-                })
-            );
-
-            if (Object.prototype.hasOwnProperty.call(patch, 'status')) {
-                nextLead.statusLevel = mapStatusLevel(nextLead.status);
-            }
-
-            snapshot.leads[index] = nextLead;
-            writeRaw(snapshot);
-            return clone(nextLead);
-        },
-        addLeadActivity(leadId, activityInput) {
-            if (!leadId) {
-                return null;
-            }
-
-            const snapshot = readRaw();
-            const index = snapshot.leads.findIndex((lead) => lead.id === leadId);
-            if (index === -1) {
-                return null;
-            }
-
-            const current = snapshot.leads[index];
-            const activity = Object.assign(
-                {
-                    id: generateId('act'),
-                    type: 'follow-up',
-                    method: 'Email',
-                    summary: 'Follow-up logged',
-                    createdAt: Date.now(),
-                },
-                activityInput
-            );
-
-            const nextLead = hydrateLead(
-                Object.assign({}, current, {
-                    activities: [activity, ...current.activities],
-                    lastFollowUpAt: activity.createdAt,
-                    lastFollowUpMethod: activity.method,
-                    nextTouchpoint: activity.nextTouchpoint || current.nextTouchpoint,
-                })
-            );
-
-            snapshot.leads[index] = nextLead;
-            writeRaw(snapshot);
-            return clone(nextLead);
-        },
-        clearAll() {
-            writeRaw(clone(defaultData));
         },
     };
 
