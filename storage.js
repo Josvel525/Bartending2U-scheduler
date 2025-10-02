@@ -18,6 +18,7 @@
                 statusLevel: 'success',
                 staffingStatus: 'Fully staffed',
                 staffingLevel: 'success',
+                assignedTeam: ['emp-1', 'emp-3', 'emp-6'],
                 notes: 'Deposit received. Call time 6:00 PM.',
                 lastReminderSent: Date.now() - 1000 * 60 * 60 * 24,
                 createdAt: Date.now() - 1000 * 60 * 20,
@@ -37,6 +38,7 @@
                 statusLevel: 'warning',
                 staffingStatus: 'Needs 2 bartenders',
                 staffingLevel: 'warning',
+                assignedTeam: [],
                 notes: 'Send reminder for deposit. Discuss signature cocktail list.',
                 lastReminderSent: null,
                 createdAt: Date.now() - 1000 * 60 * 60 * 3,
@@ -56,6 +58,7 @@
                 statusLevel: 'danger',
                 staffingStatus: 'Partial coverage',
                 staffingLevel: 'warning',
+                assignedTeam: ['emp-5'],
                 notes: 'Client reviewing updated package. Follow up Friday.',
                 lastReminderSent: null,
                 createdAt: Date.now() - 1000 * 60 * 60 * 10,
@@ -75,6 +78,7 @@
                 statusLevel: 'success',
                 staffingStatus: 'Ready',
                 staffingLevel: 'success',
+                assignedTeam: ['emp-4'],
                 notes: 'Include mocktail options and allergy-friendly mixers.',
                 lastReminderSent: Date.now() - 1000 * 60 * 60 * 12,
                 createdAt: Date.now() - 1000 * 60 * 5,
@@ -270,6 +274,31 @@
         return {
             events: hydratedEvents,
             employees: hydratedEmployees,
+        const normalisedEvents = (Array.isArray(data.events) ? data.events : clone(defaultData.events)).map((event) => {
+            const next = Object.assign({}, event);
+            if (!next.statusLevel && next.status) {
+                next.statusLevel = mapStatusLevel(next.status);
+            }
+            if (!next.staffingLevel && next.staffingStatus) {
+                next.staffingLevel = mapStatusLevel(next.staffingStatus);
+            }
+            if (!Array.isArray(next.assignedTeam)) {
+                next.assignedTeam = [];
+            }
+            return next;
+        });
+
+        const normalisedEmployees = (Array.isArray(data.employees) ? data.employees : clone(defaultData.employees)).map((employee) => {
+            const next = Object.assign({}, employee);
+            if (!next.statusLevel && next.status) {
+                next.statusLevel = mapStatusLevel(next.status);
+            }
+            return next;
+        });
+
+        return {
+            events: normalisedEvents,
+            employees: normalisedEmployees,
         };
     }
 
@@ -285,7 +314,11 @@
         }
 
         const lower = value.toLowerCase();
-        if (lower.includes('confirm') || lower.includes('ready') || lower.includes('available') || lower.includes('staffed')) {
+        if (lower.includes('unassign')) {
+            return 'danger';
+        }
+
+        if (lower.includes('confirm') || lower.includes('ready') || lower.includes('available') || lower.includes('staffed') || lower.includes('assign')) {
             return 'success';
         }
 
@@ -293,7 +326,7 @@
             return 'warning';
         }
 
-        if (lower.includes('overdue') || lower.includes('unassign') || lower.includes('contract')) {
+        if (lower.includes('overdue') || lower.includes('contract')) {
             return 'danger';
         }
 
@@ -350,6 +383,9 @@
 
             const snapshot = readRaw();
             const index = snapshot.events.findIndex((event) => event.id === eventId);
+            const snapshot = readRaw();
+            const index = snapshot.events.findIndex((event) => event.id === eventId);
+
             if (index === -1) {
                 return null;
             }
@@ -401,6 +437,21 @@
                 staffingLevel: mapStatusLevel(staffingStatus),
                 updatedAt: Date.now(),
             });
+
+            const patch = typeof updates === 'function' ? updates(clone(current)) : updates;
+            const nextEvent = Object.assign({}, current, patch);
+
+            if (!nextEvent.statusLevel || (patch && Object.prototype.hasOwnProperty.call(patch, 'status'))) {
+                nextEvent.statusLevel = mapStatusLevel(nextEvent.status);
+            }
+
+            if (!nextEvent.staffingLevel || (patch && (Object.prototype.hasOwnProperty.call(patch, 'staffingStatus') || Object.prototype.hasOwnProperty.call(patch, 'staffingLevel')))) {
+                nextEvent.staffingLevel = mapStatusLevel(nextEvent.staffingStatus);
+            }
+
+            if (!Array.isArray(nextEvent.assignedTeam)) {
+                nextEvent.assignedTeam = [];
+            }
 
             snapshot.events[index] = nextEvent;
             writeRaw(snapshot);
