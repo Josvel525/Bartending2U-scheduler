@@ -71,53 +71,141 @@
                     <a class="card-action" href="#new-lead" data-subsection-target="new-lead">Add lead</a>
                 </div>
             </div>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Lead</th>
-                            <th>Event type</th>
-                            <th>Ideal date</th>
-                            <th>Estimated value</th>
-                            <th>Status</th>
-                            <th>Next touchpoint</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td data-label="Lead">Alicia Martinez · Corporate Mixer</td>
-                            <td data-label="Event type">Corporate</td>
-                            <td data-label="Ideal date">Nov 8, 2025</td>
-                            <td data-label="Estimated value"><span class="badge success">$3,500</span></td>
-                            <td data-label="Status"><span class="badge info">Proposal sent</span></td>
-                            <td data-label="Next touchpoint">Follow up on tasting preference</td>
-                        </tr>
-                        <tr>
-                            <td data-label="Lead">Danielle & Marcus · Wedding</td>
-                            <td data-label="Event type">Wedding</td>
-                            <td data-label="Ideal date">May 17, 2026</td>
-                            <td data-label="Estimated value"><span class="badge warning">$4,800</span></td>
-                            <td data-label="Status"><span class="badge warning">Awaiting deposit</span></td>
-                            <td data-label="Next touchpoint">Send deposit reminder</td>
-                        </tr>
-                        <tr>
-                            <td data-label="Lead">Houston Startup Hub</td>
-                            <td data-label="Event type">Launch party</td>
-                            <td data-label="Ideal date">Jan 12, 2026</td>
-                            <td data-label="Estimated value"><span class="badge success">$2,100</span></td>
-                            <td data-label="Status"><span class="badge neutral">Discovery call</span></td>
-                            <td data-label="Next touchpoint">Confirm guest count</td>
-                        </tr>
-                        <tr>
-                            <td data-label="Lead">Luxe Realty · Client Appreciation</td>
-                            <td data-label="Event type">Private event</td>
-                            <td data-label="Ideal date">Dec 9, 2025</td>
-                            <td data-label="Estimated value"><span class="badge success">$2,900</span></td>
-                            <td data-label="Status"><span class="badge success">Ready to book</span></td>
-                            <td data-label="Next touchpoint">Send contract draft</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="lead-pipeline__layout">
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Lead</th>
+                                <th>Event type</th>
+                                <th>Ideal date</th>
+                                <th>Estimated value</th>
+                                <th>Status</th>
+                                <th>Next touchpoint</th>
+                            </tr>
+                        </thead>
+                        <tbody id="leadTableBody">
+                            <tr class="lead-table__empty">
+                                <td colspan="6">No leads logged yet.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <aside class="lead-detail" id="leadDetailPanel" aria-live="polite">
+                    <div class="lead-detail__empty" data-lead-empty>
+                        <h3>Select a lead to view the full history</h3>
+                        <p>Keep prospects moving by logging every touchpoint and updating the next best action.</p>
+                    </div>
+                    <div class="lead-detail__content" data-lead-content hidden>
+                        <header class="lead-detail__header">
+                            <div>
+                                <span class="badge" data-lead-field="status"></span>
+                                <h3 class="lead-detail__title" data-lead-field="name"></h3>
+                                <p class="lead-detail__subtitle" data-lead-field="company"></p>
+                            </div>
+                            <button class="button ghost small" type="button" data-lead-close>
+                                Close
+                            </button>
+                        </header>
+
+                        <div class="lead-detail__meta-grid">
+                            <article class="lead-detail__meta">
+                                <span class="lead-detail__meta-label">Next touchpoint</span>
+                                <p class="lead-detail__meta-value" data-lead-field="nextTouchpoint"></p>
+                            </article>
+                            <article class="lead-detail__meta">
+                                <span class="lead-detail__meta-label">Event date</span>
+                                <p class="lead-detail__meta-value" data-lead-field="eventDate"></p>
+                            </article>
+                            <article class="lead-detail__meta">
+                                <span class="lead-detail__meta-label">Est. value</span>
+                                <p class="lead-detail__meta-value" data-lead-field="estimatedValue"></p>
+                            </article>
+                            <article class="lead-detail__meta">
+                                <span class="lead-detail__meta-label">Last follow-up</span>
+                                <p class="lead-detail__meta-value" data-lead-field="lastFollowUp"></p>
+                            </article>
+                        </div>
+
+                        <section class="lead-detail__section lead-detail__contact">
+                            <h4 class="lead-detail__section-title">Contact</h4>
+                            <ul class="lead-detail__contact-list">
+                                <li>
+                                    <span>Email</span>
+                                    <a data-lead-field="email" href="#"></a>
+                                </li>
+                                <li>
+                                    <span>Phone</span>
+                                    <a data-lead-field="phone" href="#"></a>
+                                </li>
+                                <li>
+                                    <span>Source</span>
+                                    <p data-lead-field="source"></p>
+                                </li>
+                            </ul>
+                        </section>
+
+                        <section class="lead-detail__section">
+                            <h4 class="lead-detail__section-title">Notes</h4>
+                            <p class="lead-detail__notes" data-lead-field="notes"></p>
+                        </section>
+
+                        <section class="lead-detail__section">
+                            <div class="lead-detail__section-heading">
+                                <h4 class="lead-detail__section-title">Follow-up history</h4>
+                                <span class="lead-detail__history-count" data-lead-field="activityCount"></span>
+                            </div>
+                            <ul class="lead-activity-list" id="leadActivityList"></ul>
+                        </section>
+
+                        <section class="lead-detail__section">
+                            <h4 class="lead-detail__section-title">Log a follow-up</h4>
+                            <form class="lead-follow-up-form" id="leadFollowUpForm">
+                                <div class="form-grid">
+                                    <div class="form-field">
+                                        <label for="followUpMethod">Method</label>
+                                        <select id="followUpMethod" required>
+                                            <option value="Email">Email</option>
+                                            <option value="Phone">Phone call</option>
+                                            <option value="SMS">Text message</option>
+                                            <option value="Video call">Video call</option>
+                                            <option value="In-person">In-person meeting</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-field">
+                                        <label for="followUpSchedule">Schedule next touchpoint</label>
+                                        <input id="followUpSchedule" type="datetime-local" />
+                                        <p class="form-helper-text">Optional: set when you plan to follow up next.</p>
+                                    </div>
+                                </div>
+
+                                <div class="form-field">
+                                    <label for="followUpMessage">Message sent</label>
+                                    <textarea
+                                        id="followUpMessage"
+                                        placeholder="Summarise what you sent or discussed."
+                                        required
+                                    ></textarea>
+                                </div>
+
+                                <div class="form-field">
+                                    <label for="followUpNextStep">Update next step</label>
+                                    <input
+                                        id="followUpNextStep"
+                                        type="text"
+                                        placeholder="E.g. Send revised proposal on Friday"
+                                    />
+                                </div>
+
+                                <div class="lead-follow-up-form__actions">
+                                    <p class="lead-follow-up-form__feedback" data-follow-up-feedback aria-live="polite"></p>
+                                    <button class="button primary" type="submit">Send follow-up</button>
+                                </div>
+                            </form>
+                        </section>
+                    </div>
+                </aside>
             </div>
         </section>
 
@@ -283,6 +371,8 @@
 
     <footer class="app-footer">© 2025 Bartending2U. Turning prospects into unforgettable celebrations.</footer>
 
+    <script src="storage.js"></script>
+    <script src="leads.js"></script>
     <script src="scripts.js"></script>
 </body>
 </html>
