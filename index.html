@@ -20,7 +20,7 @@
                 </div>
             </div>
 
-            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation">☰</button>
+            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
 
             <nav class="nav-links" id="primaryNav">
                 <a class="nav-link active" href="index.html">Dashboard</a>
@@ -193,32 +193,32 @@
                     </thead>
                     <tbody>
                         <tr>
-                            <td>Corporate Party</td>
-                            <td>Oct 5, 2025 · 7:00 PM</td>
-                            <td>Downtown Houston</td>
-                            <td>John D., Alex R.</td>
-                            <td><span class="badge success">Ready</span></td>
-                            <td class="table-actions">
+                            <td data-label="Event">Corporate Party</td>
+                            <td data-label="Date">Oct 5, 2025 · 7:00 PM</td>
+                            <td data-label="Location">Downtown Houston</td>
+                            <td data-label="Team">John D., Alex R.</td>
+                            <td data-label="Status"><span class="badge success">Ready</span></td>
+                            <td class="table-actions" data-label="Actions">
                                 <a class="card-action" href="events.html">View details</a>
                             </td>
                         </tr>
                         <tr>
-                            <td>Wedding Reception</td>
-                            <td>Oct 15, 2025 · 6:00 PM</td>
-                            <td>The Grand Hall</td>
-                            <td>Pending assignments</td>
-                            <td><span class="badge warning">Needs staffing</span></td>
-                            <td class="table-actions">
+                            <td data-label="Event">Wedding Reception</td>
+                            <td data-label="Date">Oct 15, 2025 · 6:00 PM</td>
+                            <td data-label="Location">The Grand Hall</td>
+                            <td data-label="Team">Pending assignments</td>
+                            <td data-label="Status"><span class="badge warning">Needs staffing</span></td>
+                            <td class="table-actions" data-label="Actions">
                                 <a class="card-action" href="employees.html">Assign team</a>
                             </td>
                         </tr>
                         <tr>
-                            <td>Mixology Workshop</td>
-                            <td>Oct 18, 2025 · 5:30 PM</td>
-                            <td>Private Residence</td>
-                            <td>Jamie L., Priya S.</td>
-                            <td><span class="badge success">Confirmed</span></td>
-                            <td class="table-actions">
+                            <td data-label="Event">Mixology Workshop</td>
+                            <td data-label="Date">Oct 18, 2025 · 5:30 PM</td>
+                            <td data-label="Location">Private Residence</td>
+                            <td data-label="Team">Jamie L., Priya S.</td>
+                            <td data-label="Status"><span class="badge success">Confirmed</span></td>
+                            <td class="table-actions" data-label="Actions">
                                 <a class="card-action" href="events.html">Manage</a>
                             </td>
                         </tr>
@@ -236,7 +236,25 @@
 
         if (navToggle && nav) {
             navToggle.addEventListener('click', () => {
-                nav.classList.toggle('open');
+                const isOpen = nav.classList.toggle('open');
+                navToggle.setAttribute('aria-expanded', String(isOpen));
+                document.body.classList.toggle('nav-open', isOpen);
+            });
+
+            nav.querySelectorAll('a').forEach((link) => {
+                link.addEventListener('click', () => {
+                    nav.classList.remove('open');
+                    document.body.classList.remove('nav-open');
+                    navToggle.setAttribute('aria-expanded', 'false');
+                });
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    nav.classList.remove('open');
+                    document.body.classList.remove('nav-open');
+                    navToggle.setAttribute('aria-expanded', 'false');
+                }
             });
         }
 

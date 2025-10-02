@@ -20,7 +20,7 @@
                 </div>
             </div>
 
-            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation">☰</button>
+            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
 
             <nav class="nav-links" id="primaryNav">
                 <a class="nav-link" href="index.html">Dashboard</a>
@@ -195,22 +195,22 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Corporate Party</td>
-                                <td>120</td>
-                                <td>4</td>
-                                <td>6</td>
+                                <td data-label="Event">Corporate Party</td>
+                                <td data-label="Guests">120</td>
+                                <td data-label="Team">4</td>
+                                <td data-label="Prep hours">6</td>
                             </tr>
                             <tr>
-                                <td>Wedding Reception</td>
-                                <td>180</td>
-                                <td>Pending</td>
-                                <td>8</td>
+                                <td data-label="Event">Wedding Reception</td>
+                                <td data-label="Guests">180</td>
+                                <td data-label="Team">Pending</td>
+                                <td data-label="Prep hours">8</td>
                             </tr>
                             <tr>
-                                <td>Mixology Workshop</td>
-                                <td>25</td>
-                                <td>2</td>
-                                <td>3</td>
+                                <td data-label="Event">Mixology Workshop</td>
+                                <td data-label="Guests">25</td>
+                                <td data-label="Team">2</td>
+                                <td data-label="Prep hours">3</td>
                             </tr>
                         </tbody>
                     </table>
@@ -227,7 +227,25 @@
 
         if (navToggle && nav) {
             navToggle.addEventListener('click', () => {
-                nav.classList.toggle('open');
+                const isOpen = nav.classList.toggle('open');
+                navToggle.setAttribute('aria-expanded', String(isOpen));
+                document.body.classList.toggle('nav-open', isOpen);
+            });
+
+            nav.querySelectorAll('a').forEach((link) => {
+                link.addEventListener('click', () => {
+                    nav.classList.remove('open');
+                    document.body.classList.remove('nav-open');
+                    navToggle.setAttribute('aria-expanded', 'false');
+                });
+            });
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    nav.classList.remove('open');
+                    document.body.classList.remove('nav-open');
+                    navToggle.setAttribute('aria-expanded', 'false');
+                }
             });
         }
     </script>
