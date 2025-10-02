@@ -20,7 +20,17 @@
                 </div>
             </div>
 
-            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation">☰</button>
+            <button
+                class="mobile-nav-toggle"
+                id="mobileNavToggle"
+                type="button"
+                aria-label="Toggle navigation"
+                aria-expanded="false"
+                data-mobile-nav-toggle
+            >
+                <span class="mobile-nav-toggle__icon" aria-hidden="true">☰</span>
+                <span class="sr-only">Toggle navigation</span>
+            </button>
 
             <nav class="nav-links" id="primaryNav">
                 <a class="nav-link" href="index.html">Dashboard</a>
@@ -90,6 +100,26 @@
                                 <th>Prep hours</th>
                             </tr>
                         </thead>
+                        <tbody>
+                            <tr>
+                                <td data-label="Event">Corporate Party</td>
+                                <td data-label="Guests">120</td>
+                                <td data-label="Team">4</td>
+                                <td data-label="Prep hours">6</td>
+                            </tr>
+                            <tr>
+                                <td data-label="Event">Wedding Reception</td>
+                                <td data-label="Guests">180</td>
+                                <td data-label="Team">Pending</td>
+                                <td data-label="Prep hours">8</td>
+                            </tr>
+                            <tr>
+                                <td data-label="Event">Mixology Workshop</td>
+                                <td data-label="Guests">25</td>
+                                <td data-label="Team">2</td>
+                                <td data-label="Prep hours">3</td>
+                            </tr>
+                        </tbody>
                         <tbody id="weekSummaryTable"></tbody>
                     </table>
                 </div>
@@ -99,6 +129,7 @@
 
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
+    <script src="scripts.js"></script>
     <script src="storage.js"></script>
     <script>
         const navToggle = document.getElementById('mobileNavToggle');

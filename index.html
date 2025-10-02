@@ -20,7 +20,17 @@
                 </div>
             </div>
 
-            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation">☰</button>
+            <button
+                class="mobile-nav-toggle"
+                id="mobileNavToggle"
+                type="button"
+                aria-label="Toggle navigation"
+                aria-expanded="false"
+                data-mobile-nav-toggle
+            >
+                <span class="mobile-nav-toggle__icon" aria-hidden="true">☰</span>
+                <span class="sr-only">Toggle navigation</span>
+            </button>
 
             <nav class="nav-links" id="primaryNav">
                 <a class="nav-link active" href="index.html">Dashboard</a>
@@ -150,6 +160,38 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="Event">Corporate Party</td>
+                            <td data-label="Date">Oct 5, 2025 · 7:00 PM</td>
+                            <td data-label="Location">Downtown Houston</td>
+                            <td data-label="Team">John D., Alex R.</td>
+                            <td data-label="Status"><span class="badge success">Ready</span></td>
+                            <td class="table-actions" data-label="Actions">
+                                <a class="card-action" href="events.html">View details</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td data-label="Event">Wedding Reception</td>
+                            <td data-label="Date">Oct 15, 2025 · 6:00 PM</td>
+                            <td data-label="Location">The Grand Hall</td>
+                            <td data-label="Team">Pending assignments</td>
+                            <td data-label="Status"><span class="badge warning">Needs staffing</span></td>
+                            <td class="table-actions" data-label="Actions">
+                                <a class="card-action" href="employees.html">Assign team</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td data-label="Event">Mixology Workshop</td>
+                            <td data-label="Date">Oct 18, 2025 · 5:30 PM</td>
+                            <td data-label="Location">Private Residence</td>
+                            <td data-label="Team">Jamie L., Priya S.</td>
+                            <td data-label="Status"><span class="badge success">Confirmed</span></td>
+                            <td class="table-actions" data-label="Actions">
+                                <a class="card-action" href="events.html">Manage</a>
+                            </td>
+                        </tr>
+                    </tbody>
                     <tbody id="dashboardEventsTable"></tbody>
                 </table>
             </div>
@@ -158,6 +200,7 @@
 
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
+    <script src="scripts.js"></script>
     <script src="storage.js"></script>
     <script>
         const navToggle = document.getElementById('mobileNavToggle');

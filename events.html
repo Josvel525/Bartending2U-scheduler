@@ -20,7 +20,17 @@
                 </div>
             </div>
 
-            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation">☰</button>
+            <button
+                class="mobile-nav-toggle"
+                id="mobileNavToggle"
+                type="button"
+                aria-label="Toggle navigation"
+                aria-expanded="false"
+                data-mobile-nav-toggle
+            >
+                <span class="mobile-nav-toggle__icon" aria-hidden="true">☰</span>
+                <span class="sr-only">Toggle navigation</span>
+            </button>
 
             <nav class="nav-links" id="primaryNav">
                 <a class="nav-link" href="index.html">Dashboard</a>
@@ -73,6 +83,56 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="Event">Corporate Party</td>
+                            <td data-label="Date">Oct 5, 2025</td>
+                            <td data-label="Location">Downtown Houston</td>
+                            <td data-label="Package">Signature Cocktail Bar</td>
+                            <td data-label="Status"><span class="badge success">Confirmed</span></td>
+                            <td data-label="Staffing"><span class="badge success">Fully staffed</span></td>
+                            <td class="table-actions" data-label="Actions">
+                                <a class="card-action" href="#">View</a>
+                                <a class="card-action" href="#">Staff</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td data-label="Event">Wedding Reception</td>
+                            <td data-label="Date">Oct 15, 2025</td>
+                            <td data-label="Location">The Grand Hall</td>
+                            <td data-label="Package">Premium Mixology</td>
+                            <td data-label="Status"><span class="badge warning">Awaiting deposit</span></td>
+                            <td data-label="Staffing"><span class="badge warning">Needs 2 bartenders</span></td>
+                            <td class="table-actions" data-label="Actions">
+                                <a class="card-action" href="#">Send reminder</a>
+                                <a class="card-action" href="#">Assign</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td data-label="Event">Holiday Gala</td>
+                            <td data-label="Date">Nov 30, 2025</td>
+                            <td data-label="Location">Skyline Ballroom</td>
+                            <td data-label="Package">Craft Experience</td>
+                            <td data-label="Status"><span class="badge danger">Contract overdue</span></td>
+                            <td data-label="Staffing"><span class="badge warning">Partial coverage</span></td>
+                            <td class="table-actions" data-label="Actions">
+                                <a class="card-action" href="#">Follow up</a>
+                                <a class="card-action" href="#">View notes</a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td data-label="Event">Mixology Workshop</td>
+                            <td data-label="Date">Dec 3, 2025</td>
+                            <td data-label="Location">Private Residence</td>
+                            <td data-label="Package">Interactive Class</td>
+                            <td data-label="Status"><span class="badge success">Confirmed</span></td>
+                            <td data-label="Staffing"><span class="badge success">Ready</span></td>
+                            <td class="table-actions" data-label="Actions">
+                                <a class="card-action" href="#">Checklist</a>
+                                <a class="card-action" href="#">Prep sheet</a>
+                            </td>
+                        </tr>
+                    </tbody>
                     <tbody id="eventsTableBody"></tbody>
                 </table>
             </div>
@@ -160,6 +220,7 @@
 
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
+    <script src="scripts.js"></script>
     <script src="storage.js"></script>
     <script>
         const navToggle = document.getElementById('mobileNavToggle');
