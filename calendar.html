@@ -95,6 +95,7 @@
                         <thead>
                             <tr>
                                 <th>Event</th>
+                                <th>Date</th>
                                 <th>Guests</th>
                                 <th>Team</th>
                                 <th>Prep hours</th>
@@ -103,18 +104,21 @@
                         <tbody>
                             <tr>
                                 <td data-label="Event">Corporate Party</td>
+                                <td data-label="Date">Oct 12</td>
                                 <td data-label="Guests">120</td>
                                 <td data-label="Team">4</td>
                                 <td data-label="Prep hours">6</td>
                             </tr>
                             <tr>
                                 <td data-label="Event">Wedding Reception</td>
+                                <td data-label="Date">Oct 14</td>
                                 <td data-label="Guests">180</td>
                                 <td data-label="Team">Pending</td>
                                 <td data-label="Prep hours">8</td>
                             </tr>
                             <tr>
                                 <td data-label="Event">Mixology Workshop</td>
+                                <td data-label="Date">Oct 16</td>
                                 <td data-label="Guests">25</td>
                                 <td data-label="Team">2</td>
                                 <td data-label="Prep hours">3</td>
@@ -147,7 +151,29 @@
         const weekSummaryTable = document.getElementById('weekSummaryTable');
 
         const weekdayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'short' });
+        const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
         const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' });
+
+        function formatEventDate(dateString) {
+            if (!dateString) {
+                return '—';
+            }
+
+            const parts = dateString.split('-').map(Number);
+
+            if (parts.length !== 3 || parts.some((value) => Number.isNaN(value))) {
+                return '—';
+            }
+
+            const [year, month, day] = parts;
+            const eventDate = new Date(year, month - 1, day);
+
+            if (Number.isNaN(eventDate.getTime())) {
+                return '—';
+            }
+
+            return dateFormatter.format(eventDate);
+        }
 
         function getEventTimestamp(event) {
             if (!event || !event.date) {
@@ -259,7 +285,7 @@
             if (!store) {
                 const row = document.createElement('tr');
                 const cell = document.createElement('td');
-                cell.colSpan = 4;
+                cell.colSpan = 5;
                 cell.className = 'empty-state';
                 cell.textContent = 'Unable to load weekly summary.';
                 row.appendChild(cell);
@@ -281,7 +307,7 @@
             if (upcomingWeek.length === 0) {
                 const row = document.createElement('tr');
                 const cell = document.createElement('td');
-                cell.colSpan = 4;
+                cell.colSpan = 5;
                 cell.className = 'empty-state';
                 cell.textContent = 'Nothing booked for the next seven days.';
                 row.appendChild(cell);
@@ -294,17 +320,26 @@
 
                 const nameCell = document.createElement('td');
                 nameCell.textContent = event.name;
+                nameCell.setAttribute('data-label', 'Event');
+
+                const dateCell = document.createElement('td');
+                dateCell.textContent = formatEventDate(event.date);
+                dateCell.setAttribute('data-label', 'Date');
 
                 const guestCell = document.createElement('td');
                 guestCell.textContent = event.guestCount ? event.guestCount : '—';
+                guestCell.setAttribute('data-label', 'Guests');
 
                 const teamCell = document.createElement('td');
                 teamCell.textContent = event.staffingStatus || 'Staffing pending';
+                teamCell.setAttribute('data-label', 'Team');
 
                 const prepCell = document.createElement('td');
                 prepCell.textContent = estimatePrepHours(event);
+                prepCell.setAttribute('data-label', 'Prep hours');
 
                 row.appendChild(nameCell);
+                row.appendChild(dateCell);
                 row.appendChild(guestCell);
                 row.appendChild(teamCell);
                 row.appendChild(prepCell);
