@@ -505,7 +505,7 @@
             try {
                 const raw = global.localStorage.getItem(STORAGE_KEY);
                 if (raw) {
-                    cache = normaliseData(JSON.parse(raw));
+                    cache = normalise(JSON.parse(raw));
                     return cache;
                 }
 
@@ -614,11 +614,8 @@
             );
 
             snapshot.events[index] = nextEvent;
-            const patch = typeof updates === 'function' ? updates(clone(current)) : updates;
-            const nextEvent = normaliseEvent(Object.assign({}, current, patch, { updatedAt: Date.now() }));
-            snapshot.events[index] = nextEvent;
             writeRaw(snapshot);
-            return clone(nextEvent.prepSheet);
+            return clone(nextEvent);
         },
         removeEvent(eventId) {
             if (!eventId) {
