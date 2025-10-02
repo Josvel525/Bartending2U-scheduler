@@ -1,6 +1,8 @@
 (function (global) {
     const STORAGE_KEY = 'bartending2u-scheduler';
 
+    const now = Date.now();
+
     const defaultData = {
         events: [
             {
@@ -20,6 +22,8 @@
                 staffingLevel: 'success',
                 assignedTeam: ['emp-1', 'emp-3', 'emp-6'],
                 notes: 'Deposit received. Call time 6:00 PM.',
+                lastReminderSent: now - 1000 * 60 * 60 * 24,
+                createdAt: now - 1000 * 60 * 20,
                 lastReminderSent: Date.now() - 1000 * 60 * 60 * 24,
                 createdAt: Date.now() - 1000 * 60 * 20,
                 checklist: [
@@ -50,6 +54,7 @@
                 assignedTeam: [],
                 notes: 'Send reminder for deposit. Discuss signature cocktail list.',
                 lastReminderSent: null,
+                createdAt: now - 1000 * 60 * 60 * 3,
                 createdAt: Date.now() - 1000 * 60 * 60 * 3,
                 checklist: [
                     { id: 'chk-evt-2-1', label: 'Follow up on deposit invoice', completed: false },
@@ -79,6 +84,7 @@
                 assignedTeam: ['emp-5'],
                 notes: 'Client reviewing updated package. Follow up Friday.',
                 lastReminderSent: null,
+                createdAt: now - 1000 * 60 * 60 * 10,
                 createdAt: Date.now() - 1000 * 60 * 60 * 10,
                 checklist: [
                     { id: 'chk-evt-3-1', label: 'Update proposal with vegan options', completed: false },
@@ -107,6 +113,8 @@
                 staffingLevel: 'success',
                 assignedTeam: ['emp-4'],
                 notes: 'Include mocktail options and allergy-friendly mixers.',
+                lastReminderSent: now - 1000 * 60 * 60 * 12,
+                createdAt: now - 1000 * 60 * 5,
                 lastReminderSent: Date.now() - 1000 * 60 * 60 * 12,
                 createdAt: Date.now() - 1000 * 60 * 5,
                 checklist: [
@@ -130,7 +138,7 @@
                 status: 'Available',
                 statusLevel: 'success',
                 notes: 'Expert in corporate activations.',
-                createdAt: Date.now() - 1000 * 60 * 60,
+                createdAt: now - 1000 * 60 * 60,
             },
             {
                 id: 'emp-2',
@@ -141,7 +149,7 @@
                 status: 'On PTO',
                 statusLevel: 'warning',
                 notes: 'Out Oct 10 - Oct 16.',
-                createdAt: Date.now() - 1000 * 60 * 60 * 2,
+                createdAt: now - 1000 * 60 * 60 * 2,
             },
             {
                 id: 'emp-3',
@@ -152,7 +160,7 @@
                 status: 'Available',
                 statusLevel: 'success',
                 notes: 'Spanish/English. Comfortable with large crowds.',
-                createdAt: Date.now() - 1000 * 60 * 25,
+                createdAt: now - 1000 * 60 * 25,
             },
             {
                 id: 'emp-4',
@@ -163,7 +171,7 @@
                 status: 'Available',
                 statusLevel: 'success',
                 notes: 'Specializes in custom experiences.',
-                createdAt: Date.now() - 1000 * 60 * 15,
+                createdAt: now - 1000 * 60 * 15,
             },
             {
                 id: 'emp-5',
@@ -174,7 +182,7 @@
                 status: 'Limited hours',
                 statusLevel: 'warning',
                 notes: 'Available evenings only.',
-                createdAt: Date.now() - 1000 * 60 * 10,
+                createdAt: now - 1000 * 60 * 10,
             },
             {
                 id: 'emp-6',
@@ -185,7 +193,149 @@
                 status: 'Available',
                 statusLevel: 'success',
                 notes: 'Strong with load-in/load-out logistics.',
-                createdAt: Date.now() - 1000 * 60 * 45,
+                createdAt: now - 1000 * 60 * 45,
+            },
+        ],
+        leads: [
+            {
+                id: 'lead-1',
+                name: 'Alicia Martinez',
+                company: 'Corporate Mixer',
+                email: 'alicia@houstonmixers.com',
+                phone: '(555) 410-8800',
+                eventType: 'Corporate',
+                eventDate: '2025-11-08',
+                estimatedValue: 3500,
+                status: 'Proposal sent',
+                statusLevel: 'info',
+                source: 'Referral',
+                guestCount: 85,
+                notes: 'Enjoyed the live tasting. Interested in a zero-proof welcome drink.',
+                nextTouchpoint: 'Follow up on tasting preference',
+                createdAt: now - 1000 * 60 * 60 * 24 * 4,
+                lastFollowUpAt: now - 1000 * 60 * 60 * 20,
+                lastFollowUpMethod: 'Email',
+                activities: [
+                    {
+                        id: 'act-1',
+                        type: 'note',
+                        method: 'Email',
+                        summary: 'Shared tasting recap',
+                        message: 'Sent curated tasting recap with sample menu links.',
+                        createdAt: now - 1000 * 60 * 60 * 20,
+                    },
+                    {
+                        id: 'act-2',
+                        type: 'call',
+                        method: 'Phone',
+                        summary: 'Discovery call',
+                        message: 'Confirmed guest count and signature mocktail interest.',
+                        createdAt: now - 1000 * 60 * 60 * 48,
+                    },
+                ],
+            },
+            {
+                id: 'lead-2',
+                name: 'Danielle & Marcus',
+                company: 'Wedding',
+                email: 'celebrate@danielleandmarcus.com',
+                phone: '(555) 720-1099',
+                eventType: 'Wedding',
+                eventDate: '2026-05-17',
+                estimatedValue: 4800,
+                status: 'Awaiting deposit',
+                statusLevel: 'warning',
+                source: 'Website form',
+                guestCount: 160,
+                notes: 'Requested champagne tower and signature his & hers cocktails.',
+                nextTouchpoint: 'Send deposit reminder',
+                createdAt: now - 1000 * 60 * 60 * 24 * 8,
+                lastFollowUpAt: now - 1000 * 60 * 60 * 36,
+                lastFollowUpMethod: 'SMS',
+                activities: [
+                    {
+                        id: 'act-3',
+                        type: 'follow-up',
+                        method: 'SMS',
+                        summary: 'Sent deposit reminder',
+                        message: 'Texted deposit reminder with secure payment link.',
+                        createdAt: now - 1000 * 60 * 60 * 36,
+                    },
+                    {
+                        id: 'act-4',
+                        type: 'meeting',
+                        method: 'Video call',
+                        summary: 'Menu planning session',
+                        message: 'Finalised signature cocktails and champagne tower logistics.',
+                        createdAt: now - 1000 * 60 * 60 * 72,
+                    },
+                ],
+            },
+            {
+                id: 'lead-3',
+                name: 'Houston Startup Hub',
+                company: 'Launch Party',
+                email: 'events@houstonstartuphub.com',
+                phone: '(555) 930-4412',
+                eventType: 'Launch party',
+                eventDate: '2026-01-12',
+                estimatedValue: 2100,
+                status: 'Discovery call',
+                statusLevel: 'neutral',
+                source: 'Venue partner',
+                guestCount: 120,
+                notes: 'Needs thematic cocktails named after startup founders.',
+                nextTouchpoint: 'Confirm guest count',
+                createdAt: now - 1000 * 60 * 60 * 24 * 2,
+                lastFollowUpAt: now - 1000 * 60 * 60 * 8,
+                lastFollowUpMethod: 'Phone',
+                activities: [
+                    {
+                        id: 'act-5',
+                        type: 'call',
+                        method: 'Phone',
+                        summary: 'Discovery call held',
+                        message: 'Discussed vision and high-level budget. Awaiting guest count.',
+                        createdAt: now - 1000 * 60 * 60 * 8,
+                    },
+                ],
+            },
+            {
+                id: 'lead-4',
+                name: 'Luxe Realty',
+                company: 'Client Appreciation',
+                email: 'events@luxerealty.com',
+                phone: '(555) 640-7788',
+                eventType: 'Private event',
+                eventDate: '2025-12-09',
+                estimatedValue: 2900,
+                status: 'Ready to book',
+                statusLevel: 'success',
+                source: 'Referral',
+                guestCount: 90,
+                notes: 'Wants high-end whiskey tasting station and cigar pairing.',
+                nextTouchpoint: 'Send contract draft',
+                createdAt: now - 1000 * 60 * 60 * 24 * 5,
+                lastFollowUpAt: now - 1000 * 60 * 60 * 18,
+                lastFollowUpMethod: 'Email',
+                activities: [
+                    {
+                        id: 'act-6',
+                        type: 'follow-up',
+                        method: 'Email',
+                        summary: 'Sent proposal for approval',
+                        message: 'Shared detailed proposal with whiskey tasting upgrades.',
+                        createdAt: now - 1000 * 60 * 60 * 18,
+                    },
+                    {
+                        id: 'act-7',
+                        type: 'note',
+                        method: 'Internal',
+                        summary: 'Venue walkthrough complete',
+                        message: 'Visited venue and confirmed back-of-house access.',
+                        createdAt: now - 1000 * 60 * 60 * 30,
+                    },
+                ],
             },
         ],
     };
@@ -224,25 +374,6 @@
             }));
     }
 
-    function normaliseEvent(event) {
-        const next = Object.assign({}, event);
-
-        if (!next.statusLevel && next.status) {
-            next.statusLevel = mapStatusLevel(next.status);
-        }
-
-        if (!next.staffingLevel && next.staffingStatus) {
-            next.staffingLevel = mapStatusLevel(next.staffingStatus);
-        }
-
-        if (!Array.isArray(next.assignedTeam)) {
-            next.assignedTeam = [];
-        }
-
-        next.checklist = normaliseChecklist(next.checklist);
-        next.prepSheet = sanitisePrepSheet(next.prepSheet);
-
-        return next;
     function mapStatusLevel(value) {
         if (!value) {
             return 'neutral';
@@ -278,17 +409,18 @@
                 assignedTeam: [],
                 requiredStaff: 0,
                 lastReminderSent: null,
+                checklist: [],
+                prepSheet: {},
             },
             event || {}
         );
 
-        if (!Array.isArray(base.assignedStaffIds)) {
-            base.assignedStaffIds = [];
-        }
-
-        if (!Array.isArray(base.assignedTeam)) {
-            base.assignedTeam = [];
-        }
+        base.assignedStaffIds = Array.isArray(base.assignedStaffIds)
+            ? base.assignedStaffIds.filter(Boolean)
+            : [];
+        base.assignedTeam = Array.isArray(base.assignedTeam) ? base.assignedTeam.filter(Boolean) : [];
+        base.checklist = normaliseChecklist(base.checklist);
+        base.prepSheet = sanitisePrepSheet(base.prepSheet);
 
         if (!base.statusLevel && base.status) {
             base.statusLevel = mapStatusLevel(base.status);
@@ -311,17 +443,16 @@
         return base;
     }
 
-    function normalise(data) {
+    function normaliseData(data) {
         if (!data || typeof data !== 'object') {
             return clone(defaultData);
         }
 
-        const eventsSource = Array.isArray(data.events) ? data.events : defaultData.events;
-        const employeesSource = Array.isArray(data.employees) ? data.employees : defaultData.employees;
-
         return {
-            events: eventsSource.map((event) => normaliseEvent(event)),
-            employees: employeesSource.map((employee) => normaliseEmployee(employee)),
+            events: (Array.isArray(data.events) ? data.events : defaultData.events).map((event) => normaliseEvent(event)),
+            employees: (Array.isArray(data.employees) ? data.employees : defaultData.employees).map((employee) =>
+                normaliseEmployee(employee)
+            ),
         };
     }
 
@@ -345,20 +476,28 @@
     let memoryStore = null;
     let cache = null;
 
-    function readRaw() {
-        if (cache) {
-            return cache;
+    function mapStatusLevel(value) {
+        if (!value) {
+            return 'neutral';
         }
 
+        const lower = String(value).toLowerCase();
+
+        if (lower.includes('confirm') || lower.includes('ready') || lower.includes('won') || lower.includes('available')) {
+            return 'success';
+        }
+
+        if (lower.includes('await') || lower.includes('limited') || lower.includes('need') || lower.includes('scheduled')) {
+            return 'warning';
         if (hasLocalStorage) {
             try {
                 const raw = global.localStorage.getItem(STORAGE_KEY);
                 if (raw) {
-                    cache = normalise(JSON.parse(raw));
+                    cache = normaliseData(JSON.parse(raw));
                     return cache;
                 }
 
-                const seeded = normalise(clone(defaultData));
+                const seeded = normaliseData(clone(defaultData));
                 global.localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
                 cache = seeded;
                 return cache;
@@ -368,7 +507,136 @@
         }
 
         if (!memoryStore) {
-            memoryStore = normalise(clone(defaultData));
+            memoryStore = normaliseData(clone(defaultData));
+        }
+
+        if (lower.includes('overdue') || lower.includes('behind') || lower.includes('lost')) {
+            return 'danger';
+        }
+
+        return 'info';
+    }
+
+    function hydrateLead(lead) {
+        const base = Object.assign(
+            {
+                activities: [],
+                estimatedValue: 0,
+            },
+            lead
+        );
+
+        if (!Array.isArray(base.activities)) {
+            base.activities = [];
+        }
+
+        base.activities = base.activities
+            .map((activity) => {
+                const activityBase = Object.assign(
+                    {
+                        id: generateId('act'),
+                        type: 'note',
+                        createdAt: Date.now(),
+                    },
+                    activity
+                );
+
+                if (!activityBase.method) {
+                    activityBase.method = 'Email';
+                }
+
+                return activityBase;
+            })
+            .sort((a, b) => b.createdAt - a.createdAt);
+
+        if (!base.statusLevel) {
+            base.statusLevel = mapStatusLevel(base.status);
+        }
+
+        return base;
+    }
+
+    function normalise(data) {
+        if (!data || typeof data !== 'object') {
+            return clone(defaultData);
+        }
+
+        const events = Array.isArray(data.events) ? data.events : defaultData.events;
+        const employees = Array.isArray(data.employees) ? data.employees : defaultData.employees;
+        const leads = Array.isArray(data.leads) ? data.leads : defaultData.leads;
+
+        const hydratedEvents = events.map((event) => {
+            const base = Object.assign(
+                {
+                    assignedStaffIds: [],
+                    assignedTeam: [],
+                    requiredStaff: 0,
+                    lastReminderSent: null,
+                },
+                event
+            );
+
+            if (!Array.isArray(base.assignedStaffIds)) {
+                base.assignedStaffIds = [];
+            }
+
+            if (!Array.isArray(base.assignedTeam)) {
+                base.assignedTeam = [];
+            }
+
+            if (!base.statusLevel) {
+                base.statusLevel = mapStatusLevel(base.status);
+            }
+
+            if (!base.staffingLevel) {
+                base.staffingLevel = mapStatusLevel(base.staffingStatus);
+            }
+
+            return base;
+        });
+
+        const hydratedEmployees = employees.map((employee) => {
+            const base = Object.assign({}, employee);
+            if (!base.statusLevel) {
+                base.statusLevel = mapStatusLevel(base.status);
+            }
+            return base;
+        });
+
+        const hydratedLeads = leads.map((lead) => hydrateLead(lead));
+
+        return {
+            events: hydratedEvents,
+            employees: hydratedEmployees,
+            leads: hydratedLeads,
+        };
+    }
+
+    function readRaw() {
+        if (cache) {
+            return cache;
+        }
+
+        if (hasLocalStorage) {
+            try {
+                const raw = global.localStorage.getItem(STORAGE_KEY);
+                if (!raw) {
+                    const seeded = clone(defaultData);
+                    cache = seeded;
+                    global.localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
+                    return cache;
+                }
+
+                const parsed = JSON.parse(raw);
+                cache = normalise(parsed);
+                return cache;
+            } catch (error) {
+                console.warn('Unable to read scheduler data from localStorage. Using in-memory fallback.', error);
+            }
+        }
+
+        if (!memoryStore) {
+            memoryStore = clone(defaultData);
         }
 
         cache = clone(memoryStore);
@@ -376,7 +644,7 @@
     }
 
     function writeRaw(data) {
-        const payload = normalise(data);
+        const payload = normaliseData(data);
         cache = clone(payload);
 
         if (hasLocalStorage) {
@@ -390,11 +658,6 @@
 
         memoryStore = clone(payload);
     }
-
-    function normalise(data) {
-        if (!data || typeof data !== 'object') {
-            return clone(defaultData);
-        }
 
         const normalisedEvents = (Array.isArray(data.events) ? data.events : clone(defaultData.events)).map(normaliseEvent);
 
@@ -436,11 +699,31 @@
         getEmployees() {
             return clone(readRaw().employees);
         },
+        getLeads() {
+            return clone(readRaw().leads);
+        },
+        getLead(leadId) {
+            if (!leadId) {
+                return null;
+            }
+            const lead = readRaw().leads.find((item) => item.id === leadId);
+            return lead ? clone(lead) : null;
+        },
         saveSnapshot(next) {
             writeRaw(next);
         },
         addEvent(eventInput) {
             const snapshot = readRaw();
+            const event = Object.assign(
+                {
+                    id: generateId('evt'),
+                    createdAt: Date.now(),
+                    assignedStaffIds: [],
+                    assignedTeam: [],
+                    requiredStaff: 0,
+                    lastReminderSent: null,
+                },
+                eventInput
             const event = normaliseEvent(
                 Object.assign(
                     {
@@ -451,10 +734,6 @@
                 )
             );
 
-            const normalisedEvent = normaliseEvent(event);
-            snapshot.events.push(normalisedEvent);
-            writeRaw(snapshot);
-            return clone(normalisedEvent);
             snapshot.events.push(event);
             writeRaw(snapshot);
             return clone(event);
@@ -481,12 +760,29 @@
             }
 
             const current = snapshot.events[index];
+            const patch = typeof updates === 'function' ? updates(clone(current)) : updates || {};
+            const nextEvent = normaliseEvent(
+                Object.assign({}, current, patch, {
+                    updatedAt: Date.now(),
+                })
+            );
+
+            snapshot.events[index] = nextEvent;
             const patch = typeof updates === 'function' ? updates(clone(current)) : updates;
+            const nextEvent = Object.assign({}, current, patch, {
+                updatedAt: Date.now(),
+            });
+
+            if (Object.prototype.hasOwnProperty.call(patch, 'status')) {
+                nextEvent.statusLevel = mapStatusLevel(nextEvent.status);
+            }
+            if (Object.prototype.hasOwnProperty.call(patch, 'staffingStatus')) {
+                nextEvent.staffingLevel = mapStatusLevel(nextEvent.staffingStatus);
             const nextEvent = Object.assign({}, current, patch);
             const normalisedEvent = normaliseEvent(nextEvent);
             snapshot.events[index] = normalisedEvent;
             writeRaw(snapshot);
-            return clone(normalisedEvent);
+            return clone(nextEvent);
         },
         addChecklistItem(eventId, label) {
             if (!label) {
@@ -499,68 +795,98 @@
             }
 
             const snapshot = readRaw();
-            const target = snapshot.events.find((event) => event.id === eventId);
-            if (!target) {
+            const index = snapshot.events.findIndex((event) => event.id === eventId);
+            if (index === -1) {
                 return null;
             }
 
+            const target = snapshot.events[index];
             const item = {
                 id: generateId('chk'),
                 label: trimmed,
                 completed: false,
             };
 
-            target.checklist = normaliseChecklist((target.checklist || []).concat(item));
-            writeRaw(snapshot);
-            return clone(item);
-        },
-        updateChecklistItem(eventId, itemId, updates) {
-            const snapshot = readRaw();
-            const target = snapshot.events.find((event) => event.id === eventId);
-            if (!target || !Array.isArray(target.checklist)) {
-                return null;
-            }
-
-            const index = target.checklist.findIndex((item) => item.id === itemId);
-            if (index === -1) {
-                return null;
-            }
-
-            const current = target.checklist[index];
-            const patch = typeof updates === 'function' ? updates(clone(current)) : updates;
-            target.checklist[index] = Object.assign({}, current, patch);
-            target.checklist = normaliseChecklist(target.checklist);
-            writeRaw(snapshot);
-            return clone(target.checklist[index]);
-        },
-        removeChecklistItem(eventId, itemId) {
-            const snapshot = readRaw();
-            const target = snapshot.events.find((event) => event.id === eventId);
-            if (!target || !Array.isArray(target.checklist)) {
-                return;
-            }
-
-            target.checklist = normaliseChecklist(target.checklist.filter((item) => item.id !== itemId));
-            writeRaw(snapshot);
-        },
-        savePrepSheet(eventId, prepSheet) {
-            const snapshot = readRaw();
-            const target = snapshot.events.find((event) => event.id === eventId);
-            if (!target) {
-                return null;
-            }
-
-            target.prepSheet = sanitisePrepSheet(prepSheet);
-            const patch = typeof updates === 'function' ? updates(clone(current)) : updates || {};
             const nextEvent = normaliseEvent(
-                Object.assign({}, current, patch, {
+                Object.assign({}, target, {
+                    checklist: normaliseChecklist((target.checklist || []).concat(item)),
                     updatedAt: Date.now(),
                 })
             );
 
             snapshot.events[index] = nextEvent;
             writeRaw(snapshot);
-            return clone(nextEvent);
+            return clone(item);
+        },
+        updateChecklistItem(eventId, itemId, updates) {
+            const snapshot = readRaw();
+            const index = snapshot.events.findIndex((event) => event.id === eventId);
+            if (index === -1) {
+                return null;
+            }
+
+            const target = snapshot.events[index];
+            const checklist = Array.isArray(target.checklist) ? target.checklist.slice() : [];
+            const itemIndex = checklist.findIndex((item) => item.id === itemId);
+            if (itemIndex === -1) {
+                return null;
+            }
+
+            const current = checklist[itemIndex];
+            const patch = typeof updates === 'function' ? updates(clone(current)) : updates || {};
+            checklist[itemIndex] = Object.assign({}, current, patch);
+
+            const nextEvent = normaliseEvent(
+                Object.assign({}, target, {
+                    checklist: normaliseChecklist(checklist),
+                    updatedAt: Date.now(),
+                })
+            );
+
+            snapshot.events[index] = nextEvent;
+            writeRaw(snapshot);
+            return clone(nextEvent.checklist[itemIndex]);
+        },
+        removeChecklistItem(eventId, itemId) {
+            const snapshot = readRaw();
+            const index = snapshot.events.findIndex((event) => event.id === eventId);
+            if (index === -1) {
+                return;
+            }
+
+            const target = snapshot.events[index];
+            const checklist = Array.isArray(target.checklist)
+                ? target.checklist.filter((item) => item.id !== itemId)
+                : [];
+
+            const nextEvent = normaliseEvent(
+                Object.assign({}, target, {
+                    checklist,
+                    updatedAt: Date.now(),
+                })
+            );
+
+            snapshot.events[index] = nextEvent;
+            writeRaw(snapshot);
+        },
+        savePrepSheet(eventId, prepSheet) {
+            const snapshot = readRaw();
+            const index = snapshot.events.findIndex((event) => event.id === eventId);
+            if (index === -1) {
+                return null;
+            }
+
+            const target = snapshot.events[index];
+            const nextEvent = normaliseEvent(
+                Object.assign({}, target, {
+                    prepSheet: sanitisePrepSheet(prepSheet),
+                    updatedAt: Date.now(),
+                })
+            );
+
+            snapshot.events[index] = nextEvent;
+            writeRaw(snapshot);
+            return clone(nextEvent.prepSheet);
         },
         assignStaff(eventId, staffIds) {
             const ids = Array.isArray(staffIds) ? staffIds.filter(Boolean) : [];
@@ -587,6 +913,12 @@
                 staffingStatus = `Assigned ${assignedCount} team`;
             }
 
+            const nextEvent = Object.assign({}, current, {
+                assignedStaffIds: ids,
+                staffingStatus,
+                staffingLevel: mapStatusLevel(staffingStatus),
+                updatedAt: Date.now(),
+            });
             const nextEvent = normaliseEvent(
                 Object.assign({}, current, {
                     assignedStaffIds: ids,
@@ -598,7 +930,7 @@
 
             snapshot.events[index] = nextEvent;
             writeRaw(snapshot);
-            return clone(target.prepSheet);
+            return clone(nextEvent);
         },
         addEmployee(employeeInput) {
             const snapshot = readRaw();
@@ -624,6 +956,90 @@
             const snapshot = readRaw();
             snapshot.employees = snapshot.employees.filter((employee) => employee.id !== employeeId);
             writeRaw(snapshot);
+        },
+        addLead(leadInput) {
+            const snapshot = readRaw();
+            const lead = hydrateLead(
+                Object.assign(
+                    {
+                        id: generateId('lead'),
+                        createdAt: Date.now(),
+                        activities: [],
+                    },
+                    leadInput
+                )
+            );
+
+            if (!lead.nextTouchpoint && lead.notes) {
+                lead.nextTouchpoint = 'Schedule follow-up';
+            }
+
+            snapshot.leads.push(lead);
+            writeRaw(snapshot);
+            return clone(lead);
+        },
+        updateLead(leadId, updates) {
+            if (!leadId) {
+                return null;
+            }
+
+            const snapshot = readRaw();
+            const index = snapshot.leads.findIndex((lead) => lead.id === leadId);
+            if (index === -1) {
+                return null;
+            }
+
+            const current = snapshot.leads[index];
+            const patch = typeof updates === 'function' ? updates(clone(current)) : updates;
+            const nextLead = hydrateLead(
+                Object.assign({}, current, patch, {
+                    updatedAt: Date.now(),
+                })
+            );
+
+            if (Object.prototype.hasOwnProperty.call(patch, 'status')) {
+                nextLead.statusLevel = mapStatusLevel(nextLead.status);
+            }
+
+            snapshot.leads[index] = nextLead;
+            writeRaw(snapshot);
+            return clone(nextLead);
+        },
+        addLeadActivity(leadId, activityInput) {
+            if (!leadId) {
+                return null;
+            }
+
+            const snapshot = readRaw();
+            const index = snapshot.leads.findIndex((lead) => lead.id === leadId);
+            if (index === -1) {
+                return null;
+            }
+
+            const current = snapshot.leads[index];
+            const activity = Object.assign(
+                {
+                    id: generateId('act'),
+                    type: 'follow-up',
+                    method: 'Email',
+                    summary: 'Follow-up logged',
+                    createdAt: Date.now(),
+                },
+                activityInput
+            );
+
+            const nextLead = hydrateLead(
+                Object.assign({}, current, {
+                    activities: [activity, ...current.activities],
+                    lastFollowUpAt: activity.createdAt,
+                    lastFollowUpMethod: activity.method,
+                    nextTouchpoint: activity.nextTouchpoint || current.nextTouchpoint,
+                })
+            );
+
+            snapshot.leads[index] = nextLead;
+            writeRaw(snapshot);
+            return clone(nextLead);
         },
         clearAll() {
             writeRaw(clone(defaultData));
