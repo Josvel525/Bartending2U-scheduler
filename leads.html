@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leads - Bartending2U</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <header class="top-bar">
+        <div class="top-bar__inner">
+            <div class="brand">
+                <img src="IMG_9047.png" alt="Bartending2U logo" />
+                <div class="brand__text">
+                    <span class="brand__subtitle">Bartending2U</span>
+                    <span class="brand__title">Scheduling Suite</span>
+                </div>
+            </div>
+
+            <button
+                class="mobile-nav-toggle"
+                id="mobileNavToggle"
+                type="button"
+                aria-label="Toggle navigation"
+                aria-expanded="false"
+                data-mobile-nav-toggle
+            >
+                <span class="mobile-nav-toggle__icon" aria-hidden="true">☰</span>
+                <span class="sr-only">Toggle navigation</span>
+            </button>
+
+            <nav class="nav-links" id="primaryNav">
+                <a class="nav-link" href="index.html">Dashboard</a>
+                <a class="nav-link" href="events.html">Events</a>
+                <a class="nav-link active" href="leads.html">Leads</a>
+                <a class="nav-link" href="employees.html">Employees</a>
+                <a class="nav-link" href="calendar.html">Calendar</a>
+                <a class="nav-link" href="settings.html">Settings</a>
+            </nav>
+
+            <a class="cta-button" href="#new-lead" data-subsection-target="new-lead">+ New Lead</a>
+        </div>
+    </header>
+
+    <main class="page-content">
+        <section class="page-header">
+            <div>
+                <p class="page-eyebrow">Leads</p>
+                <h1 class="page-title">Prospective clients & tastings</h1>
+                <p class="lead-text">
+                    Capture every incoming inquiry, prioritize next steps, and move the right opportunities into your event pipeline.
+                </p>
+            </div>
+            <div class="hero-actions">
+                <a class="button primary" href="#new-lead" data-subsection-target="new-lead">Log new inquiry</a>
+                <a class="secondary-link" href="events.html">Convert to event →</a>
+            </div>
+        </section>
+
+        <section id="lead-pipeline" class="content-card" data-subsection="Lead pipeline">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">Lead pipeline</h2>
+                    <p class="card-subtitle">A focused list of prospects that are ready for nurturing and quick follow-up.</p>
+                </div>
+                <div class="card-actions">
+                    <span class="badge info">6 warm</span>
+                    <a class="card-action" href="#new-lead" data-subsection-target="new-lead">Add lead</a>
+                </div>
+            </div>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Lead</th>
+                            <th>Event type</th>
+                            <th>Ideal date</th>
+                            <th>Estimated value</th>
+                            <th>Status</th>
+                            <th>Next touchpoint</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td data-label="Lead">Alicia Martinez · Corporate Mixer</td>
+                            <td data-label="Event type">Corporate</td>
+                            <td data-label="Ideal date">Nov 8, 2025</td>
+                            <td data-label="Estimated value"><span class="badge success">$3,500</span></td>
+                            <td data-label="Status"><span class="badge info">Proposal sent</span></td>
+                            <td data-label="Next touchpoint">Follow up on tasting preference</td>
+                        </tr>
+                        <tr>
+                            <td data-label="Lead">Danielle & Marcus · Wedding</td>
+                            <td data-label="Event type">Wedding</td>
+                            <td data-label="Ideal date">May 17, 2026</td>
+                            <td data-label="Estimated value"><span class="badge warning">$4,800</span></td>
+                            <td data-label="Status"><span class="badge warning">Awaiting deposit</span></td>
+                            <td data-label="Next touchpoint">Send deposit reminder</td>
+                        </tr>
+                        <tr>
+                            <td data-label="Lead">Houston Startup Hub</td>
+                            <td data-label="Event type">Launch party</td>
+                            <td data-label="Ideal date">Jan 12, 2026</td>
+                            <td data-label="Estimated value"><span class="badge success">$2,100</span></td>
+                            <td data-label="Status"><span class="badge neutral">Discovery call</span></td>
+                            <td data-label="Next touchpoint">Confirm guest count</td>
+                        </tr>
+                        <tr>
+                            <td data-label="Lead">Luxe Realty · Client Appreciation</td>
+                            <td data-label="Event type">Private event</td>
+                            <td data-label="Ideal date">Dec 9, 2025</td>
+                            <td data-label="Estimated value"><span class="badge success">$2,900</span></td>
+                            <td data-label="Status"><span class="badge success">Ready to book</span></td>
+                            <td data-label="Next touchpoint">Send contract draft</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <section class="split-layout">
+            <article id="nurture-board" class="content-card" data-subsection="Nurture board">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Nurture board</h2>
+                        <p class="card-subtitle">Keep outreach consistent across your hottest prospects.</p>
+                    </div>
+                </div>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-item__left">
+                            <span class="timeline-icon">📞</span>
+                            <div>
+                                <h3 class="person-card__name">Call Danielle about signature cocktails</h3>
+                                <p class="card-subtitle">Schedule: Today · Owner follow-up</p>
+                            </div>
+                        </div>
+                        <span class="timeline-item__meta">High priority</span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-item__left">
+                            <span class="timeline-icon">✉️</span>
+                            <div>
+                                <h3 class="person-card__name">Send tasting recap to Alicia</h3>
+                                <p class="card-subtitle">Schedule: Tomorrow · Include custom menu</p>
+                            </div>
+                        </div>
+                        <span class="timeline-item__meta">Reminder set</span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-item__left">
+                            <span class="timeline-icon">🤝</span>
+                            <div>
+                                <h3 class="person-card__name">Check-in with Houston Startup Hub</h3>
+                                <p class="card-subtitle">Schedule: Friday · Confirm sponsorship tier</p>
+                            </div>
+                        </div>
+                        <span class="timeline-item__meta">In progress</span>
+                    </div>
+                </div>
+            </article>
+
+            <article id="lead-sources" class="content-card" data-subsection="Lead sources">
+                <div class="card-header">
+                    <div>
+                        <h2 class="card-title">Lead sources</h2>
+                        <p class="card-subtitle">See where your newest inquiries originate and adjust marketing accordingly.</p>
+                    </div>
+                </div>
+                <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));">
+                    <article class="stat-card">
+                        <span class="stat-card__label">Referrals</span>
+                        <span class="stat-card__value">38%</span>
+                        <span class="stat-card__meta success">Up 12% vs last month</span>
+                    </article>
+                    <article class="stat-card">
+                        <span class="stat-card__label">Website form</span>
+                        <span class="stat-card__value">29%</span>
+                        <span class="stat-card__meta">Steady performance</span>
+                    </article>
+                    <article class="stat-card">
+                        <span class="stat-card__label">Social media</span>
+                        <span class="stat-card__value">21%</span>
+                        <span class="stat-card__meta warning">Opportunity to boost ads</span>
+                    </article>
+                    <article class="stat-card">
+                        <span class="stat-card__label">Venue partners</span>
+                        <span class="stat-card__value">12%</span>
+                        <span class="stat-card__meta">Build co-marketing kit</span>
+                    </article>
+                </div>
+            </article>
+        </section>
+
+        <section id="new-lead" class="content-card" data-subsection="Create new lead">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">Create new lead</h2>
+                    <p class="card-subtitle">Log inquiry details, expected value, and your next follow-up.</p>
+                </div>
+            </div>
+            <form>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="leadName">Lead name</label>
+                        <input id="leadName" type="text" placeholder="E.g. Samantha Chen" required />
+                    </div>
+                    <div class="form-field">
+                        <label for="leadEmail">Email</label>
+                        <input id="leadEmail" type="email" placeholder="name@example.com" />
+                    </div>
+                    <div class="form-field">
+                        <label for="leadPhone">Phone number</label>
+                        <input id="leadPhone" type="tel" placeholder="(555) 123-4567" />
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="leadEventType">Event type</label>
+                        <select id="leadEventType">
+                            <option value="" selected disabled>Select event type</option>
+                            <option>Wedding</option>
+                            <option>Corporate</option>
+                            <option>Private party</option>
+                            <option>Workshop</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="leadEventDate">Ideal event date</label>
+                        <input id="leadEventDate" type="date" />
+                    </div>
+                    <div class="form-field">
+                        <label for="leadValue">Estimated value (USD)</label>
+                        <input id="leadValue" type="number" min="0" step="100" placeholder="0" />
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="leadSource">Source</label>
+                        <select id="leadSource">
+                            <option value="" selected disabled>Select source</option>
+                            <option>Website form</option>
+                            <option>Social media</option>
+                            <option>Referral</option>
+                            <option>Venue partner</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="leadStatus">Lead stage</label>
+                        <select id="leadStatus">
+                            <option value="" selected disabled>Select status</option>
+                            <option>New inquiry</option>
+                            <option>Discovery call scheduled</option>
+                            <option>Proposal sent</option>
+                            <option>Awaiting deposit</option>
+                            <option>Closed - won</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-field">
+                    <label for="leadNotes">Notes</label>
+                    <textarea
+                        id="leadNotes"
+                        placeholder="Capture guest count, beverage style, and any personal touches to follow up with."
+                    ></textarea>
+                </div>
+                <div class="form-field">
+                    <label for="leadNextStep">Next follow-up</label>
+                    <input id="leadNextStep" type="text" placeholder="E.g. Call on Friday with updated menu" />
+                </div>
+                <div class="table-actions" style="justify-content: flex-end;">
+                    <button class="button ghost" type="reset">Clear form</button>
+                    <button class="button primary" type="submit">Save lead</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <footer class="app-footer">© 2025 Bartending2U. Turning prospects into unforgettable celebrations.</footer>
+
+    <script src="scripts.js"></script>
+</body>
+</html>

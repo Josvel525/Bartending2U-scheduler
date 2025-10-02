@@ -35,6 +35,7 @@
             <nav class="nav-links" id="primaryNav">
                 <a class="nav-link" href="index.html">Dashboard</a>
                 <a class="nav-link" href="events.html">Events</a>
+                <a class="nav-link" href="leads.html">Leads</a>
                 <a class="nav-link active" href="employees.html">Employees</a>
                 <a class="nav-link" href="calendar.html">Calendar</a>
                 <a class="nav-link" href="settings.html">Settings</a>
@@ -44,7 +45,7 @@
         </div>
     </header>
 
-    <main class="page-content">
+    <main class="page-content" data-subsection-allow-empty="true">
         <section class="page-header">
             <div>
                 <p class="page-eyebrow">Team</p>
@@ -106,7 +107,12 @@
                             <h3 class="details-name" id="detailName">Select a teammate</h3>
                             <p class="details-role" id="detailRole">Profile details will appear here.</p>
                         </div>
-                        <span class="badge" id="detailStatus">—</span>
+                        <div class="details-header__meta">
+                            <span class="badge" id="detailStatus">—</span>
+                            <button class="button danger small" type="button" id="removeEmployeeButton" disabled>
+                                Remove teammate
+                            </button>
+                        </div>
                     </div>
 
                     <div class="details-section">
@@ -123,6 +129,28 @@
                             <div>
                                 <dt>Primary location</dt>
                                 <dd id="detailLocation">Houston Metro</dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <div class="details-section">
+                        <h4>Tax &amp; identification</h4>
+                        <dl class="details-list">
+                            <div>
+                                <dt>Home address</dt>
+                                <dd id="detailAddress" class="multiline">—</dd>
+                            </div>
+                            <div>
+                                <dt>Tax ID / SSN</dt>
+                                <dd id="detailTaxId">—</dd>
+                            </div>
+                            <div>
+                                <dt>Driver's license</dt>
+                                <dd id="detailLicense">—</dd>
+                            </div>
+                            <div>
+                                <dt>Date of birth</dt>
+                                <dd id="detailDob">—</dd>
                             </div>
                         </dl>
                     </div>
@@ -209,15 +237,58 @@
                         <p class="form-alert" id="docAlert" role="status" aria-live="polite"></p>
                     </div>
 
+                    <div class="details-section" id="portalAccessSection">
+                        <div class="details-section__header">
+                            <h4>Portal access</h4>
+                            <div class="portal-access__actions">
+                                <button class="button ghost" type="button" id="togglePortalActivity">View login activity</button>
+                                <button class="button primary" type="button" id="resetPortalPassword">Reset password</button>
+                                <button class="button ghost" type="button" id="resendPortalInvite">Resend invite</button>
+                            </div>
+                        </div>
+                        <dl class="details-list">
+                            <div>
+                                <dt>Status</dt>
+                                <dd><span class="badge" id="portalStatusBadge">Invite pending</span></dd>
+                            </div>
+                            <div>
+                                <dt>Last login</dt>
+                                <dd id="portalLastLogin">No logins yet</dd>
+                            </div>
+                            <div>
+                                <dt>Access level</dt>
+                                <dd id="portalAccessLevel">—</dd>
+                            </div>
+                            <div>
+                                <dt>Invite sent</dt>
+                                <dd id="portalInviteSent">—</dd>
+                            </div>
+                            <div>
+                                <dt>Multi-factor auth</dt>
+                                <dd id="portalMfa">Not enabled</dd>
+                            </div>
+                        </dl>
+                        <div class="portal-login-activity is-hidden" id="portalLoginActivity">
+                            <h5 class="portal-login-activity__title">Recent activity</h5>
+                            <ul class="portal-login-list" id="portalLoginList"></ul>
+                        </div>
+                        <p class="form-alert" id="portalAlert" role="status" aria-live="polite"></p>
+                    </div>
+
                     <div class="details-section">
                         <h4>Notes & strengths</h4>
                         <p class="details-notes" id="detailNotes">Document specialties, awards, and go-to pairings for your star team members.</p>
                     </div>
-            <div class="list-grid" id="teamList"></div>
-            <div class="list-grid">
+                </article>
+            </div>
+
+            <div class="team-grid" id="teamList">
                 <article class="person-card">
                     <h3 class="person-card__name">John Garcia</h3>
                     <p class="person-card__role">Bar Lead · Flair certified</p>
+                    <div class="person-card__status"><span class="badge success">Available</span></div>
+                </article>
+                <article class="person-card">
                     <h3 class="person-card__name">John Doe</h3>
                     <p class="person-card__role">Bartender · Lead flair specialist</p>
                     <div class="person-card__status"><span class="badge success">Available</span></div>
@@ -338,6 +409,46 @@
                                 <option value="Limited hours" data-level="warning">Limited hours</option>
                                 <option value="Booked" data-level="danger">Booked</option>
                             </select>
+                        </div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-field full-width">
+                            <label for="teamAddressLine1">Home address</label>
+                            <input id="teamAddressLine1" name="addressLine1" type="text" placeholder="Street address" />
+                        </div>
+                        <div class="form-field full-width">
+                            <label for="teamAddressLine2">Apartment, suite, etc. (optional)</label>
+                            <input id="teamAddressLine2" name="addressLine2" type="text" placeholder="Unit or floor" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamCity">City</label>
+                            <input id="teamCity" name="city" type="text" placeholder="City" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamState">State</label>
+                            <input id="teamState" name="state" type="text" maxlength="2" placeholder="TX" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamPostalCode">ZIP code</label>
+                            <input id="teamPostalCode" name="postalCode" type="text" placeholder="75201" />
+                        </div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="teamSsn">Tax ID / SSN</label>
+                            <input id="teamSsn" name="taxId" type="text" placeholder="123-45-6789" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamDob">Date of birth</label>
+                            <input id="teamDob" name="dob" type="date" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamDlNumber">Driver's license number</label>
+                            <input id="teamDlNumber" name="dlNumber" type="text" placeholder="TX1234567" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamDlState">Issuing state</label>
+                            <input id="teamDlState" name="dlState" type="text" maxlength="2" placeholder="TX" />
                         </div>
                     </div>
                     <div class="form-field">
@@ -518,6 +629,7 @@
         }
 
         const employees = [
+        let employees = [
             {
                 id: 'john-doe',
                 name: 'John Doe',
@@ -528,6 +640,15 @@
                 location: 'Houston, TX',
                 email: 'john.doe@bartending2u.com',
                 phone: '(713) 555-0114',
+                addressLine1: '1901 Market St',
+                addressLine2: 'Suite 210',
+                addressCity: 'Houston',
+                addressState: 'TX',
+                addressPostalCode: '77002',
+                taxId: '123-45-6789',
+                dob: '1984-07-19',
+                dlNumber: 'TX12345678',
+                dlState: 'TX',
                 notes: 'Lead trainer for new hires. Loves crafting signature welcome cocktails.',
                 assignments: [
                     'Corporate Party — Oct 5 (Lead bartender)',
@@ -544,7 +665,23 @@
                         attention: false
                     },
                     { type: 'Liability Waiver', status: 'On file', expires: '—', url: '#', attention: false }
-                ]
+                ],
+                portal: {
+                    status: 'active',
+                    statusLabel: 'Active',
+                    statusLevel: 'success',
+                    accessLevel: 'Full portal access',
+                    inviteSentAt: '2024-06-20T15:30:00',
+                    lastLogin: '2025-10-01T09:42:00',
+                    mfaEnabled: true,
+                    canResetPassword: true,
+                    canResendInvite: false,
+                    loginActivity: [
+                        { timestamp: '2025-10-01T09:42:00', action: 'Logged in on desktop', location: 'Houston, TX' },
+                        { timestamp: '2025-09-28T17:22:00', action: 'Reviewed corporate party schedule', location: 'Houston, TX' },
+                        { timestamp: '2025-09-26T11:08:00', action: 'Downloaded pay stub', location: 'Mobile · Austin, TX' }
+                    ]
+                }
             },
             {
                 id: 'jane-smith',
@@ -556,6 +693,15 @@
                 location: 'Austin, TX',
                 email: 'jane.smith@bartending2u.com',
                 phone: '(512) 555-0199',
+                addressLine1: '501 Congress Ave',
+                addressLine2: 'Apt 9B',
+                addressCity: 'Austin',
+                addressState: 'TX',
+                addressPostalCode: '78701',
+                taxId: '234-56-7890',
+                dob: '1990-02-11',
+                dlNumber: 'TX87654321',
+                dlState: 'TX',
                 notes: 'Certified sommelier. Currently on PTO returning Oct 14.',
                 assignments: [
                     'Mocktail Workshop — Oct 22 (Program design)'
@@ -571,7 +717,19 @@
                         attention: true
                     },
                     { type: 'Food Handler', status: 'Submitted', expires: '2026-02-01', url: '#', attention: false }
-                ]
+                ],
+                portal: {
+                    status: 'invite-pending',
+                    statusLabel: 'Invite pending',
+                    statusLevel: 'warning',
+                    accessLevel: 'Awaiting portal activation',
+                    inviteSentAt: '2025-09-20T13:15:00',
+                    lastLogin: null,
+                    mfaEnabled: false,
+                    canResetPassword: false,
+                    canResendInvite: true,
+                    loginActivity: []
+                }
             },
             {
                 id: 'alex-rivera',
@@ -583,6 +741,15 @@
                 location: 'Dallas, TX',
                 email: 'alex.rivera@bartending2u.com',
                 phone: '(469) 555-0147',
+                addressLine1: '1400 Elm St',
+                addressLine2: '',
+                addressCity: 'Dallas',
+                addressState: 'TX',
+                addressPostalCode: '75202',
+                taxId: '345-67-8901',
+                dob: '1988-11-03',
+                dlNumber: 'TX44556677',
+                dlState: 'TX',
                 notes: 'Lead for sports stadium activations. Fluent in Spanish and English.',
                 assignments: [
                     'Corporate Party — Oct 5 (Support)',
@@ -599,7 +766,22 @@
                         attention: false
                     },
                     { type: 'Food Handler', status: 'Pending upload', expires: '—', url: '#', attention: true }
-                ]
+                ],
+                portal: {
+                    status: 'active',
+                    statusLabel: 'Active',
+                    statusLevel: 'success',
+                    accessLevel: 'Schedule + pay stubs',
+                    inviteSentAt: '2024-08-05T10:05:00',
+                    lastLogin: '2025-09-30T18:10:00',
+                    mfaEnabled: false,
+                    canResetPassword: true,
+                    canResendInvite: false,
+                    loginActivity: [
+                        { timestamp: '2025-09-30T18:10:00', action: 'Logged in on mobile', location: 'Dallas, TX' },
+                        { timestamp: '2025-09-27T08:55:00', action: 'Confirmed shift availability', location: 'Dallas, TX' }
+                    ]
+                }
             },
             {
                 id: 'priya-singh',
@@ -611,6 +793,15 @@
                 location: 'Houston, TX',
                 email: 'priya.singh@bartending2u.com',
                 phone: '(832) 555-0177',
+                addressLine1: '2220 Westheimer Rd',
+                addressLine2: 'Unit 5',
+                addressCity: 'Houston',
+                addressState: 'TX',
+                addressPostalCode: '77098',
+                taxId: '456-78-9012',
+                dob: '1986-05-27',
+                dlNumber: 'TX99887766',
+                dlState: 'TX',
                 notes: 'Hosts quarterly workshops and champions zero-proof menu innovation.',
                 assignments: [
                     'Mixology Workshop — Oct 18 (Instructor)',
@@ -627,7 +818,23 @@
                         attention: false
                     },
                     { type: 'W-9', status: 'On file', expires: '—', url: '#', attention: false }
-                ]
+                ],
+                portal: {
+                    status: 'active',
+                    statusLabel: 'Active',
+                    statusLevel: 'success',
+                    accessLevel: 'Manager access',
+                    inviteSentAt: '2023-12-12T09:00:00',
+                    lastLogin: '2025-09-29T07:30:00',
+                    mfaEnabled: true,
+                    canResetPassword: true,
+                    canResendInvite: false,
+                    loginActivity: [
+                        { timestamp: '2025-09-29T07:30:00', action: 'Approved workshop roster', location: 'Houston, TX' },
+                        { timestamp: '2025-09-25T19:05:00', action: 'Sent message to mixology team', location: 'Houston, TX' },
+                        { timestamp: '2025-09-21T12:18:00', action: 'Updated availability', location: 'Mobile · Austin, TX' }
+                    ]
+                }
             },
             {
                 id: 'jamie-lee',
@@ -639,6 +846,15 @@
                 location: 'San Antonio, TX',
                 email: 'jamie.lee@bartending2u.com',
                 phone: '(210) 555-0188',
+                addressLine1: '815 Avenue B',
+                addressLine2: '',
+                addressCity: 'San Antonio',
+                addressState: 'TX',
+                addressPostalCode: '78215',
+                taxId: '567-89-0123',
+                dob: '1992-09-14',
+                dlNumber: 'TX11223344',
+                dlState: 'TX',
                 notes: 'Available for load-ins and barback duties Thursdays through Sundays.',
                 assignments: [
                     'Mixology Workshop — Oct 18 (Support)'
@@ -654,7 +870,21 @@
                         attention: true
                     },
                     { type: 'Liability Waiver', status: 'On file', expires: '—', url: '#', attention: false }
-                ]
+                ],
+                portal: {
+                    status: 'disabled',
+                    statusLabel: 'Access disabled',
+                    statusLevel: 'danger',
+                    accessLevel: 'Portal locked until renewal',
+                    inviteSentAt: '2024-02-10T16:45:00',
+                    lastLogin: '2024-08-18T14:05:00',
+                    mfaEnabled: false,
+                    canResetPassword: false,
+                    canResendInvite: false,
+                    loginActivity: [
+                        { timestamp: '2024-08-18T14:05:00', action: 'Account locked after credential expiration', location: 'San Antonio, TX' }
+                    ]
+                }
             },
             {
                 id: 'marcus-allen',
@@ -666,6 +896,15 @@
                 location: 'Houston, TX',
                 email: 'marcus.allen@bartending2u.com',
                 phone: '(713) 555-0160',
+                addressLine1: '3710 Main St',
+                addressLine2: '',
+                addressCity: 'Houston',
+                addressState: 'TX',
+                addressPostalCode: '77002',
+                taxId: '678-90-1234',
+                dob: '1987-03-08',
+                dlNumber: 'TX55667788',
+                dlState: 'TX',
                 notes: 'Great with tight timelines and closing shifts. CDL certified.',
                 assignments: [
                     'Wedding Reception — Oct 15 (Barback)',
@@ -673,7 +912,22 @@
                 ],
                 documents: [
                     { type: 'Food Handler', status: 'Active', expires: '2025-03-15', url: '#', attention: false }
-                ]
+                ],
+                portal: {
+                    status: 'active',
+                    statusLabel: 'Active',
+                    statusLevel: 'success',
+                    accessLevel: 'Schedule access only',
+                    inviteSentAt: '2025-01-12T08:30:00',
+                    lastLogin: '2025-09-24T06:55:00',
+                    mfaEnabled: false,
+                    canResetPassword: true,
+                    canResendInvite: false,
+                    loginActivity: [
+                        { timestamp: '2025-09-24T06:55:00', action: 'Checked load-in checklist', location: 'Houston, TX' },
+                        { timestamp: '2025-09-18T20:40:00', action: 'Confirmed transportation availability', location: 'Mobile · Houston, TX' }
+                    ]
+                }
             }
         ].map(prepareEmployee);
 
@@ -687,9 +941,25 @@
         const detailEmail = document.getElementById('detailEmail');
         const detailPhone = document.getElementById('detailPhone');
         const detailLocation = document.getElementById('detailLocation');
+        const detailAddress = document.getElementById('detailAddress');
+        const detailTaxId = document.getElementById('detailTaxId');
+        const detailLicense = document.getElementById('detailLicense');
+        const detailDob = document.getElementById('detailDob');
         const detailNotes = document.getElementById('detailNotes');
         const detailDocs = document.getElementById('detailDocs');
         const detailAssignments = document.getElementById('detailAssignments');
+        const portalStatusBadge = document.getElementById('portalStatusBadge');
+        const portalLastLogin = document.getElementById('portalLastLogin');
+        const portalAccessLevel = document.getElementById('portalAccessLevel');
+        const portalInviteSent = document.getElementById('portalInviteSent');
+        const portalMfa = document.getElementById('portalMfa');
+        const portalLoginActivity = document.getElementById('portalLoginActivity');
+        const portalLoginList = document.getElementById('portalLoginList');
+        const portalAlert = document.getElementById('portalAlert');
+        const togglePortalActivity = document.getElementById('togglePortalActivity');
+        const resetPortalPassword = document.getElementById('resetPortalPassword');
+        const resendPortalInvite = document.getElementById('resendPortalInvite');
+        const removeEmployeeButton = document.getElementById('removeEmployeeButton');
         const characterCount = document.getElementById('characterCount');
         const blastMessage = document.getElementById('blastMessage');
         const blastSubject = document.getElementById('blastSubject');
@@ -723,6 +993,15 @@
         const teamRoleInput = document.getElementById('teamRole');
         const teamEmailInput = document.getElementById('teamEmail');
         const teamPhoneInput = document.getElementById('teamPhone');
+        const teamAddressLine1Input = document.getElementById('teamAddressLine1');
+        const teamAddressLine2Input = document.getElementById('teamAddressLine2');
+        const teamCityInput = document.getElementById('teamCity');
+        const teamStateInput = document.getElementById('teamState');
+        const teamPostalCodeInput = document.getElementById('teamPostalCode');
+        const teamSsnInput = document.getElementById('teamSsn');
+        const teamDobInput = document.getElementById('teamDob');
+        const teamDlNumberInput = document.getElementById('teamDlNumber');
+        const teamDlStateInput = document.getElementById('teamDlState');
         const teamNotesInput = document.getElementById('teamNotes');
 
         const complianceLists = {
@@ -737,10 +1016,18 @@
             limited: 'badge warning'
         };
 
+        const portalStatusClasses = {
+            active: 'badge success',
+            'invite-pending': 'badge warning',
+            disabled: 'badge danger',
+            locked: 'badge danger'
+        };
+
         const SMS_LIMIT = 160;
 
         let selectedEmployeeId = null;
         let docViewerPreviousFocus = null;
+        let portalActivityExpanded = false;
 
         function setAlert(element, message, tone = 'info') {
             if (!element) return;
@@ -803,9 +1090,80 @@
             return employees.find((person) => person.id === selectedEmployeeId);
         }
 
+        function clearEmployeeDetails() {
+            if (!detailName || !detailRole || !detailStatus) {
+                return;
+            }
+
+            detailName.textContent = 'Select a teammate';
+            detailRole.textContent = 'Profile details will appear here.';
+            detailStatus.textContent = '—';
+            detailStatus.className = 'badge';
+
+            if (detailEmail) {
+                detailEmail.textContent = 'team@bartending2u.com';
+                detailEmail.href = 'mailto:team@bartending2u.com';
+            }
+
+            if (detailPhone) {
+                detailPhone.textContent = '(555) 123-4567';
+                detailPhone.href = 'tel:+15551234567';
+            }
+
+            if (detailLocation) {
+                detailLocation.textContent = 'Houston Metro';
+            }
+
+            if (detailNotes) {
+                detailNotes.textContent = 'Document specialties, awards, and go-to pairings for your star team members.';
+            }
+
+            if (detailAssignments) {
+                detailAssignments.innerHTML = '';
+                const pill = document.createElement('li');
+                pill.className = 'text-muted';
+                pill.textContent = 'Assignments will populate once you select a teammate.';
+                detailAssignments.appendChild(pill);
+            }
+
+            if (detailDocs) {
+                detailDocs.innerHTML = '';
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 4;
+                cell.className = 'text-muted';
+                cell.textContent = 'Select a teammate to review documentation.';
+                row.appendChild(cell);
+                detailDocs.appendChild(row);
+            }
+
+            if (removeEmployeeButton) {
+                removeEmployeeButton.disabled = true;
+            }
+        }
+
         function isSmsSelected() {
             const checked = document.querySelector('input[name="blastType"]:checked');
             return checked ? checked.value === 'sms' : false;
+        }
+
+        function formatDateTime(value, { includeTime = true } = {}) {
+            if (!value) {
+                return '';
+            }
+
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return value;
+            }
+
+            return new Intl.DateTimeFormat('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: includeTime ? 'numeric' : undefined,
+                minute: includeTime ? '2-digit' : undefined
+            }).format(date);
         }
 
         function generateEmployeeId(name) {
@@ -967,6 +1325,96 @@
 
             if (docViewerDialog) {
                 docViewerDialog.focus();
+        function updatePortalActivityVisibility(hasActivity) {
+            if (!portalLoginActivity || !togglePortalActivity) {
+                return;
+            }
+
+            if (!hasActivity) {
+                portalLoginActivity.classList.remove('is-hidden');
+                togglePortalActivity.textContent = 'No login activity';
+                togglePortalActivity.disabled = true;
+                return;
+            }
+
+            togglePortalActivity.disabled = false;
+            togglePortalActivity.textContent = portalActivityExpanded ? 'Hide login activity' : 'View login activity';
+            portalLoginActivity.classList.toggle('is-hidden', !portalActivityExpanded);
+        }
+
+        function updatePortalAccess(employee) {
+            if (
+                !employee ||
+                !portalStatusBadge ||
+                !portalLastLogin ||
+                !portalAccessLevel ||
+                !portalInviteSent ||
+                !portalMfa ||
+                !portalLoginList
+            ) {
+                return;
+            }
+
+            const portal = employee.portal || {};
+            const badgeClass = portalStatusClasses[portal.status] || 'badge';
+            portalStatusBadge.className = badgeClass;
+            portalStatusBadge.textContent = portal.statusLabel || 'Not invited';
+
+            const lastLoginText = formatDateTime(portal.lastLogin) || 'No logins yet';
+            portalLastLogin.textContent = portal.lastLogin ? lastLoginText : 'No logins yet';
+            portalAccessLevel.textContent = portal.accessLevel || '—';
+            portalInviteSent.textContent = formatDateTime(portal.inviteSentAt) || 'Not sent';
+            portalMfa.textContent = portal.mfaEnabled ? 'Enabled' : 'Not enabled';
+
+            portalLoginList.innerHTML = '';
+            const hasActivity = Array.isArray(portal.loginActivity) && portal.loginActivity.length > 0;
+
+            if (hasActivity) {
+                portal.loginActivity.slice(0, 6).forEach((activity) => {
+                    const item = document.createElement('li');
+                    item.className = 'portal-login-item';
+
+                    const meta = document.createElement('span');
+                    meta.className = 'portal-login-item__meta';
+                    meta.textContent = formatDateTime(activity.timestamp) || 'Timestamp unavailable';
+
+                    const details = document.createElement('span');
+                    details.className = 'portal-login-item__details';
+                    const detailBits = [activity.action, activity.location].filter(Boolean);
+                    details.textContent = detailBits.join(' • ') || 'Portal activity recorded';
+
+                    item.appendChild(meta);
+                    item.appendChild(details);
+                    portalLoginList.appendChild(item);
+                });
+            } else {
+                const item = document.createElement('li');
+                item.className = 'portal-login-item';
+                const details = document.createElement('span');
+                details.className = 'portal-login-item__details';
+                details.textContent = 'No login activity recorded yet.';
+                item.appendChild(details);
+                portalLoginList.appendChild(item);
+            }
+
+            portalActivityExpanded = false;
+            updatePortalActivityVisibility(hasActivity);
+
+            if (portalAlert) {
+                setAlert(portalAlert, '');
+            }
+
+            if (resetPortalPassword) {
+                resetPortalPassword.disabled = !portal.canResetPassword;
+                resetPortalPassword.classList.remove('is-hidden');
+                resetPortalPassword.textContent = portal.resetLabel || 'Reset password';
+            }
+
+            if (resendPortalInvite) {
+                const showResend = Boolean(portal.canResendInvite);
+                resendPortalInvite.classList.toggle('is-hidden', !showResend);
+                resendPortalInvite.disabled = !showResend;
+                resendPortalInvite.textContent = portal.inviteAction || 'Resend invite';
             }
         }
 
@@ -984,6 +1432,8 @@
                 emptyState.className = 'empty-state';
                 emptyState.textContent = 'No teammates match your filters just yet.';
                 employeeList.appendChild(emptyState);
+                selectedEmployeeId = null;
+                clearEmployeeDetails();
                 return;
             }
 
@@ -1025,11 +1475,60 @@
             selectEmployee(selectedEmployeeId);
         }
 
+        function formatAddress(employee) {
+            if (!employee) return '';
+            const segments = [];
+            const line1 = (employee.addressLine1 || '').trim();
+            const line2 = (employee.addressLine2 || '').trim();
+            const city = (employee.addressCity || '').trim();
+            const state = (employee.addressState || '').trim();
+            const postal = (employee.addressPostalCode || '').trim();
+
+            if (line1) segments.push(line1);
+            if (line2) segments.push(line2);
+
+            const cityState = [city, state].filter(Boolean).join(', ');
+            const finalLine = [cityState, postal].filter(Boolean).join(' ').trim();
+            if (finalLine) segments.push(finalLine);
+
+            return segments.join('\n');
+        }
+
+        function formatDob(value) {
+            if (!value) return '';
+            const parts = value.split('-').map((part) => parseInt(part, 10));
+            if (parts.length === 3 && parts.every((num) => !Number.isNaN(num))) {
+                const [year, month, day] = parts;
+                const parsed = new Date(year, month - 1, day);
+                if (!Number.isNaN(parsed.getTime())) {
+                    return new Intl.DateTimeFormat('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    }).format(parsed);
+                }
+            }
+
+            const fallback = new Date(value);
+            if (!Number.isNaN(fallback.getTime())) {
+                return new Intl.DateTimeFormat('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                }).format(fallback);
+            }
+
+            return value;
+        }
+
         function selectEmployee(id) {
             const previousId = selectedEmployeeId;
             selectedEmployeeId = id;
             const employee = getSelectedEmployee();
-            if (!employee || !employeeDetails) return;
+            if (!employee || !employeeDetails) {
+                clearEmployeeDetails();
+                return;
+            }
 
             const cards = employeeList.querySelectorAll('.person-card');
             cards.forEach((card) => {
@@ -1050,7 +1549,30 @@
             const digits = employee.phone.replace(/[^0-9]/g, '');
             detailPhone.href = digits ? `tel:+1${digits}` : '#';
             detailLocation.textContent = employee.location;
+            const address = formatAddress(employee);
+            if (detailAddress) {
+                detailAddress.textContent = address || '—';
+            }
+            if (detailTaxId) {
+                detailTaxId.textContent = employee.taxId && employee.taxId.trim() ? employee.taxId.trim() : '—';
+            }
+            if (detailLicense) {
+                const licenseParts = [];
+                if (employee.dlNumber && employee.dlNumber.trim()) {
+                    licenseParts.push(employee.dlNumber.trim());
+                }
+                if (employee.dlState && employee.dlState.trim()) {
+                    licenseParts.push(`(${employee.dlState.trim()})`);
+                }
+                detailLicense.textContent = licenseParts.length ? licenseParts.join(' ') : '—';
+            }
+            if (detailDob) {
+                const dob = formatDob(employee.dob);
+                detailDob.textContent = dob || '—';
+            }
             detailNotes.textContent = employee.notes;
+
+            updatePortalAccess(employee);
 
             detailDocs.innerHTML = '';
             if (employee.documents && employee.documents.length) {
@@ -1146,6 +1668,10 @@
                     detailAssignments.appendChild(pill);
                 }
             }
+
+            if (removeEmployeeButton) {
+                removeEmployeeButton.disabled = false;
+            }
         }
 
         if (detailDocs) {
@@ -1215,6 +1741,28 @@
         }
 
         updateDocMetadataVisibility();
+        function removeSelectedEmployee() {
+            const employee = getSelectedEmployee();
+            if (!employee) {
+                return;
+            }
+
+            const confirmed = window.confirm(`Remove ${employee.name} from your roster? This action cannot be undone.`);
+            if (!confirmed) {
+                return;
+            }
+
+            employees = employees.filter((person) => person.id !== employee.id);
+            selectedEmployeeId = null;
+            setAlert(docAlert, '');
+            applyFilters();
+            buildComplianceLists();
+            updateBlastPreview();
+        }
+
+        if (removeEmployeeButton) {
+            removeEmployeeButton.addEventListener('click', removeSelectedEmployee);
+        }
 
         function buildComplianceLists() {
             const tabcExpiring = [];
@@ -1323,6 +1871,61 @@
                 updateBlastTypeVisibility();
             });
         });
+
+        if (togglePortalActivity) {
+            togglePortalActivity.addEventListener('click', () => {
+                const employee = getSelectedEmployee();
+                const portal = employee ? employee.portal : null;
+                if (!portal || !Array.isArray(portal.loginActivity) || portal.loginActivity.length === 0) {
+                    return;
+                }
+
+                portalActivityExpanded = !portalActivityExpanded;
+                updatePortalActivityVisibility(true);
+            });
+        }
+
+        if (resetPortalPassword) {
+            resetPortalPassword.addEventListener('click', () => {
+                const employee = getSelectedEmployee();
+                if (!employee) {
+                    return;
+                }
+
+                const portal = employee.portal;
+                if (!portal || !portal.canResetPassword) {
+                    setAlert(portalAlert, 'Portal password reset is unavailable for this teammate.', 'danger');
+                    return;
+                }
+
+                const recipient = employee.email || employee.name || 'this teammate';
+                setAlert(portalAlert, `Password reset instructions were emailed to ${recipient}.`, 'success');
+            });
+        }
+
+        if (resendPortalInvite) {
+            resendPortalInvite.addEventListener('click', () => {
+                const employee = getSelectedEmployee();
+                if (!employee) {
+                    return;
+                }
+
+                const portal = employee.portal;
+                if (!portal || !portal.canResendInvite) {
+                    setAlert(portalAlert, 'Portal invite cannot be resent right now.', 'danger');
+                    return;
+                }
+
+                portal.canResendInvite = false;
+                portal.status = portal.status || 'invite-pending';
+                portal.statusLabel = portal.statusLabel || 'Invite pending';
+                portal.inviteSentAt = new Date().toISOString();
+                updatePortalAccess(employee);
+
+                const recipient = employee.email || employee.name || 'this teammate';
+                setAlert(portalAlert, `Portal invite has been re-sent to ${recipient}.`, 'success');
+            });
+        }
 
         if (docForm) {
             docForm.addEventListener('submit', (event) => {
@@ -1438,12 +2041,23 @@
                 const role = teamRoleInput ? teamRoleInput.value.trim() : '';
                 const email = teamEmailInput ? teamEmailInput.value.trim() : '';
                 const phone = teamPhoneInput ? teamPhoneInput.value.trim() : '';
+                const addressLine1 = teamAddressLine1Input ? teamAddressLine1Input.value.trim() : '';
+                const addressLine2 = teamAddressLine2Input ? teamAddressLine2Input.value.trim() : '';
+                const addressCity = teamCityInput ? teamCityInput.value.trim() : '';
+                const addressState = teamStateInput ? teamStateInput.value.trim() : '';
+                const addressPostalCode = teamPostalCodeInput ? teamPostalCodeInput.value.trim() : '';
+                const taxId = teamSsnInput ? teamSsnInput.value.trim() : '';
+                const dobRaw = teamDobInput ? teamDobInput.value : '';
+                const dlNumber = teamDlNumberInput ? teamDlNumberInput.value.trim() : '';
+                const dlState = teamDlStateInput ? teamDlStateInput.value.trim() : '';
                 const notes = teamNotesInput ? teamNotesInput.value.trim() : '';
 
                 if (!name || !email) {
                     setAlert(addEmployeeAlert, 'Please add a name and email before inviting a teammate.', 'danger');
                     return;
                 }
+
+                const locationLabel = [addressCity, addressState].filter(Boolean).join(', ') || 'TBD';
 
                 const summaryRaw = notes
                     ? notes
@@ -1466,9 +2080,18 @@
                     specialties,
                     status: 'available',
                     statusLabel: 'Available',
-                    location: 'TBD',
+                    location: locationLabel,
                     email,
                     phone: phone || '—',
+                    addressLine1,
+                    addressLine2,
+                    addressCity,
+                    addressState,
+                    addressPostalCode,
+                    taxId,
+                    dob: dobRaw,
+                    dlNumber,
+                    dlState,
                     notes: detailNotes,
                     assignments: [],
                     documents: []

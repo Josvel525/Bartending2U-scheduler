@@ -35,6 +35,7 @@
             <nav class="nav-links" id="primaryNav">
                 <a class="nav-link" href="index.html">Dashboard</a>
                 <a class="nav-link" href="events.html">Events</a>
+                <a class="nav-link" href="leads.html">Leads</a>
                 <a class="nav-link" href="employees.html">Employees</a>
                 <a class="nav-link active" href="calendar.html">Calendar</a>
                 <a class="nav-link" href="settings.html">Settings</a>
@@ -48,8 +49,8 @@
         <section class="page-header">
             <div>
                 <p class="page-eyebrow">Calendar</p>
-                <h1 class="page-title">Plan every pour & prep</h1>
-                <p class="lead-text">Visualize your bookings, staffing, and prep milestones across the month. Drag-and-drop coming soon.</p>
+                <h1 class="page-title">Plan your month</h1>
+                <p class="lead-text">See bookings, staffing, and prep tasks for the month. Drag-and-drop coming soon.</p>
             </div>
             <div class="hero-actions">
                 <a class="button primary" href="events.html">Review events</a>
@@ -60,11 +61,41 @@
         <section id="calendar-overview" class="content-card" data-subsection="Monthly overview">
             <div class="card-header">
                 <div>
-                    <h2 class="card-title" id="calendarMonthHeading">Monthly overview</h2>
-                    <p class="card-subtitle">Hover over a day to reveal assignments and prep checklists.</p>
+                    <h2 class="card-title" id="calendarMonthHeading">This month</h2>
+                    <p class="card-subtitle">Select a day to view its events and staffing.</p>
                 </div>
             </div>
-            <div class="calendar-grid" id="calendarGrid"></div>
+            <div class="calendar-layout">
+                <div class="calendar-month">
+                    <div class="calendar-controls" aria-controls="calendarGrid">
+                        <button class="calendar-controls__button" type="button" data-calendar-nav="prev" aria-label="Previous month">
+                            ‹
+                        </button>
+                        <div class="calendar-controls__label">
+                            <span class="calendar-controls__heading" id="calendarControlsLabel">October 2025</span>
+                            <button class="calendar-controls__link" type="button" data-calendar-nav="today">Jump to today</button>
+                        </div>
+                        <button class="calendar-controls__button" type="button" data-calendar-nav="next" aria-label="Next month">
+                            ›
+                        </button>
+                    </div>
+                    <div class="calendar-weekdays" aria-hidden="true">
+                        <span>Sun</span>
+                        <span>Mon</span>
+                        <span>Tue</span>
+                        <span>Wed</span>
+                        <span>Thu</span>
+                        <span>Fri</span>
+                        <span>Sat</span>
+                    </div>
+                    <div class="calendar-grid" id="calendarGrid" role="grid" aria-labelledby="calendarControlsLabel"></div>
+                </div>
+                <aside class="calendar-detail" id="calendarDayDetails" aria-live="polite">
+                    <h3 class="calendar-detail__title" id="calendarSelectedHeading">Today</h3>
+                    <p class="calendar-detail__subtitle" id="calendarSelectedSummary">No events yet.</p>
+                    <div class="calendar-detail__list" id="calendarDayList"></div>
+                </aside>
+            </div>
         </section>
 
         <section class="split-layout">
@@ -72,7 +103,7 @@
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Prep checklist</h2>
-                        <p class="card-subtitle">Ensure every garnish, glass, and batch is ready ahead of time.</p>
+                        <p class="card-subtitle">Tick off supplies and reminders before wheels up.</p>
                     </div>
                 </div>
                 <div class="preferences-list">
@@ -86,8 +117,8 @@
             <article id="week-glance" class="content-card" data-subsection="Week at a glance">
                 <div class="card-header">
                     <div>
-                        <h2 class="card-title">Week at a glance</h2>
-                        <p class="card-subtitle">Quick summary of guests, staffing, and prep hours.</p>
+                        <h2 class="card-title">This week</h2>
+                        <p class="card-subtitle">Quick view of guests, staffing, and prep hours.</p>
                     </div>
                 </div>
                 <div class="table-wrapper">
@@ -148,11 +179,43 @@
         const store = window.B2UStore;
         const calendarGrid = document.getElementById('calendarGrid');
         const calendarHeading = document.getElementById('calendarMonthHeading');
+        const calendarControlsLabel = document.getElementById('calendarControlsLabel');
+        const calendarDayList = document.getElementById('calendarDayList');
+        const calendarSelectedHeading = document.getElementById('calendarSelectedHeading');
+        const calendarSelectedSummary = document.getElementById('calendarSelectedSummary');
         const weekSummaryTable = document.getElementById('weekSummaryTable');
+        const navButtons = document.querySelectorAll('[data-calendar-nav]');
 
         const weekdayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'short' });
         const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric' });
         const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' });
+        const weekdayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'short' });
+        const dayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        const timeFormatter = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' });
+
+        const today = new Date();
+
+        const state = {
+            events: [],
+            employees: [],
+            employeeMap: new Map(),
+            currentMonth: new Date(today.getFullYear(), today.getMonth(), 1),
+            selectedDate: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+        };
+
+        function buildEmployeeIndex() {
+            state.employeeMap.clear();
+            state.employees.forEach((employee) => {
+                state.employeeMap.set(employee.id, employee);
+            });
+        }
+
+        function toISODate(date) {
+            if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+                return '';
+            }
+            return date.toISOString().slice(0, 10);
+        }
 
         function formatEventDate(dateString) {
             if (!dateString) {
@@ -184,7 +247,52 @@
             return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
         }
 
-        function renderCalendar(events) {
+        function getStaffNames(ids) {
+            if (!Array.isArray(ids) || ids.length === 0) {
+                return [];
+            }
+
+            return ids
+                .map((id) => state.employeeMap.get(id))
+                .filter(Boolean)
+                .map((employee) => employee.name);
+        }
+
+        function getEventsByDate() {
+            const grouped = new Map();
+
+            state.events.forEach((event) => {
+                if (!event.date) {
+                    return;
+                }
+
+                const list = grouped.get(event.date) || [];
+                list.push(event);
+                grouped.set(event.date, list);
+            });
+
+            grouped.forEach((list, key) => {
+                list.sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b));
+                grouped.set(key, list);
+            });
+
+            return grouped;
+        }
+
+        function formatEventTime(event) {
+            if (!event || !event.time) {
+                return 'Time TBC';
+            }
+
+            const date = new Date(`${event.date}T${event.time}`);
+            if (Number.isNaN(date.getTime())) {
+                return 'Time TBC';
+            }
+
+            return timeFormatter.format(date);
+        }
+
+        function renderCalendar() {
             if (!calendarGrid) {
                 return;
             }
@@ -199,70 +307,179 @@
                 return;
             }
 
-            const today = new Date();
-            const sorted = events.slice().sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b));
-            const firstUpcoming = sorted.find((event) => getEventTimestamp(event) !== Number.MAX_SAFE_INTEGER);
-            const referenceDate = firstUpcoming && firstUpcoming.date ? new Date(`${firstUpcoming.date}T00:00`) : today;
-
-            const year = referenceDate.getFullYear();
-            const month = referenceDate.getMonth();
-            const monthStart = new Date(year, month, 1);
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const leadingEmpty = monthStart.getDay();
+            const eventsByDate = getEventsByDate();
+            const monthStart = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth(), 1);
+            const startDay = monthStart.getDay();
+            const daysInMonth = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth() + 1, 0).getDate();
+            const totalCells = Math.ceil((startDay + daysInMonth) / 7) * 7;
+            const headingText = monthFormatter.format(state.currentMonth);
+            const selectedIso = toISODate(state.selectedDate);
+            const todayIso = toISODate(today);
 
             if (calendarHeading) {
-                calendarHeading.textContent = `${monthFormatter.format(referenceDate)} overview`;
+                calendarHeading.textContent = headingText;
+            }
+            if (calendarControlsLabel) {
+                calendarControlsLabel.textContent = headingText;
             }
 
-            const eventsByDate = events.reduce((acc, event) => {
-                if (!event.date) {
-                    return acc;
-                }
-                (acc[event.date] = acc[event.date] || []).push(event);
-                return acc;
-            }, {});
-
-            for (let i = 0; i < leadingEmpty; i += 1) {
-                const emptyCell = document.createElement('div');
-                emptyCell.className = 'calendar-cell calendar-cell--empty';
-                calendarGrid.appendChild(emptyCell);
-            }
-
-            for (let day = 1; day <= daysInMonth; day += 1) {
-                const cellDate = new Date(year, month, day);
-                const isoDate = cellDate.toISOString().slice(0, 10);
+            for (let index = 0; index < totalCells; index += 1) {
+                const cellDate = new Date(monthStart);
+                cellDate.setDate(cellDate.getDate() - startDay + index);
+                const isoDate = toISODate(cellDate);
                 const cell = document.createElement('div');
                 cell.className = 'calendar-cell';
+                cell.setAttribute('role', 'gridcell');
 
-                if (cellDate.toDateString() === today.toDateString()) {
+                if (cellDate.getMonth() !== state.currentMonth.getMonth()) {
+                    cell.classList.add('calendar-cell--muted');
+                    cell.setAttribute('aria-disabled', 'true');
+                    cell.tabIndex = -1;
+                } else {
+                    cell.tabIndex = 0;
+                }
+
+                if (isoDate === todayIso) {
                     cell.classList.add('calendar-cell--today');
+                }
+
+                if (isoDate === selectedIso) {
+                    cell.classList.add('calendar-cell--selected');
+                    cell.setAttribute('aria-selected', 'true');
+                } else {
+                    cell.setAttribute('aria-selected', 'false');
                 }
 
                 const dateLabel = document.createElement('span');
                 dateLabel.className = 'calendar-cell__date';
-                dateLabel.textContent = `${weekdayFormatter.format(cellDate)} ${day}`;
+                dateLabel.textContent = `${weekdayFormatter.format(cellDate)} ${cellDate.getDate()}`;
                 cell.appendChild(dateLabel);
 
-                const dayEvents = eventsByDate[isoDate] || [];
-                dayEvents
-                    .slice()
-                    .sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b))
-                    .forEach((event) => {
-                        const eventBlock = document.createElement('div');
-                        eventBlock.className = 'calendar-event';
-                        eventBlock.textContent = event.name;
-                        cell.appendChild(eventBlock);
+                const dayEvents = eventsByDate.get(isoDate) || [];
 
-                        const details = document.createElement('p');
-                        details.className = 'card-subtitle';
-                        const time = event.time ? ` · ${event.time}` : '';
-                        const location = event.location ? ` · ${event.location}` : '';
-                        details.textContent = `${event.staffingStatus || 'Staffing pending'}${time}${location}`;
-                        cell.appendChild(details);
+                if (dayEvents.length) {
+                    const countBadge = document.createElement('span');
+                    countBadge.className = 'calendar-cell__count';
+                    countBadge.textContent = `${dayEvents.length} event${dayEvents.length === 1 ? '' : 's'}`;
+                    cell.appendChild(countBadge);
+
+                    const list = document.createElement('ul');
+                    list.className = 'calendar-cell__events';
+
+                    dayEvents.slice(0, 3).forEach((event) => {
+                        const item = document.createElement('li');
+                        item.className = `calendar-cell__event calendar-cell__event--${event.staffingLevel || 'neutral'}`;
+                        item.textContent = event.name;
+                        item.title = `${event.name} · ${event.staffingStatus || 'Staffing pending'}`;
+                        list.appendChild(item);
                     });
+
+                    cell.appendChild(list);
+
+                    if (dayEvents.length > 3) {
+                        const more = document.createElement('span');
+                        more.className = 'calendar-cell__more';
+                        more.textContent = `+${dayEvents.length - 3} more`;
+                        cell.appendChild(more);
+                    }
+                }
+
+                cell.addEventListener('click', () => {
+                    if (cellDate.getMonth() !== state.currentMonth.getMonth()) {
+                        state.currentMonth = new Date(cellDate.getFullYear(), cellDate.getMonth(), 1);
+                    }
+                    state.selectedDate = new Date(cellDate.getFullYear(), cellDate.getMonth(), cellDate.getDate());
+                    renderCalendar();
+                    renderDayDetails();
+                });
+
+                cell.addEventListener('keydown', (event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        cell.click();
+                    }
+                });
 
                 calendarGrid.appendChild(cell);
             }
+        }
+
+        function renderDayDetails() {
+            if (!calendarDayList || !calendarSelectedHeading || !calendarSelectedSummary) {
+                return;
+            }
+
+            calendarDayList.innerHTML = '';
+
+            const eventsByDate = getEventsByDate();
+            const iso = toISODate(state.selectedDate);
+            const dayEvents = eventsByDate.get(iso) || [];
+            const headingText = dayFormatter.format(state.selectedDate);
+
+            calendarSelectedHeading.textContent = headingText;
+
+            if (dayEvents.length === 0) {
+                calendarSelectedSummary.textContent = 'No events on the books for this day.';
+                const empty = document.createElement('p');
+                empty.className = 'empty-state';
+                empty.textContent = 'Add an event from the Events page to see it here.';
+                calendarDayList.appendChild(empty);
+                return;
+            }
+
+            const earliest = dayEvents.reduce((lowest, event) => {
+                const timestamp = getEventTimestamp(event);
+                return Math.min(lowest, timestamp);
+            }, Number.MAX_SAFE_INTEGER);
+
+            if (earliest && earliest !== Number.MAX_SAFE_INTEGER) {
+                const earliestDate = new Date(earliest);
+                calendarSelectedSummary.textContent = `${dayEvents.length} event${dayEvents.length === 1 ? '' : 's'} scheduled. First call time ${timeFormatter.format(earliestDate)}.`;
+            } else {
+                calendarSelectedSummary.textContent = `${dayEvents.length} event${dayEvents.length === 1 ? '' : 's'} scheduled.`;
+            }
+
+            dayEvents.forEach((event) => {
+                const item = document.createElement('article');
+                item.className = 'calendar-detail__item';
+
+                const title = document.createElement('h4');
+                title.className = 'calendar-detail__item-title';
+                title.textContent = event.name;
+
+                const meta = document.createElement('p');
+                meta.className = 'calendar-detail__item-meta';
+                const location = event.location ? ` · ${event.location}` : '';
+                meta.textContent = `${formatEventTime(event)}${location}`;
+
+                const staffing = document.createElement('p');
+                staffing.className = 'calendar-detail__item-staff';
+                const staffNames = getStaffNames(event.assignedStaffIds);
+                if (staffNames.length) {
+                    staffing.textContent = `Assigned: ${staffNames.join(', ')}`;
+                } else {
+                    staffing.textContent = event.staffingStatus || 'Staffing pending';
+                }
+
+                const note = document.createElement('p');
+                note.className = 'calendar-detail__item-note';
+                note.textContent = event.notes ? event.notes : 'No notes yet.';
+
+                const linkRow = document.createElement('div');
+                linkRow.className = 'calendar-detail__item-actions';
+                const eventsLink = document.createElement('a');
+                eventsLink.href = `events.html#event-pipeline`;
+                eventsLink.className = 'calendar-detail__link';
+                eventsLink.textContent = 'Manage in Events';
+                linkRow.appendChild(eventsLink);
+
+                item.appendChild(title);
+                item.appendChild(meta);
+                item.appendChild(staffing);
+                item.appendChild(note);
+                item.appendChild(linkRow);
+                calendarDayList.appendChild(item);
+            });
         }
 
         function estimatePrepHours(event) {
@@ -331,6 +548,8 @@
                 guestCell.setAttribute('data-label', 'Guests');
 
                 const teamCell = document.createElement('td');
+                const staffNames = getStaffNames(event.assignedStaffIds);
+                teamCell.textContent = staffNames.length ? `Assigned: ${staffNames.join(', ')}` : event.staffingStatus || 'Staffing pending';
                 teamCell.textContent = event.staffingStatus || 'Staffing pending';
                 teamCell.setAttribute('data-label', 'Team');
 
@@ -347,19 +566,56 @@
             });
         }
 
-        function renderCalendarPage() {
+        function refreshCalendar() {
             if (!store) {
-                renderCalendar([]);
+                state.events = [];
+                state.employees = [];
+                state.employeeMap.clear();
+                renderCalendar();
+                renderDayDetails();
                 renderWeekSummary([]);
                 return;
             }
 
-            const events = store.getEvents();
-            renderCalendar(events);
-            renderWeekSummary(events);
+            state.events = store.getEvents();
+            state.employees = store.getEmployees();
+            buildEmployeeIndex();
+
+            if (!(state.selectedDate instanceof Date) || Number.isNaN(state.selectedDate.getTime())) {
+                state.selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            }
+
+            renderCalendar();
+            renderDayDetails();
+            renderWeekSummary(state.events);
         }
 
-        renderCalendarPage();
+        if (navButtons.length) {
+            navButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    const action = button.dataset.calendarNav;
+                    if (!action) {
+                        return;
+                    }
+
+                    if (action === 'prev') {
+                        state.currentMonth = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth() - 1, 1);
+                        state.selectedDate = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth(), 1);
+                    } else if (action === 'next') {
+                        state.currentMonth = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth() + 1, 1);
+                        state.selectedDate = new Date(state.currentMonth.getFullYear(), state.currentMonth.getMonth(), 1);
+                    } else if (action === 'today') {
+                        state.currentMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+                        state.selectedDate = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+                    }
+
+                    renderCalendar();
+                    renderDayDetails();
+                });
+            });
+        }
+
+        refreshCalendar();
     </script>
     <script src="app.js"></script>
 </body>
