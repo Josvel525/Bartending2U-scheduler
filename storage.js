@@ -24,6 +24,17 @@
                 notes: 'Deposit received. Call time 6:00 PM.',
                 lastReminderSent: now - 1000 * 60 * 60 * 24,
                 createdAt: now - 1000 * 60 * 20,
+                lastReminderSent: Date.now() - 1000 * 60 * 60 * 24,
+                createdAt: Date.now() - 1000 * 60 * 20,
+                checklist: [
+                    { id: 'chk-evt-1-1', label: 'Confirm final guest count', completed: true },
+                    { id: 'chk-evt-1-2', label: 'Print bar menu cards', completed: false },
+                ],
+                prepSheet: {
+                    menu: 'Seasonal welcome cocktail + corporate-branded old fashioned.',
+                    equipment: '2 portable bars, branded napkins, 150 coupe glasses.',
+                    staffing: 'Lead + 2 bartenders onsite by 5:30 PM.',
+                },
             },
             {
                 id: 'evt-2',
@@ -44,6 +55,16 @@
                 notes: 'Send reminder for deposit. Discuss signature cocktail list.',
                 lastReminderSent: null,
                 createdAt: now - 1000 * 60 * 60 * 3,
+                createdAt: Date.now() - 1000 * 60 * 60 * 3,
+                checklist: [
+                    { id: 'chk-evt-2-1', label: 'Follow up on deposit invoice', completed: false },
+                    { id: 'chk-evt-2-2', label: 'Confirm champagne toast timing', completed: false },
+                ],
+                prepSheet: {
+                    menu: 'Bride + groom his & hers cocktails, late-night espresso bar.',
+                    equipment: 'Champagne tower, coffee urns, ice tubs.',
+                    staffing: 'Need 2 more bartenders for reception coverage.',
+                },
             },
             {
                 id: 'evt-3',
@@ -64,6 +85,16 @@
                 notes: 'Client reviewing updated package. Follow up Friday.',
                 lastReminderSent: null,
                 createdAt: now - 1000 * 60 * 60 * 10,
+                createdAt: Date.now() - 1000 * 60 * 60 * 10,
+                checklist: [
+                    { id: 'chk-evt-3-1', label: 'Update proposal with vegan options', completed: false },
+                    { id: 'chk-evt-3-2', label: 'Schedule tasting with chef partner', completed: false },
+                ],
+                prepSheet: {
+                    menu: 'Craft martini flight + winter mocktails.',
+                    equipment: 'Large ice sculptures, stage back-bar, 3 garnish trays.',
+                    staffing: 'Pending confirmation of additional support staff.',
+                },
             },
             {
                 id: 'evt-4',
@@ -84,6 +115,17 @@
                 notes: 'Include mocktail options and allergy-friendly mixers.',
                 lastReminderSent: now - 1000 * 60 * 60 * 12,
                 createdAt: now - 1000 * 60 * 5,
+                lastReminderSent: Date.now() - 1000 * 60 * 60 * 12,
+                createdAt: Date.now() - 1000 * 60 * 5,
+                checklist: [
+                    { id: 'chk-evt-4-1', label: 'Prepare ingredient kits', completed: true },
+                    { id: 'chk-evt-4-2', label: 'Email pre-event survey', completed: false },
+                ],
+                prepSheet: {
+                    menu: 'Hands-on margarita build + zero-proof paloma.',
+                    equipment: 'Cutting boards, shakers for 15 stations, demo monitor.',
+                    staffing: 'Priya onsite at 4:30 PM. Need 1 assistant for setup.',
+                },
             },
         ],
         employees: [
@@ -302,6 +344,137 @@
         return JSON.parse(JSON.stringify(data));
     }
 
+    function sanitisePrepSheet(prepSheet) {
+        if (!prepSheet || typeof prepSheet !== 'object') {
+            return {
+                menu: '',
+                equipment: '',
+                staffing: '',
+            };
+        }
+
+        return {
+            menu: typeof prepSheet.menu === 'string' ? prepSheet.menu : '',
+            equipment: typeof prepSheet.equipment === 'string' ? prepSheet.equipment : '',
+            staffing: typeof prepSheet.staffing === 'string' ? prepSheet.staffing : '',
+        };
+    }
+
+    function normaliseChecklist(checklist) {
+        if (!Array.isArray(checklist)) {
+            return [];
+        }
+
+        return checklist
+            .filter((item) => item && typeof item === 'object' && item.label)
+            .map((item) => ({
+                id: item.id || generateId('chk'),
+                label: String(item.label),
+                completed: Boolean(item.completed),
+            }));
+    }
+
+    function normaliseEvent(event) {
+        const next = Object.assign({}, event);
+
+        if (!next.statusLevel && next.status) {
+            next.statusLevel = mapStatusLevel(next.status);
+        }
+
+        if (!next.staffingLevel && next.staffingStatus) {
+            next.staffingLevel = mapStatusLevel(next.staffingStatus);
+        }
+
+        if (!Array.isArray(next.assignedTeam)) {
+            next.assignedTeam = [];
+        }
+
+        next.checklist = normaliseChecklist(next.checklist);
+        next.prepSheet = sanitisePrepSheet(next.prepSheet);
+
+        return next;
+    function mapStatusLevel(value) {
+        if (!value) {
+            return 'neutral';
+        }
+
+        const lower = String(value).toLowerCase();
+
+        if (lower.includes('unassign') || lower.includes('overdue') || lower.includes('contract')) {
+            return 'danger';
+        }
+
+        if (
+            lower.includes('confirm') ||
+            lower.includes('ready') ||
+            lower.includes('available') ||
+            lower.includes('staffed') ||
+            lower.includes('assign')
+        ) {
+            return 'success';
+        }
+
+        if (lower.includes('need') || lower.includes('limited') || lower.includes('await') || lower.includes('pto')) {
+            return 'warning';
+        }
+
+        return 'info';
+    }
+
+    function normaliseEvent(event) {
+        const base = Object.assign(
+            {
+                assignedStaffIds: [],
+                assignedTeam: [],
+                requiredStaff: 0,
+                lastReminderSent: null,
+            },
+            event || {}
+        );
+
+        if (!Array.isArray(base.assignedStaffIds)) {
+            base.assignedStaffIds = [];
+        }
+
+        if (!Array.isArray(base.assignedTeam)) {
+            base.assignedTeam = [];
+        }
+
+        if (!base.statusLevel && base.status) {
+            base.statusLevel = mapStatusLevel(base.status);
+        }
+
+        if (!base.staffingLevel && base.staffingStatus) {
+            base.staffingLevel = mapStatusLevel(base.staffingStatus);
+        }
+
+        return base;
+    }
+
+    function normaliseEmployee(employee) {
+        const base = Object.assign({}, employee || {});
+
+        if (!base.statusLevel && base.status) {
+            base.statusLevel = mapStatusLevel(base.status);
+        }
+
+        return base;
+    }
+
+    function normalise(data) {
+        if (!data || typeof data !== 'object') {
+            return clone(defaultData);
+        }
+
+        const eventsSource = Array.isArray(data.events) ? data.events : defaultData.events;
+        const employeesSource = Array.isArray(data.employees) ? data.employees : defaultData.employees;
+
+        return {
+            events: eventsSource.map((event) => normaliseEvent(event)),
+            employees: employeesSource.map((employee) => normaliseEmployee(employee)),
+        };
+    }
+
     function localStorageAvailable() {
         try {
             const storage = global.localStorage;
@@ -335,6 +508,25 @@
 
         if (lower.includes('await') || lower.includes('limited') || lower.includes('need') || lower.includes('scheduled')) {
             return 'warning';
+        if (hasLocalStorage) {
+            try {
+                const raw = global.localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+                    cache = normalise(JSON.parse(raw));
+                    return cache;
+                }
+
+                const seeded = normalise(clone(defaultData));
+                global.localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
+                cache = seeded;
+                return cache;
+            } catch (error) {
+                console.warn('Unable to read scheduler data from localStorage. Using in-memory fallback.', error);
+            }
+        }
+
+        if (!memoryStore) {
+            memoryStore = normalise(clone(defaultData));
         }
 
         if (lower.includes('overdue') || lower.includes('behind') || lower.includes('lost')) {
@@ -486,6 +678,22 @@
         memoryStore = clone(payload);
     }
 
+        const normalisedEvents = (Array.isArray(data.events) ? data.events : clone(defaultData.events)).map(normaliseEvent);
+
+        const normalisedEmployees = (Array.isArray(data.employees) ? data.employees : clone(defaultData.employees)).map((employee) => {
+            const next = Object.assign({}, employee);
+            if (!next.statusLevel && next.status) {
+                next.statusLevel = mapStatusLevel(next.status);
+            }
+            return next;
+        });
+
+        return {
+            events: normalisedEvents,
+            employees: normalisedEmployees,
+        };
+    }
+
     function generateId(prefix) {
         const randomPart = Math.random().toString(36).slice(2, 8);
         const timePart = Date.now().toString(36);
@@ -498,6 +706,14 @@
         },
         getEvents() {
             return clone(readRaw().events);
+        },
+        getEvent(eventId) {
+            if (!eventId) {
+                return null;
+            }
+
+            const event = readRaw().events.find((item) => item.id === eventId);
+            return event ? clone(event) : null;
         },
         getEmployees() {
             return clone(readRaw().employees);
@@ -527,20 +743,29 @@
                     lastReminderSent: null,
                 },
                 eventInput
+            const event = normaliseEvent(
+                Object.assign(
+                    {
+                        id: generateId('evt'),
+                        createdAt: Date.now(),
+                    },
+                    eventInput || {}
+                )
             );
 
-            if (!event.statusLevel) {
-                event.statusLevel = mapStatusLevel(event.status);
-            }
-            if (!event.staffingLevel) {
-                event.staffingLevel = mapStatusLevel(event.staffingStatus);
-            }
-
+            const normalisedEvent = normaliseEvent(event);
+            snapshot.events.push(normalisedEvent);
+            writeRaw(snapshot);
+            return clone(normalisedEvent);
             snapshot.events.push(event);
             writeRaw(snapshot);
             return clone(event);
         },
         removeEvent(eventId) {
+            if (!eventId) {
+                return;
+            }
+
             const snapshot = readRaw();
             snapshot.events = snapshot.events.filter((event) => event.id !== eventId);
             writeRaw(snapshot);
@@ -552,6 +777,7 @@
 
             const snapshot = readRaw();
             const index = snapshot.events.findIndex((event) => event.id === eventId);
+
             if (index === -1) {
                 return null;
             }
@@ -567,7 +793,81 @@
             }
             if (Object.prototype.hasOwnProperty.call(patch, 'staffingStatus')) {
                 nextEvent.staffingLevel = mapStatusLevel(nextEvent.staffingStatus);
+            const nextEvent = Object.assign({}, current, patch);
+            const normalisedEvent = normaliseEvent(nextEvent);
+            snapshot.events[index] = normalisedEvent;
+            writeRaw(snapshot);
+            return clone(normalisedEvent);
+        },
+        addChecklistItem(eventId, label) {
+            if (!label) {
+                return null;
             }
+
+            const trimmed = String(label).trim();
+            if (!trimmed) {
+                return null;
+            }
+
+            const snapshot = readRaw();
+            const target = snapshot.events.find((event) => event.id === eventId);
+            if (!target) {
+                return null;
+            }
+
+            const item = {
+                id: generateId('chk'),
+                label: trimmed,
+                completed: false,
+            };
+
+            target.checklist = normaliseChecklist((target.checklist || []).concat(item));
+            writeRaw(snapshot);
+            return clone(item);
+        },
+        updateChecklistItem(eventId, itemId, updates) {
+            const snapshot = readRaw();
+            const target = snapshot.events.find((event) => event.id === eventId);
+            if (!target || !Array.isArray(target.checklist)) {
+                return null;
+            }
+
+            const index = target.checklist.findIndex((item) => item.id === itemId);
+            if (index === -1) {
+                return null;
+            }
+
+            const current = target.checklist[index];
+            const patch = typeof updates === 'function' ? updates(clone(current)) : updates;
+            target.checklist[index] = Object.assign({}, current, patch);
+            target.checklist = normaliseChecklist(target.checklist);
+            writeRaw(snapshot);
+            return clone(target.checklist[index]);
+        },
+        removeChecklistItem(eventId, itemId) {
+            const snapshot = readRaw();
+            const target = snapshot.events.find((event) => event.id === eventId);
+            if (!target || !Array.isArray(target.checklist)) {
+                return;
+            }
+
+            target.checklist = normaliseChecklist(target.checklist.filter((item) => item.id !== itemId));
+            writeRaw(snapshot);
+        },
+        savePrepSheet(eventId, prepSheet) {
+            const snapshot = readRaw();
+            const target = snapshot.events.find((event) => event.id === eventId);
+            if (!target) {
+                return null;
+            }
+
+            target.prepSheet = sanitisePrepSheet(prepSheet);
+            const patch = typeof updates === 'function' ? updates(clone(current)) : updates || {};
+            const nextEvent = normaliseEvent(
+                Object.assign({}, current, patch, {
+                    updatedAt: Date.now(),
+                })
+            );
 
             snapshot.events[index] = nextEvent;
             writeRaw(snapshot);
@@ -577,6 +877,7 @@
             const ids = Array.isArray(staffIds) ? staffIds.filter(Boolean) : [];
             const snapshot = readRaw();
             const index = snapshot.events.findIndex((event) => event.id === eventId);
+
             if (index === -1) {
                 return null;
             }
@@ -603,30 +904,40 @@
                 staffingLevel: mapStatusLevel(staffingStatus),
                 updatedAt: Date.now(),
             });
+            const nextEvent = normaliseEvent(
+                Object.assign({}, current, {
+                    assignedStaffIds: ids,
+                    staffingStatus,
+                    staffingLevel: mapStatusLevel(staffingStatus),
+                    updatedAt: Date.now(),
+                })
+            );
 
             snapshot.events[index] = nextEvent;
             writeRaw(snapshot);
-            return clone(nextEvent);
+            return clone(target.prepSheet);
         },
         addEmployee(employeeInput) {
             const snapshot = readRaw();
-            const employee = Object.assign(
-                {
-                    id: generateId('emp'),
-                    createdAt: Date.now(),
-                },
-                employeeInput
+            const employee = normaliseEmployee(
+                Object.assign(
+                    {
+                        id: generateId('emp'),
+                        createdAt: Date.now(),
+                    },
+                    employeeInput || {}
+                )
             );
-
-            if (!employee.statusLevel) {
-                employee.statusLevel = mapStatusLevel(employee.status);
-            }
 
             snapshot.employees.push(employee);
             writeRaw(snapshot);
             return clone(employee);
         },
         removeEmployee(employeeId) {
+            if (!employeeId) {
+                return;
+            }
+
             const snapshot = readRaw();
             snapshot.employees = snapshot.employees.filter((employee) => employee.id !== employeeId);
             writeRaw(snapshot);
