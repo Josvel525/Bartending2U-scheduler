@@ -47,7 +47,7 @@
             </div>
         </section>
 
-        <section class="content-card">
+        <section id="calendar-overview" class="content-card" data-subsection="Monthly overview">
             <div class="card-header">
                 <div>
                     <h2 class="card-title" id="calendarMonthHeading">Monthly overview</h2>
@@ -58,7 +58,7 @@
         </section>
 
         <section class="split-layout">
-            <article class="content-card">
+            <article id="prep-checklist" class="content-card" data-subsection="Prep checklist">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Prep checklist</h2>
@@ -73,7 +73,7 @@
                 </div>
             </article>
 
-            <article class="content-card">
+            <article id="week-glance" class="content-card" data-subsection="Week at a glance">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Week at a glance</h2>
@@ -295,5 +295,6 @@
 
         renderCalendarPage();
     </script>
+    <script src="app.js"></script>
 </body>
 </html>

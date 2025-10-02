@@ -42,12 +42,12 @@
                 <p class="lead-text">Glance through every celebration, from contracted events to pending tastings, and manage staffing in one place.</p>
             </div>
             <div class="hero-actions">
-                <a class="button primary" href="#new-event">Log new booking</a>
+                <a class="button primary" href="#new-event" data-subsection-target="new-event">Log new booking</a>
                 <a class="secondary-link" href="calendar.html">Sync with calendar →</a>
             </div>
         </section>
 
-        <section class="content-card">
+        <section id="event-pipeline" class="content-card" data-subsection="Event pipeline">
             <div class="card-header">
                 <div>
                     <h2 class="card-title">Event pipeline</h2>
@@ -78,7 +78,7 @@
             </div>
         </section>
 
-        <section id="new-event" class="content-card">
+        <section id="new-event" class="content-card" data-subsection="Create new event">
             <div class="card-header">
                 <div>
                     <h2 class="card-title">Create new event</h2>
@@ -392,5 +392,6 @@
 
         renderEvents();
     </script>
+    <script src="app.js"></script>
 </body>
 </html>

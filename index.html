@@ -39,7 +39,7 @@
             <div>
                 <p class="page-eyebrow">Dashboard</p>
                 <h1 class="page-title">Welcome back, Admin!</h1>
-                <p class="lead-text">Stay ahead of every tasting, private party, and corporate gathering with a real-time pulse on staffing and logistics.</p>
+                <p class="lead-text">Keep tabs on staffing and logistics for every upcoming event.</p>
             </div>
             <div class="hero-actions">
                 <a class="button primary" href="events.html">Schedule an Event</a>
@@ -47,7 +47,7 @@
             </div>
         </section>
 
-        <section class="card-grid stats-grid">
+        <section id="dashboard-stats" class="card-grid stats-grid" data-subsection="At-a-glance">
             <article class="stat-card">
                 <span class="stat-card__label">Total events</span>
                 <span class="stat-card__value" id="totalEventsStat">0</span>
@@ -71,7 +71,7 @@
         </section>
 
         <section class="split-layout">
-            <article class="content-card">
+            <article id="recent-activity" class="content-card" data-subsection="Recent activity">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Recent activity</h2>
@@ -82,7 +82,7 @@
                 <div class="timeline" id="activityFeed"></div>
             </article>
 
-            <article class="content-card">
+            <article id="critical-alerts" class="content-card" data-subsection="Critical alerts">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Critical alerts</h2>
@@ -470,5 +470,6 @@
             updateStats(events, employees);
         }
     </script>
+    <script src="app.js"></script>
 </body>
 </html>

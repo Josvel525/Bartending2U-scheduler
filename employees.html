@@ -30,7 +30,7 @@
                 <a class="nav-link" href="settings.html">Settings</a>
             </nav>
 
-            <a class="cta-button" href="#add-employee">+ Add Team Member</a>
+            <a class="cta-button" href="#add-employee" data-subsection-target="add-employee">+ Add Team Member</a>
         </div>
     </header>
 
@@ -42,12 +42,12 @@
                 <p class="lead-text">Track availability, assign shifts, and empower your crew to deliver world-class service.</p>
             </div>
             <div class="hero-actions">
-                <a class="button primary" href="#add-employee">Invite teammate</a>
+                <a class="button primary" href="#add-employee" data-subsection-target="add-employee">Add teammate</a>
                 <a class="secondary-link" href="events.html">Match to events →</a>
             </div>
         </section>
 
-        <section class="card-grid stats-grid">
+        <section id="team-snapshot" class="card-grid stats-grid" data-subsection="Team snapshot">
             <article class="stat-card">
                 <span class="stat-card__label">Active staff</span>
                 <span class="stat-card__value" id="activeStaffStat">0</span>
@@ -57,6 +57,8 @@
                 <span class="stat-card__label">Roles covered</span>
                 <span class="stat-card__value" id="rolesCoveredStat" style="font-size:1.8rem;">0</span>
                 <span class="stat-card__meta" id="rolesCoveredMeta">Add team members to broaden expertise.</span>
+                <span class="stat-card__value" style="font-size:1.8rem;">4</span>
+                <span class="stat-card__meta">Bartender, Barback, Server, Support</span>
             </article>
             <article class="stat-card">
                 <span class="stat-card__label">Upcoming PTO</span>
@@ -65,7 +67,7 @@
             </article>
         </section>
 
-        <section class="content-card">
+        <section id="team-directory" class="content-card" data-subsection="Team directory">
             <div class="card-header">
                 <div>
                     <h2 class="card-title">Team directory</h2>
@@ -73,10 +75,42 @@
                 </div>
             </div>
             <div class="list-grid" id="teamList"></div>
+            <div class="list-grid">
+                <article class="person-card">
+                    <h3 class="person-card__name">John Doe</h3>
+                    <p class="person-card__role">Bartender · Lead flair specialist</p>
+                    <div class="person-card__status"><span class="badge success">Available</span></div>
+                </article>
+                <article class="person-card">
+                    <h3 class="person-card__name">Jane Smith</h3>
+                    <p class="person-card__role">Server · Guest experience lead</p>
+                    <div class="person-card__status"><span class="badge warning">On PTO</span></div>
+                </article>
+                <article class="person-card">
+                    <h3 class="person-card__name">Alex Rivera</h3>
+                    <p class="person-card__role">Bartender · Bilingual</p>
+                    <div class="person-card__status"><span class="badge success">Available</span></div>
+                </article>
+                <article class="person-card">
+                    <h3 class="person-card__name">Priya Singh</h3>
+                    <p class="person-card__role">Barback · Seasonal cocktail prep</p>
+                    <div class="person-card__status"><span class="badge success">Available</span></div>
+                </article>
+                <article class="person-card">
+                    <h3 class="person-card__name">Jamie Lee</h3>
+                    <p class="person-card__role">General support staff · Prep specialist</p>
+                    <div class="person-card__status"><span class="badge warning">Limited hours</span></div>
+                </article>
+                <article class="person-card">
+                    <h3 class="person-card__name">Marcus Allen</h3>
+                    <p class="person-card__role">Barback · Logistics</p>
+                    <div class="person-card__status"><span class="badge success">Available</span></div>
+                </article>
+            </div>
         </section>
 
         <section class="split-layout">
-            <article class="content-card">
+            <article id="upcoming-shifts" class="content-card" data-subsection="Upcoming shifts">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Upcoming shifts</h2>
@@ -87,14 +121,16 @@
                 <div class="timeline" id="upcomingShifts"></div>
             </article>
 
-            <article id="add-employee" class="content-card">
+            <article id="add-employee" class="content-card" data-subsection="Add team member">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Add team member</h2>
-                        <p class="card-subtitle">Invite freelancers or seasonal staff to upcoming shifts.</p>
+                        <p class="card-subtitle">Add new hires instantly and optionally invite them to the portal.</p>
                     </div>
                 </div>
                 <form id="teamForm">
+                <form>
+                    <p class="form-helper-text">Team members are added to your roster immediately. Check the box below if you'd like to send them a portal invite so they can review shifts, pay, and resources.</p>
                     <div class="form-grid">
                         <div class="form-field">
                             <label for="teamName">Name</label>
@@ -109,6 +145,9 @@
                                 <option>Bar Lead</option>
                                 <option>Support / Barback</option>
                                 <option>Event Captain</option>
+                                <option>Barback</option>
+                                <option>Server</option>
+                                <option>General Support Staff</option>
                             </select>
                         </div>
                         <div class="form-field">
@@ -133,9 +172,15 @@
                         <label for="teamNotes">Specialties & certifications</label>
                         <textarea id="teamNotes" name="notes" placeholder="E.g. flair bartending, wine pairing, bilingual"></textarea>
                     </div>
+                    <div class="form-field">
+                        <label class="checkbox-field" for="sendPortalInvite">
+                            <input id="sendPortalInvite" type="checkbox" />
+                            Send portal invite so they can view shifts and pay updates
+                        </label>
+                    </div>
                     <div class="table-actions" style="justify-content: flex-end;">
                         <button class="button ghost" type="reset">Clear</button>
-                        <button class="button primary" type="submit">Invite</button>
+                        <button class="button primary" type="submit">Add team member</button>
                     </div>
                 </form>
 
@@ -437,5 +482,6 @@
 
         refresh();
     </script>
+    <script src="app.js"></script>
 </body>
 </html>
