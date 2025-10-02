@@ -374,25 +374,6 @@
             }));
     }
 
-    function normaliseEvent(event) {
-        const next = Object.assign({}, event);
-
-        if (!next.statusLevel && next.status) {
-            next.statusLevel = mapStatusLevel(next.status);
-        }
-
-        if (!next.staffingLevel && next.staffingStatus) {
-            next.staffingLevel = mapStatusLevel(next.staffingStatus);
-        }
-
-        if (!Array.isArray(next.assignedTeam)) {
-            next.assignedTeam = [];
-        }
-
-        next.checklist = normaliseChecklist(next.checklist);
-        next.prepSheet = sanitisePrepSheet(next.prepSheet);
-
-        return next;
     function mapStatusLevel(value) {
         if (!value) {
             return 'neutral';
@@ -428,17 +409,18 @@
                 assignedTeam: [],
                 requiredStaff: 0,
                 lastReminderSent: null,
+                checklist: [],
+                prepSheet: {},
             },
             event || {}
         );
 
-        if (!Array.isArray(base.assignedStaffIds)) {
-            base.assignedStaffIds = [];
-        }
-
-        if (!Array.isArray(base.assignedTeam)) {
-            base.assignedTeam = [];
-        }
+        base.assignedStaffIds = Array.isArray(base.assignedStaffIds)
+            ? base.assignedStaffIds.filter(Boolean)
+            : [];
+        base.assignedTeam = Array.isArray(base.assignedTeam) ? base.assignedTeam.filter(Boolean) : [];
+        base.checklist = normaliseChecklist(base.checklist);
+        base.prepSheet = sanitisePrepSheet(base.prepSheet);
 
         if (!base.statusLevel && base.status) {
             base.statusLevel = mapStatusLevel(base.status);
@@ -461,17 +443,16 @@
         return base;
     }
 
-    function normalise(data) {
+    function normaliseData(data) {
         if (!data || typeof data !== 'object') {
             return clone(defaultData);
         }
 
-        const eventsSource = Array.isArray(data.events) ? data.events : defaultData.events;
-        const employeesSource = Array.isArray(data.employees) ? data.employees : defaultData.employees;
-
         return {
-            events: eventsSource.map((event) => normaliseEvent(event)),
-            employees: employeesSource.map((employee) => normaliseEmployee(employee)),
+            events: (Array.isArray(data.events) ? data.events : defaultData.events).map((event) => normaliseEvent(event)),
+            employees: (Array.isArray(data.employees) ? data.employees : defaultData.employees).map((employee) =>
+                normaliseEmployee(employee)
+            ),
         };
     }
 
@@ -512,11 +493,11 @@
             try {
                 const raw = global.localStorage.getItem(STORAGE_KEY);
                 if (raw) {
-                    cache = normalise(JSON.parse(raw));
+                    cache = normaliseData(JSON.parse(raw));
                     return cache;
                 }
 
-                const seeded = normalise(clone(defaultData));
+                const seeded = normaliseData(clone(defaultData));
                 global.localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
                 cache = seeded;
                 return cache;
@@ -526,7 +507,7 @@
         }
 
         if (!memoryStore) {
-            memoryStore = normalise(clone(defaultData));
+            memoryStore = normaliseData(clone(defaultData));
         }
 
         if (lower.includes('overdue') || lower.includes('behind') || lower.includes('lost')) {
@@ -663,7 +644,7 @@
     }
 
     function writeRaw(data) {
-        const payload = normalise(data);
+        const payload = normaliseData(data);
         cache = clone(payload);
 
         if (hasLocalStorage) {
@@ -753,10 +734,6 @@
                 )
             );
 
-            const normalisedEvent = normaliseEvent(event);
-            snapshot.events.push(normalisedEvent);
-            writeRaw(snapshot);
-            return clone(normalisedEvent);
             snapshot.events.push(event);
             writeRaw(snapshot);
             return clone(event);
@@ -783,6 +760,14 @@
             }
 
             const current = snapshot.events[index];
+            const patch = typeof updates === 'function' ? updates(clone(current)) : updates || {};
+            const nextEvent = normaliseEvent(
+                Object.assign({}, current, patch, {
+                    updatedAt: Date.now(),
+                })
+            );
+
+            snapshot.events[index] = nextEvent;
             const patch = typeof updates === 'function' ? updates(clone(current)) : updates;
             const nextEvent = Object.assign({}, current, patch, {
                 updatedAt: Date.now(),
@@ -797,7 +782,7 @@
             const normalisedEvent = normaliseEvent(nextEvent);
             snapshot.events[index] = normalisedEvent;
             writeRaw(snapshot);
-            return clone(normalisedEvent);
+            return clone(nextEvent);
         },
         addChecklistItem(eventId, label) {
             if (!label) {
@@ -810,68 +795,98 @@
             }
 
             const snapshot = readRaw();
-            const target = snapshot.events.find((event) => event.id === eventId);
-            if (!target) {
+            const index = snapshot.events.findIndex((event) => event.id === eventId);
+            if (index === -1) {
                 return null;
             }
 
+            const target = snapshot.events[index];
             const item = {
                 id: generateId('chk'),
                 label: trimmed,
                 completed: false,
             };
 
-            target.checklist = normaliseChecklist((target.checklist || []).concat(item));
-            writeRaw(snapshot);
-            return clone(item);
-        },
-        updateChecklistItem(eventId, itemId, updates) {
-            const snapshot = readRaw();
-            const target = snapshot.events.find((event) => event.id === eventId);
-            if (!target || !Array.isArray(target.checklist)) {
-                return null;
-            }
-
-            const index = target.checklist.findIndex((item) => item.id === itemId);
-            if (index === -1) {
-                return null;
-            }
-
-            const current = target.checklist[index];
-            const patch = typeof updates === 'function' ? updates(clone(current)) : updates;
-            target.checklist[index] = Object.assign({}, current, patch);
-            target.checklist = normaliseChecklist(target.checklist);
-            writeRaw(snapshot);
-            return clone(target.checklist[index]);
-        },
-        removeChecklistItem(eventId, itemId) {
-            const snapshot = readRaw();
-            const target = snapshot.events.find((event) => event.id === eventId);
-            if (!target || !Array.isArray(target.checklist)) {
-                return;
-            }
-
-            target.checklist = normaliseChecklist(target.checklist.filter((item) => item.id !== itemId));
-            writeRaw(snapshot);
-        },
-        savePrepSheet(eventId, prepSheet) {
-            const snapshot = readRaw();
-            const target = snapshot.events.find((event) => event.id === eventId);
-            if (!target) {
-                return null;
-            }
-
-            target.prepSheet = sanitisePrepSheet(prepSheet);
-            const patch = typeof updates === 'function' ? updates(clone(current)) : updates || {};
             const nextEvent = normaliseEvent(
-                Object.assign({}, current, patch, {
+                Object.assign({}, target, {
+                    checklist: normaliseChecklist((target.checklist || []).concat(item)),
                     updatedAt: Date.now(),
                 })
             );
 
             snapshot.events[index] = nextEvent;
             writeRaw(snapshot);
-            return clone(nextEvent);
+            return clone(item);
+        },
+        updateChecklistItem(eventId, itemId, updates) {
+            const snapshot = readRaw();
+            const index = snapshot.events.findIndex((event) => event.id === eventId);
+            if (index === -1) {
+                return null;
+            }
+
+            const target = snapshot.events[index];
+            const checklist = Array.isArray(target.checklist) ? target.checklist.slice() : [];
+            const itemIndex = checklist.findIndex((item) => item.id === itemId);
+            if (itemIndex === -1) {
+                return null;
+            }
+
+            const current = checklist[itemIndex];
+            const patch = typeof updates === 'function' ? updates(clone(current)) : updates || {};
+            checklist[itemIndex] = Object.assign({}, current, patch);
+
+            const nextEvent = normaliseEvent(
+                Object.assign({}, target, {
+                    checklist: normaliseChecklist(checklist),
+                    updatedAt: Date.now(),
+                })
+            );
+
+            snapshot.events[index] = nextEvent;
+            writeRaw(snapshot);
+            return clone(nextEvent.checklist[itemIndex]);
+        },
+        removeChecklistItem(eventId, itemId) {
+            const snapshot = readRaw();
+            const index = snapshot.events.findIndex((event) => event.id === eventId);
+            if (index === -1) {
+                return;
+            }
+
+            const target = snapshot.events[index];
+            const checklist = Array.isArray(target.checklist)
+                ? target.checklist.filter((item) => item.id !== itemId)
+                : [];
+
+            const nextEvent = normaliseEvent(
+                Object.assign({}, target, {
+                    checklist,
+                    updatedAt: Date.now(),
+                })
+            );
+
+            snapshot.events[index] = nextEvent;
+            writeRaw(snapshot);
+        },
+        savePrepSheet(eventId, prepSheet) {
+            const snapshot = readRaw();
+            const index = snapshot.events.findIndex((event) => event.id === eventId);
+            if (index === -1) {
+                return null;
+            }
+
+            const target = snapshot.events[index];
+            const nextEvent = normaliseEvent(
+                Object.assign({}, target, {
+                    prepSheet: sanitisePrepSheet(prepSheet),
+                    updatedAt: Date.now(),
+                })
+            );
+
+            snapshot.events[index] = nextEvent;
+            writeRaw(snapshot);
+            return clone(nextEvent.prepSheet);
         },
         assignStaff(eventId, staffIds) {
             const ids = Array.isArray(staffIds) ? staffIds.filter(Boolean) : [];
@@ -915,7 +930,7 @@
 
             snapshot.events[index] = nextEvent;
             writeRaw(snapshot);
-            return clone(target.prepSheet);
+            return clone(nextEvent);
         },
         addEmployee(employeeInput) {
             const snapshot = readRaw();
