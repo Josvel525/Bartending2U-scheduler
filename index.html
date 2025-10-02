@@ -75,10 +75,19 @@
                 <span class="stat-card__value" id="nextEventName" style="font-size:1.6rem;">No events scheduled</span>
                 <span class="stat-card__meta" id="nextEventMeta">Add an event to build your schedule.</span>
             </article>
-            <article class="stat-card">
+            <article class="stat-card stat-card--interactive">
                 <span class="stat-card__label">Action needed</span>
-                <span class="stat-card__value" id="actionNeededStat" style="color: var(--danger-500);">0</span>
-                <span class="stat-card__meta danger">Unassigned shifts</span>
+                <button
+                    type="button"
+                    class="stat-card__action"
+                    id="actionNeededTrigger"
+                    data-action-needed-trigger
+                    aria-haspopup="dialog"
+                    aria-controls="actionNeededDrawer"
+                >
+                    <span class="stat-card__value" id="actionNeededStat">0</span>
+                    <span class="stat-card__meta danger" id="actionNeededMeta">Unassigned shifts</span>
+                </button>
             </article>
         </section>
 
@@ -240,6 +249,32 @@
                 </table>
             </div>
         </section>
+        <div class="action-needed-overlay" id="actionNeededOverlay" hidden></div>
+        <aside
+            class="action-needed-drawer"
+            id="actionNeededDrawer"
+            role="dialog"
+            aria-modal="true"
+            aria-hidden="true"
+            aria-labelledby="actionNeededTitle"
+        >
+            <div class="action-needed-drawer__header">
+                <h2 class="action-needed-drawer__title" id="actionNeededTitle">Shifts needing staffing</h2>
+                <button type="button" class="icon-button" data-action-needed-close aria-label="Close action needed panel">
+                    ✕
+                </button>
+            </div>
+            <div class="action-needed-drawer__body">
+                <p class="action-needed-drawer__intro">
+                    Review events that still need staffing coverage and quickly assign available team members.
+                </p>
+                <div id="actionNeededFeedback" class="action-needed-drawer__feedback" role="status" aria-live="polite"></div>
+                <div id="actionNeededEmpty" class="action-needed-empty-state" hidden>
+                    All events are fully staffed. Great job!
+                </div>
+                <div id="actionNeededList" class="action-needed-list"></div>
+            </div>
+        </aside>
     </main>
 
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
@@ -507,6 +542,7 @@
             const nextEventName = document.getElementById('nextEventName');
             const nextEventMeta = document.getElementById('nextEventMeta');
             const actionNeeded = document.getElementById('actionNeededStat');
+            const actionNeededMeta = document.getElementById('actionNeededMeta');
 
             if (totalEvents) {
                 totalEvents.textContent = events.length;
@@ -520,6 +556,18 @@
             if (actionNeeded) {
                 const needsStaff = events.filter((event) => event.staffingLevel !== 'success').length;
                 actionNeeded.textContent = needsStaff;
+
+                if (actionNeededMeta) {
+                    actionNeededMeta.textContent =
+                        needsStaff === 0
+                            ? 'All staffed'
+                            : needsStaff === 1
+                            ? 'Shift needs staffing'
+                            : 'Unassigned shifts';
+
+                    actionNeededMeta.classList.toggle('danger', needsStaff > 0);
+                    actionNeededMeta.classList.toggle('success', needsStaff === 0);
+                }
             }
 
             if (nextEventName && nextEventMeta) {
@@ -544,17 +592,266 @@
             }
         }
 
+        function renderActionNeededDrawer(events, employees) {
+            const list = document.getElementById('actionNeededList');
+            const emptyState = document.getElementById('actionNeededEmpty');
+
+            if (!list || !emptyState) {
+                return;
+            }
+
+            list.innerHTML = '';
+
+            const needsStaff = events.filter((event) => event.staffingLevel !== 'success');
+            const availableEmployees = employees.filter((employee) => employee.statusLevel === 'success');
+
+            if (needsStaff.length === 0) {
+                emptyState.hidden = false;
+                return;
+            }
+
+            emptyState.hidden = true;
+
+            needsStaff
+                .sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b))
+                .forEach((event) => {
+                    const card = document.createElement('section');
+                    card.className = 'action-needed-item';
+
+                    const header = document.createElement('header');
+                    header.className = 'action-needed-item__header';
+
+                    const title = document.createElement('h3');
+                    title.className = 'action-needed-item__title';
+                    title.textContent = event.name;
+
+                    const date = document.createElement('p');
+                    date.className = 'action-needed-item__date';
+                    date.textContent = formatDateTime(event.date, event.time);
+
+                    header.appendChild(title);
+                    header.appendChild(date);
+                    card.appendChild(header);
+
+                    const status = document.createElement('p');
+                    status.className = 'action-needed-item__status';
+                    status.textContent = event.staffingStatus || 'Staffing pending';
+                    card.appendChild(status);
+
+                    const assignedNames = Array.isArray(event.assignedTeam)
+                        ? event.assignedTeam
+                              .map((id) => {
+                                  const match = employees.find((employee) => employee.id === id);
+                                  return match ? match.name : null;
+                              })
+                              .filter(Boolean)
+                        : [];
+
+                    if (assignedNames.length > 0) {
+                        const assigned = document.createElement('p');
+                        assigned.className = 'action-needed-item__assigned';
+                        assigned.textContent = `Currently assigned: ${assignedNames.join(', ')}`;
+                        card.appendChild(assigned);
+                    }
+
+                    const form = document.createElement('form');
+                    form.className = 'action-needed-form';
+                    form.dataset.eventId = event.id;
+
+                    const description = document.createElement('p');
+                    description.className = 'action-needed-form__help';
+                    description.textContent = 'Assign available team members to cover this event.';
+                    form.appendChild(description);
+
+                    if (availableEmployees.length === 0) {
+                        const noTeam = document.createElement('p');
+                        noTeam.className = 'action-needed-form__empty';
+                        noTeam.textContent = 'No team members are currently available. Update availability in the Employees tab.';
+                        form.appendChild(noTeam);
+                    } else {
+                        const checklist = document.createElement('div');
+                        checklist.className = 'action-needed-form__checklist';
+
+                        availableEmployees.forEach((employee) => {
+                            const wrapper = document.createElement('label');
+                            wrapper.className = 'action-needed-form__option';
+
+                            const input = document.createElement('input');
+                            input.type = 'checkbox';
+                            input.name = `assignment-${event.id}`;
+                            input.value = employee.id;
+                            input.checked = Array.isArray(event.assignedTeam) && event.assignedTeam.includes(employee.id);
+
+                            const span = document.createElement('span');
+                            span.innerHTML = `<strong>${employee.name}</strong><small>${employee.role}</small>`;
+
+                            wrapper.appendChild(input);
+                            wrapper.appendChild(span);
+                            checklist.appendChild(wrapper);
+                        });
+
+                        form.appendChild(checklist);
+                    }
+
+                    const actions = document.createElement('div');
+                    actions.className = 'action-needed-form__actions';
+
+                    const submit = document.createElement('button');
+                    submit.type = 'submit';
+                    submit.className = 'button primary';
+                    submit.textContent = 'Assign selected team';
+                    submit.disabled = availableEmployees.length === 0;
+
+                    actions.appendChild(submit);
+                    form.appendChild(actions);
+                    card.appendChild(form);
+                    list.appendChild(card);
+
+                });
+        }
+
+        function attachActionNeededHandlers(state) {
+            const trigger = document.querySelector('[data-action-needed-trigger]');
+            const drawer = document.getElementById('actionNeededDrawer');
+            const overlay = document.getElementById('actionNeededOverlay');
+            const closeButton = document.querySelector('[data-action-needed-close]');
+            const feedback = document.getElementById('actionNeededFeedback');
+
+            if (!trigger || !drawer) {
+                return;
+            }
+
+            const focusableSelectors = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+            let lastFocusedElement = null;
+
+            const setOpenState = (isOpen) => {
+                drawer.classList.toggle('open', isOpen);
+                drawer.setAttribute('aria-hidden', String(!isOpen));
+
+                if (overlay) {
+                    overlay.hidden = !isOpen;
+                    overlay.classList.toggle('open', isOpen);
+                }
+
+                document.body.classList.toggle('drawer-open', isOpen);
+
+                if (isOpen) {
+                    const focusable = drawer.querySelectorAll(focusableSelectors);
+                    if (focusable.length > 0) {
+                        focusable[0].focus();
+                    }
+                } else if (lastFocusedElement) {
+                    lastFocusedElement.focus();
+                    lastFocusedElement = null;
+                }
+            };
+
+            const openDrawer = () => {
+                lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+                if (feedback) {
+                    feedback.textContent = '';
+                }
+                renderActionNeededDrawer(state.events, state.employees);
+                setOpenState(true);
+            };
+
+            const closeDrawer = () => {
+                setOpenState(false);
+            };
+
+            trigger.addEventListener('click', () => {
+                if (trigger.disabled) {
+                    return;
+                }
+                openDrawer();
+            });
+
+            if (overlay) {
+                overlay.addEventListener('click', closeDrawer);
+            }
+
+            if (closeButton) {
+                closeButton.addEventListener('click', closeDrawer);
+            }
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape' && drawer.classList.contains('open')) {
+                    closeDrawer();
+                }
+            });
+
+            document.addEventListener('submit', (event) => {
+                const form = event.target;
+                if (!(form instanceof HTMLFormElement)) {
+                    return;
+                }
+
+                if (!form.classList.contains('action-needed-form')) {
+                    return;
+                }
+
+                event.preventDefault();
+                const eventId = form.dataset.eventId;
+                if (!eventId) {
+                    return;
+                }
+
+                const checked = Array.from(form.querySelectorAll('input[type="checkbox"]:checked'));
+                const selectedIds = checked.map((input) => input.value);
+
+                const assignedNames = state.employees
+                    .filter((employee) => selectedIds.includes(employee.id))
+                    .map((employee) => employee.name);
+
+                const staffingStatus = assignedNames.length
+                    ? `Assigned team: ${assignedNames.join(', ')}`
+                    : 'Staffing pending';
+                const staffingLevel = assignedNames.length ? 'success' : 'warning';
+
+                store.updateEvent(eventId, {
+                    assignedTeam: selectedIds,
+                    staffingStatus,
+                    staffingLevel,
+                });
+
+                state.events = store.getEvents();
+                state.employees = store.getEmployees();
+
+                renderActivity(state.events, state.employees);
+                renderDashboardEvents(
+                    state.events
+                        .slice()
+                        .sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b))
+                );
+                renderStaffingAlerts(state.events);
+                updateStats(state.events, state.employees);
+                renderActionNeededDrawer(state.events, state.employees);
+
+                if (feedback) {
+                    const updatedEvent = state.events.find((item) => item.id === eventId);
+                    feedback.textContent = assignedNames.length
+                        ? `${updatedEvent ? updatedEvent.name : 'Event'} now has ${assignedNames.length} team member${assignedNames.length === 1 ? '' : 's'} assigned.`
+                        : 'Assignment removed. This event still needs staffing.';
+                }
+            });
+        }
+
         if (store) {
-            const events = store.getEvents();
-            const employees = store.getEmployees();
-            renderActivity(events, employees);
+            const state = {
+                events: store.getEvents(),
+                employees: store.getEmployees(),
+            };
+
+            renderActivity(state.events, state.employees);
             renderDashboardEvents(
-                events
+                state.events
                     .slice()
                     .sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b))
             );
-            renderStaffingAlerts(events);
-            updateStats(events, employees);
+            renderStaffingAlerts(state.events);
+            updateStats(state.events, state.employees);
+            renderActionNeededDrawer(state.events, state.employees);
+            attachActionNeededHandlers(state);
         }
     </script>
     <script src="app.js"></script>
