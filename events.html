@@ -49,8 +49,8 @@
         <section class="page-header">
             <div>
                 <p class="page-eyebrow">Events</p>
-                <h1 class="page-title">Booked experiences & proposals</h1>
-                <p class="lead-text">Glance through every celebration, from contracted events to pending tastings, and manage staffing in one place.</p>
+                <h1 class="page-title">Manage events</h1>
+                <p class="lead-text">Track confirmed gigs, proposals, and staffing status in one place.</p>
             </div>
             <div class="hero-actions">
                 <a class="button primary" href="#new-event" data-subsection-target="new-event">Log new booking</a>
@@ -62,7 +62,7 @@
             <div class="card-header">
                 <div>
                     <h2 class="card-title">Event pipeline</h2>
-                    <p class="card-subtitle">Filter the engagements you care about and track readiness at a glance.</p>
+                    <p class="card-subtitle">Filter bookings, review details, and update staffing.</p>
                 </div>
             </div>
             <div class="tab-bar">
@@ -94,9 +94,12 @@
                 <div>
                     <h2 class="card-title">Create new event</h2>
                     <p class="card-subtitle">Capture the essentials, assign talent, and keep clients delighted.</p>
+                    <p class="form-mode-indicator" id="eventFormModeIndicator" aria-live="polite"></p>
+                    <p class="card-subtitle">Log the basics, set staffing needs, and keep notes handy.</p>
                 </div>
             </div>
             <form id="eventForm">
+                <input id="eventId" name="id" type="hidden" />
                 <div class="form-grid">
                     <div class="form-field">
                         <label for="eventName">Event name</label>
@@ -131,6 +134,10 @@
                     <div class="form-field">
                         <label for="eventPayout">Estimated payout (USD)</label>
                         <input id="eventPayout" name="payout" type="number" min="0" step="50" placeholder="0" />
+                    </div>
+                    <div class="form-field">
+                        <label for="requiredStaff">Target staff count</label>
+                        <input id="requiredStaff" name="requiredStaff" type="number" min="0" step="1" placeholder="0" />
                     </div>
                 </div>
                 <div class="form-grid">
@@ -215,10 +222,24 @@
         </template>
     </main>
 
+    <div class="modal-backdrop" id="modalBackdrop" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <div class="modal__header">
+                <h2 class="modal__title" id="modalTitle">Event</h2>
+                <button class="modal__close" type="button" data-modal-close aria-label="Close dialog">✕</button>
+            </div>
+            <div class="modal__body" id="modalBody"></div>
+            <div class="modal__footer" id="modalFooter"></div>
+        </div>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
     <script src="scripts.js"></script>
     <script src="storage.js"></script>
+
     <script>
         const navToggle = document.getElementById('mobileNavToggle');
         const nav = document.getElementById('primaryNav');
@@ -233,6 +254,9 @@
         const tableBody = document.getElementById('eventsTableBody');
         const form = document.getElementById('eventForm');
         const tabs = document.querySelectorAll('.tab');
+        const submitButton = form ? form.querySelector('[type="submit"]') : null;
+        const modeIndicator = document.getElementById('eventFormModeIndicator');
+        const hiddenIdField = document.getElementById('eventId');
         let activeFilter = 'all';
         const modal = document.getElementById('eventModal');
         const modalTitleEl = modal ? modal.querySelector('#eventModalTitle') : null;
@@ -242,6 +266,140 @@
         const prepSheetTemplate = document.getElementById('prepSheetTemplate');
         let activeModal = null;
         let activeEvent = null;
+        let editingEventId = null;
+
+        const defaultStatusValue = 'Confirmed';
+        const defaultStaffingValue = 'Fully staffed';
+        const modalBackdrop = document.getElementById('modalBackdrop');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalBody = document.getElementById('modalBody');
+        const modalFooter = document.getElementById('modalFooter');
+        const toast = document.getElementById('toast');
+
+        const currencyFormatter = new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            maximumFractionDigits: 0,
+        });
+        const dateFormatter = new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+        });
+        const dateTimeFormatter = new Intl.DateTimeFormat('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+        });
+        const relativeFormatter = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+
+        const state = {
+            filter: 'all',
+            events: [],
+            employees: [],
+            employeeMap: new Map(),
+        };
+
+        let toastTimeoutId = null;
+
+        function showToast(message, variant = 'info') {
+            if (!toast) {
+                return;
+            }
+
+            toast.textContent = message;
+            toast.dataset.variant = variant;
+            toast.classList.remove('toast--visible');
+            void toast.offsetWidth;
+            toast.classList.add('toast--visible');
+
+            if (toastTimeoutId) {
+                clearTimeout(toastTimeoutId);
+            }
+
+            toastTimeoutId = setTimeout(() => {
+                toast.classList.remove('toast--visible');
+            }, 3200);
+        }
+
+        function closeModal() {
+            if (!modalBackdrop) {
+                return;
+            }
+
+            modalBackdrop.classList.remove('is-visible');
+            modalBackdrop.hidden = true;
+            if (modalBody) {
+                modalBody.innerHTML = '';
+            }
+            if (modalFooter) {
+                modalFooter.innerHTML = '';
+            }
+            document.body.classList.remove('modal-open');
+        }
+
+        function openModal(options) {
+            if (!modalBackdrop || !modalTitle || !modalBody || !modalFooter) {
+                return;
+            }
+
+            closeModal();
+
+            const { title, body, actions = [] } = options || {};
+
+            modalTitle.textContent = title || 'Details';
+
+            if (body instanceof Element) {
+                modalBody.innerHTML = '';
+                modalBody.appendChild(body);
+            } else if (typeof body === 'string') {
+                modalBody.innerHTML = body;
+            } else {
+                modalBody.innerHTML = '<p class="empty-state">Nothing to show.</p>';
+            }
+
+            modalFooter.innerHTML = '';
+            actions.forEach((action) => {
+                const button = document.createElement('button');
+                button.type = action.type || 'button';
+                button.className = `button ${action.variant || 'ghost'}`;
+                button.textContent = action.label || 'Action';
+
+                if (typeof action.onClick === 'function') {
+                    button.addEventListener('click', action.onClick);
+                }
+
+                modalFooter.appendChild(button);
+            });
+
+            modalBackdrop.hidden = false;
+            requestAnimationFrame(() => {
+                modalBackdrop.classList.add('is-visible');
+            });
+            document.body.classList.add('modal-open');
+        }
+
+        if (modalBackdrop) {
+            modalBackdrop.addEventListener('click', (event) => {
+                if (event.target === modalBackdrop) {
+                    closeModal();
+                }
+            });
+        }
+
+        document.querySelectorAll('[data-modal-close]').forEach((button) => {
+            button.addEventListener('click', () => {
+                closeModal();
+            });
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && modalBackdrop && !modalBackdrop.hidden) {
+                closeModal();
+            }
+        });
 
         function formatDate(dateStr, timeStr) {
             if (!dateStr) {
@@ -253,32 +411,14 @@
                 return 'Date TBC';
             }
 
-            return new Intl.DateTimeFormat('en-US', {
-                month: 'short',
-                day: 'numeric',
-                year: 'numeric',
-                hour: timeStr ? 'numeric' : undefined,
-                minute: timeStr ? '2-digit' : undefined,
-            }).format(date);
+            return timeStr ? dateTimeFormatter.format(date) : dateFormatter.format(date);
         }
 
         function formatCurrency(amount) {
-            if (!amount && amount !== 0) {
+            if (typeof amount !== 'number' || Number.isNaN(amount)) {
                 return '$0';
             }
-
-            return new Intl.NumberFormat('en-US', {
-                style: 'currency',
-                currency: 'USD',
-                maximumFractionDigits: 0,
-            }).format(amount);
-        }
-
-        function createBadge(text, level) {
-            const badge = document.createElement('span');
-            badge.className = `badge ${level || 'neutral'}`;
-            badge.textContent = text;
-            return badge;
+            return currencyFormatter.format(amount);
         }
 
         function formatModalSubtitle(event) {
@@ -550,8 +690,35 @@
             return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
         }
 
+        function refreshData() {
+            if (!store) {
+                state.events = [];
+                state.employees = [];
+                state.employeeMap.clear();
+                return;
+            }
+
+            state.events = store.getEvents();
+            state.employees = store.getEmployees();
+            state.employeeMap.clear();
+            state.employees.forEach((employee) => {
+                state.employeeMap.set(employee.id, employee);
+            });
+        }
+
+        function getStaffNames(ids) {
+            if (!Array.isArray(ids) || ids.length === 0) {
+                return [];
+            }
+
+            return ids
+                .map((id) => state.employeeMap.get(id))
+                .filter(Boolean)
+                .map((employee) => employee.name);
+        }
+
         function filterEvents(events) {
-            switch (activeFilter) {
+            switch (state.filter) {
                 case 'confirmed':
                     return events.filter((event) => event.statusLevel === 'success');
                 case 'pending':
@@ -561,6 +728,70 @@
                 default:
                     return events;
             }
+        }
+
+        function createBadge(text, level) {
+            const badge = document.createElement('span');
+            badge.className = `badge ${level || 'neutral'}`;
+            badge.textContent = text;
+            return badge;
+        }
+
+        function getStaffingSummary(event) {
+            const names = getStaffNames(event.assignedStaffIds || []);
+            const required = typeof event.requiredStaff === 'number' && event.requiredStaff > 0 ? event.requiredStaff : 0;
+            const summary = {
+                text: event.staffingStatus || 'Unassigned',
+                title: event.staffingStatus || 'Unassigned',
+            };
+
+            if (names.length) {
+                if (required) {
+                    summary.text = `${names.length}/${required} assigned`;
+                } else {
+                    summary.text = `${names.length} assigned`;
+                }
+                summary.title = names.join(', ');
+            }
+
+            return summary;
+        }
+
+        function getActionsForEvent(event) {
+            const actions = [
+                { id: 'view', label: 'View' },
+                { id: 'staff', label: 'Staff' },
+                { id: 'notes', label: 'Notes' },
+            ];
+
+            if (event.statusLevel === 'success') {
+                actions.push({ id: 'checklist', label: 'Checklist' });
+            } else {
+                actions.push({ id: 'reminder', label: 'Send reminder' });
+            }
+
+            actions.push({ id: 'remove', label: 'Remove', variant: 'danger' });
+            return actions;
+        }
+
+        function formatRelativeTime(timestamp) {
+            if (!timestamp) {
+                return 'Never';
+            }
+
+            const diff = timestamp - Date.now();
+            const minutes = Math.round(diff / (1000 * 60));
+            if (Math.abs(minutes) < 60) {
+                return relativeFormatter.format(minutes, 'minute');
+            }
+
+            const hours = Math.round(diff / (1000 * 60 * 60));
+            if (Math.abs(hours) < 24) {
+                return relativeFormatter.format(hours, 'hour');
+            }
+
+            const days = Math.round(diff / (1000 * 60 * 60 * 24));
+            return relativeFormatter.format(days, 'day');
         }
 
         function renderEvents() {
@@ -582,8 +813,7 @@
             }
 
             const events = filterEvents(
-                store
-                    .getEvents()
+                state.events
                     .slice()
                     .sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b))
             );
@@ -601,15 +831,19 @@
 
             events.forEach((event) => {
                 const row = document.createElement('tr');
+                row.dataset.eventId = event.id;
 
                 const nameCell = document.createElement('td');
                 nameCell.textContent = event.name;
+                row.appendChild(nameCell);
 
                 const dateCell = document.createElement('td');
                 dateCell.textContent = formatDate(event.date, event.time);
+                row.appendChild(dateCell);
 
                 const locationCell = document.createElement('td');
                 locationCell.textContent = event.location || 'Location TBC';
+                row.appendChild(locationCell);
 
                 const packageCell = document.createElement('td');
                 const packageParts = [];
@@ -619,16 +853,22 @@
                 if (event.guestCount) {
                     packageParts.push(`${event.guestCount} guests`);
                 }
-                if (event.payout) {
+                if (typeof event.payout === 'number' && event.payout > 0) {
                     packageParts.push(formatCurrency(event.payout));
                 }
                 packageCell.textContent = packageParts.join(' · ') || 'Package TBC';
+                row.appendChild(packageCell);
 
                 const statusCell = document.createElement('td');
                 statusCell.appendChild(createBadge(event.status || 'Pending', event.statusLevel));
+                row.appendChild(statusCell);
 
                 const staffingCell = document.createElement('td');
-                staffingCell.appendChild(createBadge(event.staffingStatus || 'Unassigned', event.staffingLevel));
+                const staffingSummary = getStaffingSummary(event);
+                const staffingBadge = createBadge(staffingSummary.text, event.staffingLevel);
+                staffingBadge.title = staffingSummary.title;
+                staffingCell.appendChild(staffingBadge);
+                row.appendChild(staffingCell);
 
                 const actionsCell = document.createElement('td');
                 actionsCell.className = 'table-actions';
@@ -651,6 +891,11 @@
                 prepButton.dataset.eventAction = 'prep';
                 prepButton.dataset.eventId = event.id;
                 prepButton.textContent = 'Prep sheet';
+                const editButton = document.createElement('button');
+                editButton.type = 'button';
+                editButton.className = 'card-action link-button';
+                editButton.dataset.editEvent = event.id;
+                editButton.textContent = 'Modify';
 
                 const removeButton = document.createElement('button');
                 removeButton.type = 'button';
@@ -661,17 +906,322 @@
                 actionsCell.appendChild(viewLink);
                 actionsCell.appendChild(checklistButton);
                 actionsCell.appendChild(prepButton);
+                actionsCell.appendChild(editButton);
                 actionsCell.appendChild(removeButton);
+                getActionsForEvent(event).forEach((action) => {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'card-action link-button';
+                    if (action.variant === 'danger') {
+                        button.classList.add('card-action--danger');
+                    }
+                    button.dataset.action = action.id;
+                    button.dataset.eventId = event.id;
+                    button.textContent = action.label;
+                    actionsCell.appendChild(button);
+                });
 
-                row.appendChild(nameCell);
-                row.appendChild(dateCell);
-                row.appendChild(locationCell);
-                row.appendChild(packageCell);
-                row.appendChild(statusCell);
-                row.appendChild(staffingCell);
                 row.appendChild(actionsCell);
                 tableBody.appendChild(row);
             });
+        }
+
+        function handleViewEvent(eventData) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'modal-section';
+
+            const list = document.createElement('dl');
+            list.className = 'modal-summary';
+
+            const addEntry = (label, value) => {
+                const dt = document.createElement('dt');
+                dt.textContent = label;
+                const dd = document.createElement('dd');
+                dd.textContent = value;
+                list.appendChild(dt);
+                list.appendChild(dd);
+            };
+
+            addEntry('Date', formatDate(eventData.date, eventData.time));
+            addEntry('Location', eventData.location || 'Not set');
+            addEntry('Package', eventData.package || 'Not set');
+            addEntry('Guests', eventData.guestCount ? String(eventData.guestCount) : 'Not set');
+            addEntry('Payout', eventData.payout ? formatCurrency(eventData.payout) : 'Not set');
+            addEntry('Status', eventData.status || 'Pending');
+
+            const staffingSummary = getStaffingSummary(eventData);
+            addEntry('Staffing', staffingSummary.text);
+            addEntry('Last reminder', eventData.lastReminderSent ? `${formatRelativeTime(eventData.lastReminderSent)} · ${dateTimeFormatter.format(new Date(eventData.lastReminderSent))}` : 'Never');
+
+            wrapper.appendChild(list);
+
+            const notesHeading = document.createElement('h4');
+            notesHeading.textContent = 'Notes';
+            notesHeading.className = 'modal-subheading';
+            wrapper.appendChild(notesHeading);
+
+            const notes = document.createElement('p');
+            notes.className = 'modal-notes';
+            notes.textContent = eventData.notes ? eventData.notes : 'No notes yet.';
+            wrapper.appendChild(notes);
+
+            openModal({
+                title: eventData.name,
+                body: wrapper,
+                actions: [{ label: 'Close', variant: 'primary', onClick: closeModal }],
+            });
+        }
+
+        function handleStaffEvent(eventData) {
+            const formElement = document.createElement('form');
+            formElement.className = 'modal-form';
+
+            const helper = document.createElement('p');
+            helper.className = 'form-helper';
+            const required = typeof eventData.requiredStaff === 'number' && eventData.requiredStaff > 0 ? eventData.requiredStaff : 0;
+            helper.textContent = required
+                ? `Select up to ${required} team member${required === 1 ? '' : 's'}.`
+                : 'Select the team members you want to assign.';
+            formElement.appendChild(helper);
+
+            const list = document.createElement('div');
+            list.className = 'staff-picker';
+            formElement.appendChild(list);
+
+            const assignedSet = new Set(eventData.assignedStaffIds || []);
+
+            if (state.employees.length === 0) {
+                const empty = document.createElement('p');
+                empty.className = 'empty-state';
+                empty.textContent = 'Add team members first to assign staffing.';
+                formElement.appendChild(empty);
+            }
+
+            state.employees.forEach((employee) => {
+                const label = document.createElement('label');
+                label.className = 'staff-picker__item';
+
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.name = 'staffMembers';
+                checkbox.value = employee.id;
+                checkbox.checked = assignedSet.has(employee.id);
+
+                const name = document.createElement('span');
+                name.className = 'staff-picker__name';
+                name.textContent = employee.name;
+
+                const role = document.createElement('span');
+                role.className = 'staff-picker__meta';
+                role.textContent = employee.role || '';
+
+                const status = document.createElement('span');
+                status.className = `badge ${employee.statusLevel || 'neutral'}`;
+                status.textContent = employee.status || 'Status TBC';
+
+                label.appendChild(checkbox);
+                label.appendChild(name);
+                label.appendChild(role);
+                label.appendChild(status);
+
+                list.appendChild(label);
+            });
+
+            formElement.addEventListener('submit', (event) => {
+                event.preventDefault();
+                if (!store) {
+                    return;
+                }
+
+                const selected = Array.from(formElement.querySelectorAll('input[name="staffMembers"]:checked')).map((input) => input.value);
+                store.assignStaff(eventData.id, selected);
+                closeModal();
+                showToast('Staff assignments saved', 'success');
+                refreshData();
+                renderEvents();
+            });
+
+            openModal({
+                title: `Assign staff · ${eventData.name}`,
+                body: formElement,
+                actions: [
+                    { label: 'Cancel', variant: 'ghost', onClick: closeModal },
+                    { label: 'Save assignments', variant: 'primary', onClick: () => formElement.requestSubmit() },
+                ],
+            });
+
+            const firstCheckbox = formElement.querySelector('input[type="checkbox"]');
+            if (firstCheckbox) {
+                firstCheckbox.focus();
+            }
+        }
+
+        function handleNotesEvent(eventData) {
+            const formElement = document.createElement('form');
+            formElement.className = 'modal-form';
+
+            const label = document.createElement('label');
+            label.className = 'form-field';
+            const span = document.createElement('span');
+            span.textContent = 'Notes';
+            const textarea = document.createElement('textarea');
+            textarea.name = 'notes';
+            textarea.rows = 6;
+            textarea.value = eventData.notes || '';
+            label.appendChild(span);
+            label.appendChild(textarea);
+
+            formElement.appendChild(label);
+
+            const helper = document.createElement('p');
+            helper.className = 'form-helper';
+            helper.textContent = 'Saved notes appear in the calendar day view.';
+            formElement.appendChild(helper);
+
+            formElement.addEventListener('submit', (event) => {
+                event.preventDefault();
+                if (!store) {
+                    return;
+                }
+
+                const nextNotes = textarea.value.trim();
+                store.updateEvent(eventData.id, { notes: nextNotes });
+                closeModal();
+                showToast('Notes saved', 'success');
+                refreshData();
+                renderEvents();
+            });
+
+            openModal({
+                title: `Notes · ${eventData.name}`,
+                body: formElement,
+                actions: [
+                    { label: 'Cancel', variant: 'ghost', onClick: closeModal },
+                    { label: 'Save notes', variant: 'primary', onClick: () => formElement.requestSubmit() },
+                ],
+            });
+
+            textarea.focus();
+        }
+
+        function handleReminderEvent(eventData) {
+            const formElement = document.createElement('form');
+            formElement.className = 'modal-form';
+
+            const info = document.createElement('p');
+            info.className = 'form-helper';
+            info.textContent = eventData.lastReminderSent
+                ? `Last reminder ${formatRelativeTime(eventData.lastReminderSent)} (${dateTimeFormatter.format(new Date(eventData.lastReminderSent))}).`
+                : 'No reminders have been logged for this event yet.';
+            formElement.appendChild(info);
+
+            const label = document.createElement('label');
+            label.className = 'form-field';
+            const span = document.createElement('span');
+            span.textContent = 'Message';
+            const textarea = document.createElement('textarea');
+            textarea.name = 'reminderMessage';
+            textarea.rows = 5;
+            const friendlyDate = formatDate(eventData.date, eventData.time);
+            textarea.value = `Hi there! Checking in on ${eventData.name} scheduled for ${friendlyDate}. Let me know if you have any updates.`;
+            label.appendChild(span);
+            label.appendChild(textarea);
+            formElement.appendChild(label);
+
+            formElement.addEventListener('submit', (event) => {
+                event.preventDefault();
+                if (!store) {
+                    return;
+                }
+
+                const message = textarea.value.trim();
+                const timestamp = Date.now();
+                const existingNotes = eventData.notes ? `${eventData.notes}\n\n` : '';
+                const nextNotes = message
+                    ? `${existingNotes}Reminder logged ${dateTimeFormatter.format(new Date(timestamp))}: ${message}`
+                    : eventData.notes || '';
+
+                store.updateEvent(eventData.id, {
+                    lastReminderSent: timestamp,
+                    notes: nextNotes,
+                });
+                closeModal();
+                showToast('Reminder logged', 'success');
+                refreshData();
+                renderEvents();
+            });
+
+            openModal({
+                title: `Send reminder · ${eventData.name}`,
+                body: formElement,
+                actions: [
+                    { label: 'Cancel', variant: 'ghost', onClick: closeModal },
+                    { label: 'Log reminder', variant: 'primary', onClick: () => formElement.requestSubmit() },
+                ],
+            });
+
+            textarea.focus();
+        }
+
+        function handleChecklistEvent(eventData) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'modal-section';
+
+            const intro = document.createElement('p');
+            intro.className = 'form-helper';
+            intro.textContent = 'Mark tasks as you prep. Progress is saved while this window stays open.';
+            wrapper.appendChild(intro);
+
+            const assignedNames = getStaffNames(eventData.assignedStaffIds || []);
+            const staffLabel = assignedNames.length ? assignedNames.join(', ') : 'assigned staff';
+            const tasks = [
+                `Confirm call times with ${staffLabel}.`,
+                `Review the menu for ${eventData.package || 'the selected package'}.`,
+                'Finalize the shopping list and rentals.',
+                'Send arrival instructions to the client.',
+            ];
+
+            const list = document.createElement('ul');
+            list.className = 'checklist';
+            wrapper.appendChild(list);
+
+            tasks.forEach((task, index) => {
+                const item = document.createElement('li');
+                const label = document.createElement('label');
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.dataset.index = String(index);
+                const text = document.createElement('span');
+                text.textContent = task;
+                label.appendChild(checkbox);
+                label.appendChild(text);
+                item.appendChild(label);
+                list.appendChild(item);
+            });
+
+            const progress = document.createElement('p');
+            progress.className = 'form-helper';
+            wrapper.appendChild(progress);
+
+            const updateProgress = () => {
+                const total = tasks.length;
+                const done = list.querySelectorAll('input[type="checkbox"]:checked').length;
+                progress.textContent = `${done}/${total} tasks complete`;
+            };
+
+            list.addEventListener('change', updateProgress);
+            updateProgress();
+
+            openModal({
+                title: `Checklist · ${eventData.name}`,
+                body: wrapper,
+                actions: [{ label: 'Close', variant: 'primary', onClick: closeModal }],
+            });
+
+            const firstCheckbox = list.querySelector('input[type="checkbox"]');
+            if (firstCheckbox) {
+                firstCheckbox.focus();
+            }
         }
 
         if (tabs.length) {
@@ -679,7 +1229,7 @@
                 tab.addEventListener('click', () => {
                     tabs.forEach((button) => button.classList.remove('active'));
                     tab.classList.add('active');
-                    activeFilter = tab.dataset.filter || 'all';
+                    state.filter = tab.dataset.filter || 'all';
                     renderEvents();
                 });
             });
@@ -734,14 +1284,200 @@
                 closeModal();
             }
         });
+                const removeTarget = event.target.closest('[data-remove-event]');
+                const editTarget = event.target.closest('[data-edit-event]');
+
+                if (removeTarget && store) {
+                    store.removeEvent(removeTarget.dataset.removeEvent);
+                    renderEvents();
+                    if (editingEventId === removeTarget.dataset.removeEvent) {
+                        exitEditMode();
+                        applyDefaultSelects();
+                    }
+                    return;
+                }
+
+                if (editTarget && store) {
+                    const existingEvent = store
+                        .getEvents()
+                        .find((item) => item.id === editTarget.dataset.editEvent);
+
+                    if (!existingEvent) {
+                        return;
+                    }
+
+                    enterEditMode(existingEvent);
+                const actionButton = event.target.closest('[data-action]');
+                if (!actionButton) {
+                    return;
+                }
+
+                const action = actionButton.dataset.action;
+                const eventId = actionButton.dataset.eventId;
+                if (!action || !eventId) {
+                    return;
+                }
+
+                const eventData = state.events.find((item) => item.id === eventId);
+                if (!eventData) {
+                    return;
+                }
+
+                if (!store) {
+                    showToast('Storage unavailable right now.', 'error');
+                    return;
+                }
+
+                switch (action) {
+                    case 'view':
+                        handleViewEvent(eventData);
+                        break;
+                    case 'staff':
+                        handleStaffEvent(eventData);
+                        break;
+                    case 'notes':
+                        handleNotesEvent(eventData);
+                        break;
+                    case 'reminder':
+                        handleReminderEvent(eventData);
+                        break;
+                    case 'checklist':
+                        handleChecklistEvent(eventData);
+                        break;
+                    case 'remove':
+                        store.removeEvent(eventId);
+                        showToast('Event removed', 'success');
+                        refreshData();
+                        renderEvents();
+                        break;
+                    default:
+                        break;
+                }
+            });
+        }
+
+        function applyDefaultSelects() {
+            if (!form) {
+                return;
+            }
+
+            if (form.eventStatus) {
+                form.eventStatus.value = defaultStatusValue;
+            }
+            if (form.eventStaffing) {
+                form.eventStaffing.value = defaultStaffingValue;
+            }
+        }
+
+        function ensureOption(select, value, level) {
+            if (!select || value === undefined || value === null || value === '') {
+                return;
+            }
+
+            const option = Array.from(select.options || []).find((opt) => opt.value === value);
+            if (option) {
+                if (level && option.dataset) {
+                    option.dataset.level = level;
+                }
+                select.value = value;
+                return;
+            }
+
+            const newOption = document.createElement('option');
+            newOption.value = value;
+            newOption.textContent = value;
+            if (level) {
+                newOption.dataset.level = level;
+            }
+            select.appendChild(newOption);
+            select.value = value;
+        }
+
+        function updateModeIndicator(message) {
+            if (!modeIndicator) {
+                return;
+            }
+
+            modeIndicator.textContent = message || '';
+        }
+
+        function exitEditMode() {
+            editingEventId = null;
+            if (hiddenIdField) {
+                hiddenIdField.value = '';
+            }
+            if (submitButton) {
+                submitButton.textContent = 'Save event';
+            }
+            if (form) {
+                form.dataset.mode = 'create';
+            }
+            updateModeIndicator('');
+        }
+
+        function enterEditMode(eventData) {
+            if (!form) {
+                return;
+            }
+
+            editingEventId = eventData.id;
+            if (hiddenIdField) {
+                hiddenIdField.value = eventData.id;
+            }
+
+            form.dataset.mode = 'edit';
+
+            if (form.eventName) {
+                form.eventName.value = eventData.name || '';
+            }
+            if (form.eventDate) {
+                form.eventDate.value = eventData.date || '';
+            }
+            if (form.eventTime) {
+                form.eventTime.value = eventData.time || '';
+            }
+            if (form.eventLocation) {
+                form.eventLocation.value = eventData.location || '';
+            }
+            if (form.eventPackage) {
+                ensureOption(form.eventPackage, eventData.package);
+            }
+            if (form.guestCount) {
+                form.guestCount.value = eventData.guestCount != null ? eventData.guestCount : '';
+            }
+            if (form.eventPayout) {
+                form.eventPayout.value = eventData.payout != null ? eventData.payout : '';
+            }
+            if (form.eventStatus) {
+                ensureOption(form.eventStatus, eventData.status, eventData.statusLevel);
+            }
+            if (form.eventStaffing) {
+                ensureOption(form.eventStaffing, eventData.staffingStatus, eventData.staffingLevel);
+            }
+            if (form.eventNotes) {
+                form.eventNotes.value = eventData.notes || '';
+            }
+
+            if (submitButton) {
+                submitButton.textContent = 'Update event';
+            }
+
+            const nameText = eventData.name ? `Editing "${eventData.name}"` : 'Editing existing event';
+            updateModeIndicator(nameText);
+            if (typeof window !== 'undefined') {
+                window.location.hash = '#new-event';
+            }
+        }
 
         if (form && store) {
             form.addEventListener('submit', (event) => {
                 event.preventDefault();
 
                 const formData = new FormData(form);
-                const statusOption = form.eventStatus.options[form.eventStatus.selectedIndex];
-                const staffingOption = form.eventStaffing.options[form.eventStaffing.selectedIndex];
+                const statusSelect = form.eventStatus;
+                const staffingSelect = form.eventStaffing;
+                const statusOption = statusSelect ? statusSelect.options[statusSelect.selectedIndex] : null;
+                const staffingOption = staffingSelect ? staffingSelect.options[staffingSelect.selectedIndex] : null;
 
                 const eventPayload = {
                     name: (formData.get('name') || '').trim() || 'Untitled event',
@@ -751,14 +1487,28 @@
                     package: formData.get('package') || '',
                     guestCount: Number(formData.get('guestCount') || 0),
                     payout: Number(formData.get('payout') || 0),
+                    status: formData.get('status') || (statusSelect ? statusSelect.value : 'Draft'),
+                    requiredStaff: Number(formData.get('requiredStaff') || 0),
                     status: formData.get('status') || 'Draft',
                     statusLevel: statusOption ? statusOption.dataset.level : undefined,
-                    staffingStatus: formData.get('staffingStatus') || 'Unassigned',
+                    staffingStatus:
+                        formData.get('staffingStatus') || (staffingSelect ? staffingSelect.value : 'Unassigned'),
                     staffingLevel: staffingOption ? staffingOption.dataset.level : undefined,
                     notes: (formData.get('notes') || '').trim(),
                 };
 
+                if (editingEventId) {
+                    store.updateEvent(editingEventId, eventPayload);
+                } else {
+                    store.addEvent(eventPayload);
+                }
+
+                form.reset();
+                exitEditMode();
+                applyDefaultSelects();
                 store.addEvent(eventPayload);
+                showToast('Event saved', 'success');
+
                 form.reset();
                 if (form.eventStatus) {
                     form.eventStatus.value = 'Confirmed';
@@ -766,12 +1516,29 @@
                 if (form.eventStaffing) {
                     form.eventStaffing.value = 'Fully staffed';
                 }
+
+                refreshData();
                 renderEvents();
+            });
+
+            form.addEventListener('reset', () => {
+                const resetHandler = () => {
+                    exitEditMode();
+                    applyDefaultSelects();
+                };
+
+                if (typeof window !== 'undefined' && window.requestAnimationFrame) {
+                    window.requestAnimationFrame(resetHandler);
+                } else {
+                    resetHandler();
+                }
             });
         }
 
+        refreshData();
         renderEvents();
     </script>
+
     <script src="app.js"></script>
 </body>
 </html>

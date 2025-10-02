@@ -45,6 +45,7 @@
     const subsectionElements = Array.from(document.querySelectorAll('[data-subsection]'));
     if (subsectionElements.length > 1) {
         const pageContent = document.querySelector('.page-content');
+        const allowEmptyState = pageContent && pageContent.dataset.subsectionAllowEmpty === 'true';
         const header = pageContent ? pageContent.querySelector('.page-header') : null;
         const sectionToButton = new Map();
 
@@ -89,9 +90,11 @@
             button.textContent = section.dataset.subsection || `Section ${index + 1}`;
             button.setAttribute('aria-controls', section.id);
 
-            if (index === 0) {
+            if (!allowEmptyState && index === 0) {
                 button.classList.add('is-active');
-            } else {
+            }
+
+            if (allowEmptyState || index !== 0) {
                 section.classList.add('is-hidden');
             }
 

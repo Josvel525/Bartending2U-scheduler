@@ -45,7 +45,7 @@
         </div>
     </header>
 
-    <main class="page-content">
+    <main class="page-content" data-subsection-allow-empty="true">
         <section class="page-header">
             <div>
                 <p class="page-eyebrow">Team</p>
@@ -134,6 +134,28 @@
                     </div>
 
                     <div class="details-section">
+                        <h4>Tax &amp; identification</h4>
+                        <dl class="details-list">
+                            <div>
+                                <dt>Home address</dt>
+                                <dd id="detailAddress" class="multiline">—</dd>
+                            </div>
+                            <div>
+                                <dt>Tax ID / SSN</dt>
+                                <dd id="detailTaxId">—</dd>
+                            </div>
+                            <div>
+                                <dt>Driver's license</dt>
+                                <dd id="detailLicense">—</dd>
+                            </div>
+                            <div>
+                                <dt>Date of birth</dt>
+                                <dd id="detailDob">—</dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <div class="details-section">
                         <h4>Upcoming assignments</h4>
                         <ul class="details-pills" id="detailAssignments">
                             <li class="text-muted">Assignments will populate once you select a teammate.</li>
@@ -147,13 +169,33 @@
                                 <tr>
                                     <th scope="col">Document</th>
                                     <th scope="col">Status</th>
+                                    <th scope="col">Issued</th>
                                     <th scope="col">Expires</th>
+                                    <th scope="col">License / ID</th>
                                     <th scope="col">File</th>
                                 </tr>
                             </thead>
                             <tbody id="detailDocs"></tbody>
                         </table>
                         <p class="helper-text" id="documentation-helper">Track TABC certificates, liability waivers, and other compliance paperwork.</p>
+                        <div class="modal" id="docViewer" aria-hidden="true">
+                            <div class="modal__overlay" data-modal-close></div>
+                            <div class="modal__dialog" role="dialog" aria-modal="true" aria-labelledby="docViewerTitle" tabindex="-1">
+                                <button class="modal__close link-button" type="button" data-modal-close>Close ×</button>
+                                <div class="modal__header">
+                                    <h5 class="modal__title" id="docViewerTitle">Document preview</h5>
+                                    <p class="modal__subtitle text-muted" id="docViewerSubtitle"></p>
+                                </div>
+                                <dl class="modal__details" id="docViewerMeta"></dl>
+                                <div class="modal__preview">
+                                    <iframe id="docViewerFrame" title="Document preview" sandbox></iframe>
+                                    <p class="modal__placeholder text-muted" id="docViewerPlaceholder">Preview unavailable. Use the download button below to open the file in a new tab.</p>
+                                </div>
+                                <div class="modal__actions">
+                                    <a class="button primary" id="docViewerDownload" target="_blank" rel="noopener">Open in new tab</a>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="details-section">
@@ -168,6 +210,21 @@
                                     <option>Food Handler</option>
                                 </select>
                             </label>
+                            <div class="form-grid form-grid--compact" id="tabcMetadata" hidden>
+                                <label class="form-field">
+                                    <span>License / Permit ID</span>
+                                    <input type="text" id="tabcLicense" placeholder="e.g. TX-123456" autocomplete="off" />
+                                </label>
+                                <label class="form-field">
+                                    <span>Issued date</span>
+                                    <input type="date" id="tabcIssued" />
+                                </label>
+                                <label class="form-field">
+                                    <span>Expiration date</span>
+                                    <input type="date" id="tabcExpires" />
+                                </label>
+                            </div>
+                            <p class="helper-text" id="tabcMetadataHelper" hidden>TABC uploads need license ID, issuance, and expiration dates.</p>
                             <label class="form-field">
                                 <span>Attach file</span>
                                 <input type="file" id="docFile" />
@@ -180,15 +237,58 @@
                         <p class="form-alert" id="docAlert" role="status" aria-live="polite"></p>
                     </div>
 
+                    <div class="details-section" id="portalAccessSection">
+                        <div class="details-section__header">
+                            <h4>Portal access</h4>
+                            <div class="portal-access__actions">
+                                <button class="button ghost" type="button" id="togglePortalActivity">View login activity</button>
+                                <button class="button primary" type="button" id="resetPortalPassword">Reset password</button>
+                                <button class="button ghost" type="button" id="resendPortalInvite">Resend invite</button>
+                            </div>
+                        </div>
+                        <dl class="details-list">
+                            <div>
+                                <dt>Status</dt>
+                                <dd><span class="badge" id="portalStatusBadge">Invite pending</span></dd>
+                            </div>
+                            <div>
+                                <dt>Last login</dt>
+                                <dd id="portalLastLogin">No logins yet</dd>
+                            </div>
+                            <div>
+                                <dt>Access level</dt>
+                                <dd id="portalAccessLevel">—</dd>
+                            </div>
+                            <div>
+                                <dt>Invite sent</dt>
+                                <dd id="portalInviteSent">—</dd>
+                            </div>
+                            <div>
+                                <dt>Multi-factor auth</dt>
+                                <dd id="portalMfa">Not enabled</dd>
+                            </div>
+                        </dl>
+                        <div class="portal-login-activity is-hidden" id="portalLoginActivity">
+                            <h5 class="portal-login-activity__title">Recent activity</h5>
+                            <ul class="portal-login-list" id="portalLoginList"></ul>
+                        </div>
+                        <p class="form-alert" id="portalAlert" role="status" aria-live="polite"></p>
+                    </div>
+
                     <div class="details-section">
                         <h4>Notes & strengths</h4>
                         <p class="details-notes" id="detailNotes">Document specialties, awards, and go-to pairings for your star team members.</p>
                     </div>
-            <div class="list-grid" id="teamList"></div>
-            <div class="list-grid">
+                </article>
+            </div>
+
+            <div class="team-grid" id="teamList">
                 <article class="person-card">
                     <h3 class="person-card__name">John Garcia</h3>
                     <p class="person-card__role">Bar Lead · Flair certified</p>
+                    <div class="person-card__status"><span class="badge success">Available</span></div>
+                </article>
+                <article class="person-card">
                     <h3 class="person-card__name">John Doe</h3>
                     <p class="person-card__role">Bartender · Lead flair specialist</p>
                     <div class="person-card__status"><span class="badge success">Available</span></div>
@@ -311,6 +411,46 @@
                             </select>
                         </div>
                     </div>
+                    <div class="form-grid">
+                        <div class="form-field full-width">
+                            <label for="teamAddressLine1">Home address</label>
+                            <input id="teamAddressLine1" name="addressLine1" type="text" placeholder="Street address" />
+                        </div>
+                        <div class="form-field full-width">
+                            <label for="teamAddressLine2">Apartment, suite, etc. (optional)</label>
+                            <input id="teamAddressLine2" name="addressLine2" type="text" placeholder="Unit or floor" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamCity">City</label>
+                            <input id="teamCity" name="city" type="text" placeholder="City" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamState">State</label>
+                            <input id="teamState" name="state" type="text" maxlength="2" placeholder="TX" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamPostalCode">ZIP code</label>
+                            <input id="teamPostalCode" name="postalCode" type="text" placeholder="75201" />
+                        </div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="teamSsn">Tax ID / SSN</label>
+                            <input id="teamSsn" name="taxId" type="text" placeholder="123-45-6789" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamDob">Date of birth</label>
+                            <input id="teamDob" name="dob" type="date" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamDlNumber">Driver's license number</label>
+                            <input id="teamDlNumber" name="dlNumber" type="text" placeholder="TX1234567" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamDlState">Issuing state</label>
+                            <input id="teamDlState" name="dlState" type="text" maxlength="2" placeholder="TX" />
+                        </div>
+                    </div>
                     <div class="form-field">
                         <label for="teamNotes">Specialties & certifications</label>
                         <textarea id="teamNotes" name="notes" placeholder="E.g. flair bartending, wine pairing, bilingual"></textarea>
@@ -425,6 +565,70 @@
             });
         }
 
+        function formatDisplayDate(value) {
+            if (!value) {
+                return '';
+            }
+
+            const iso = value.length === 10 ? `${value}T00:00:00` : value;
+            const date = new Date(iso);
+            if (Number.isNaN(date.getTime())) {
+                return value;
+            }
+
+            return new Intl.DateTimeFormat(undefined, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            }).format(date);
+        }
+
+        function formatDisplayDateTime(value) {
+            if (!value) {
+                return '';
+            }
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return '';
+            }
+
+            return new Intl.DateTimeFormat(undefined, {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit'
+            }).format(date);
+        }
+
+        function prepareDocument(doc) {
+            const prepared = { ...doc };
+            if (prepared.expires && !prepared.expiresDisplay) {
+                prepared.expiresDisplay = formatDisplayDate(prepared.expires);
+            }
+            if (prepared.issued && !prepared.issuedDisplay) {
+                prepared.issuedDisplay = formatDisplayDate(prepared.issued);
+            }
+            if (!prepared.previewSource) {
+                const candidate = prepared.previewSource || prepared.dataUrl || prepared.url;
+                const source = candidate && candidate !== '#' ? candidate : '';
+                prepared.previewSource = source;
+            }
+            if (!prepared.fileName && prepared.url && prepared.url !== '#') {
+                prepared.fileName = prepared.url.split('/').pop();
+            }
+            prepared.canPreview = Boolean(prepared.previewSource);
+            return prepared;
+        }
+
+        function prepareEmployee(employee) {
+            return {
+                ...employee,
+                documents: (employee.documents || []).map(prepareDocument)
+            };
+        }
+
+        const employees = [
         let employees = [
             {
                 id: 'john-doe',
@@ -436,15 +640,48 @@
                 location: 'Houston, TX',
                 email: 'john.doe@bartending2u.com',
                 phone: '(713) 555-0114',
+                addressLine1: '1901 Market St',
+                addressLine2: 'Suite 210',
+                addressCity: 'Houston',
+                addressState: 'TX',
+                addressPostalCode: '77002',
+                taxId: '123-45-6789',
+                dob: '1984-07-19',
+                dlNumber: 'TX12345678',
+                dlState: 'TX',
                 notes: 'Lead trainer for new hires. Loves crafting signature welcome cocktails.',
                 assignments: [
                     'Corporate Party — Oct 5 (Lead bartender)',
                     'VIP Lounge — Oct 12 (Setup & close)'
                 ],
                 documents: [
-                    { type: 'TABC Certificate', status: 'Active', expires: '2025-05-12', url: '#', attention: false },
+                    {
+                        type: 'TABC Certificate',
+                        status: 'Active',
+                        issued: '2023-05-12',
+                        expires: '2025-05-12',
+                        licenseNumber: 'TX-BC-4412',
+                        url: '#',
+                        attention: false
+                    },
                     { type: 'Liability Waiver', status: 'On file', expires: '—', url: '#', attention: false }
-                ]
+                ],
+                portal: {
+                    status: 'active',
+                    statusLabel: 'Active',
+                    statusLevel: 'success',
+                    accessLevel: 'Full portal access',
+                    inviteSentAt: '2024-06-20T15:30:00',
+                    lastLogin: '2025-10-01T09:42:00',
+                    mfaEnabled: true,
+                    canResetPassword: true,
+                    canResendInvite: false,
+                    loginActivity: [
+                        { timestamp: '2025-10-01T09:42:00', action: 'Logged in on desktop', location: 'Houston, TX' },
+                        { timestamp: '2025-09-28T17:22:00', action: 'Reviewed corporate party schedule', location: 'Houston, TX' },
+                        { timestamp: '2025-09-26T11:08:00', action: 'Downloaded pay stub', location: 'Mobile · Austin, TX' }
+                    ]
+                }
             },
             {
                 id: 'jane-smith',
@@ -456,14 +693,43 @@
                 location: 'Austin, TX',
                 email: 'jane.smith@bartending2u.com',
                 phone: '(512) 555-0199',
+                addressLine1: '501 Congress Ave',
+                addressLine2: 'Apt 9B',
+                addressCity: 'Austin',
+                addressState: 'TX',
+                addressPostalCode: '78701',
+                taxId: '234-56-7890',
+                dob: '1990-02-11',
+                dlNumber: 'TX87654321',
+                dlState: 'TX',
                 notes: 'Certified sommelier. Currently on PTO returning Oct 14.',
                 assignments: [
                     'Mocktail Workshop — Oct 22 (Program design)'
                 ],
                 documents: [
-                    { type: 'TABC Certificate', status: 'Expiring soon', expires: '2024-10-30', url: '#', attention: true },
+                    {
+                        type: 'TABC Certificate',
+                        status: 'Expiring soon',
+                        issued: '2022-11-01',
+                        expires: '2024-10-30',
+                        licenseNumber: 'TX-ML-3008',
+                        url: '#',
+                        attention: true
+                    },
                     { type: 'Food Handler', status: 'Submitted', expires: '2026-02-01', url: '#', attention: false }
-                ]
+                ],
+                portal: {
+                    status: 'invite-pending',
+                    statusLabel: 'Invite pending',
+                    statusLevel: 'warning',
+                    accessLevel: 'Awaiting portal activation',
+                    inviteSentAt: '2025-09-20T13:15:00',
+                    lastLogin: null,
+                    mfaEnabled: false,
+                    canResetPassword: false,
+                    canResendInvite: true,
+                    loginActivity: []
+                }
             },
             {
                 id: 'alex-rivera',
@@ -475,15 +741,47 @@
                 location: 'Dallas, TX',
                 email: 'alex.rivera@bartending2u.com',
                 phone: '(469) 555-0147',
+                addressLine1: '1400 Elm St',
+                addressLine2: '',
+                addressCity: 'Dallas',
+                addressState: 'TX',
+                addressPostalCode: '75202',
+                taxId: '345-67-8901',
+                dob: '1988-11-03',
+                dlNumber: 'TX44556677',
+                dlState: 'TX',
                 notes: 'Lead for sports stadium activations. Fluent in Spanish and English.',
                 assignments: [
                     'Corporate Party — Oct 5 (Support)',
                     'Wedding Reception — Oct 15 (Bartender)'
                 ],
                 documents: [
-                    { type: 'TABC Certificate', status: 'Active', expires: '2026-01-19', url: '#', attention: false },
+                    {
+                        type: 'TABC Certificate',
+                        status: 'Active',
+                        issued: '2024-01-19',
+                        expires: '2026-01-19',
+                        licenseNumber: 'TX-RV-7782',
+                        url: '#',
+                        attention: false
+                    },
                     { type: 'Food Handler', status: 'Pending upload', expires: '—', url: '#', attention: true }
-                ]
+                ],
+                portal: {
+                    status: 'active',
+                    statusLabel: 'Active',
+                    statusLevel: 'success',
+                    accessLevel: 'Schedule + pay stubs',
+                    inviteSentAt: '2024-08-05T10:05:00',
+                    lastLogin: '2025-09-30T18:10:00',
+                    mfaEnabled: false,
+                    canResetPassword: true,
+                    canResendInvite: false,
+                    loginActivity: [
+                        { timestamp: '2025-09-30T18:10:00', action: 'Logged in on mobile', location: 'Dallas, TX' },
+                        { timestamp: '2025-09-27T08:55:00', action: 'Confirmed shift availability', location: 'Dallas, TX' }
+                    ]
+                }
             },
             {
                 id: 'priya-singh',
@@ -495,15 +793,48 @@
                 location: 'Houston, TX',
                 email: 'priya.singh@bartending2u.com',
                 phone: '(832) 555-0177',
+                addressLine1: '2220 Westheimer Rd',
+                addressLine2: 'Unit 5',
+                addressCity: 'Houston',
+                addressState: 'TX',
+                addressPostalCode: '77098',
+                taxId: '456-78-9012',
+                dob: '1986-05-27',
+                dlNumber: 'TX99887766',
+                dlState: 'TX',
                 notes: 'Hosts quarterly workshops and champions zero-proof menu innovation.',
                 assignments: [
                     'Mixology Workshop — Oct 18 (Instructor)',
                     'Holiday Menu Lab — Nov 2 (Designer)'
                 ],
                 documents: [
-                    { type: 'TABC Certificate', status: 'Active', expires: '2025-11-08', url: '#', attention: false },
+                    {
+                        type: 'TABC Certificate',
+                        status: 'Active',
+                        issued: '2023-11-08',
+                        expires: '2025-11-08',
+                        licenseNumber: 'TX-PS-1150',
+                        url: '#',
+                        attention: false
+                    },
                     { type: 'W-9', status: 'On file', expires: '—', url: '#', attention: false }
-                ]
+                ],
+                portal: {
+                    status: 'active',
+                    statusLabel: 'Active',
+                    statusLevel: 'success',
+                    accessLevel: 'Manager access',
+                    inviteSentAt: '2023-12-12T09:00:00',
+                    lastLogin: '2025-09-29T07:30:00',
+                    mfaEnabled: true,
+                    canResetPassword: true,
+                    canResendInvite: false,
+                    loginActivity: [
+                        { timestamp: '2025-09-29T07:30:00', action: 'Approved workshop roster', location: 'Houston, TX' },
+                        { timestamp: '2025-09-25T19:05:00', action: 'Sent message to mixology team', location: 'Houston, TX' },
+                        { timestamp: '2025-09-21T12:18:00', action: 'Updated availability', location: 'Mobile · Austin, TX' }
+                    ]
+                }
             },
             {
                 id: 'jamie-lee',
@@ -515,14 +846,45 @@
                 location: 'San Antonio, TX',
                 email: 'jamie.lee@bartending2u.com',
                 phone: '(210) 555-0188',
+                addressLine1: '815 Avenue B',
+                addressLine2: '',
+                addressCity: 'San Antonio',
+                addressState: 'TX',
+                addressPostalCode: '78215',
+                taxId: '567-89-0123',
+                dob: '1992-09-14',
+                dlNumber: 'TX11223344',
+                dlState: 'TX',
                 notes: 'Available for load-ins and barback duties Thursdays through Sundays.',
                 assignments: [
                     'Mixology Workshop — Oct 18 (Support)'
                 ],
                 documents: [
-                    { type: 'TABC Certificate', status: 'Needs renewal', expires: '2024-09-25', url: '#', attention: true },
+                    {
+                        type: 'TABC Certificate',
+                        status: 'Needs renewal',
+                        issued: '2022-09-25',
+                        expires: '2024-09-25',
+                        licenseNumber: 'TX-JL-8821',
+                        url: '#',
+                        attention: true
+                    },
                     { type: 'Liability Waiver', status: 'On file', expires: '—', url: '#', attention: false }
-                ]
+                ],
+                portal: {
+                    status: 'disabled',
+                    statusLabel: 'Access disabled',
+                    statusLevel: 'danger',
+                    accessLevel: 'Portal locked until renewal',
+                    inviteSentAt: '2024-02-10T16:45:00',
+                    lastLogin: '2024-08-18T14:05:00',
+                    mfaEnabled: false,
+                    canResetPassword: false,
+                    canResendInvite: false,
+                    loginActivity: [
+                        { timestamp: '2024-08-18T14:05:00', action: 'Account locked after credential expiration', location: 'San Antonio, TX' }
+                    ]
+                }
             },
             {
                 id: 'marcus-allen',
@@ -534,6 +896,15 @@
                 location: 'Houston, TX',
                 email: 'marcus.allen@bartending2u.com',
                 phone: '(713) 555-0160',
+                addressLine1: '3710 Main St',
+                addressLine2: '',
+                addressCity: 'Houston',
+                addressState: 'TX',
+                addressPostalCode: '77002',
+                taxId: '678-90-1234',
+                dob: '1987-03-08',
+                dlNumber: 'TX55667788',
+                dlState: 'TX',
                 notes: 'Great with tight timelines and closing shifts. CDL certified.',
                 assignments: [
                     'Wedding Reception — Oct 15 (Barback)',
@@ -541,9 +912,24 @@
                 ],
                 documents: [
                     { type: 'Food Handler', status: 'Active', expires: '2025-03-15', url: '#', attention: false }
-                ]
+                ],
+                portal: {
+                    status: 'active',
+                    statusLabel: 'Active',
+                    statusLevel: 'success',
+                    accessLevel: 'Schedule access only',
+                    inviteSentAt: '2025-01-12T08:30:00',
+                    lastLogin: '2025-09-24T06:55:00',
+                    mfaEnabled: false,
+                    canResetPassword: true,
+                    canResendInvite: false,
+                    loginActivity: [
+                        { timestamp: '2025-09-24T06:55:00', action: 'Checked load-in checklist', location: 'Houston, TX' },
+                        { timestamp: '2025-09-18T20:40:00', action: 'Confirmed transportation availability', location: 'Mobile · Houston, TX' }
+                    ]
+                }
             }
-        ];
+        ].map(prepareEmployee);
 
         const employeeList = document.getElementById('employeeList');
         const employeeDetails = document.getElementById('employeeDetails');
@@ -555,9 +941,24 @@
         const detailEmail = document.getElementById('detailEmail');
         const detailPhone = document.getElementById('detailPhone');
         const detailLocation = document.getElementById('detailLocation');
+        const detailAddress = document.getElementById('detailAddress');
+        const detailTaxId = document.getElementById('detailTaxId');
+        const detailLicense = document.getElementById('detailLicense');
+        const detailDob = document.getElementById('detailDob');
         const detailNotes = document.getElementById('detailNotes');
         const detailDocs = document.getElementById('detailDocs');
         const detailAssignments = document.getElementById('detailAssignments');
+        const portalStatusBadge = document.getElementById('portalStatusBadge');
+        const portalLastLogin = document.getElementById('portalLastLogin');
+        const portalAccessLevel = document.getElementById('portalAccessLevel');
+        const portalInviteSent = document.getElementById('portalInviteSent');
+        const portalMfa = document.getElementById('portalMfa');
+        const portalLoginActivity = document.getElementById('portalLoginActivity');
+        const portalLoginList = document.getElementById('portalLoginList');
+        const portalAlert = document.getElementById('portalAlert');
+        const togglePortalActivity = document.getElementById('togglePortalActivity');
+        const resetPortalPassword = document.getElementById('resetPortalPassword');
+        const resendPortalInvite = document.getElementById('resendPortalInvite');
         const removeEmployeeButton = document.getElementById('removeEmployeeButton');
         const characterCount = document.getElementById('characterCount');
         const blastMessage = document.getElementById('blastMessage');
@@ -568,16 +969,39 @@
         const blastPreview = document.getElementById('blastPreview');
         const blastAlert = document.getElementById('blastAlert');
         const communicationForm = document.getElementById('communicationForm');
+        const docViewer = document.getElementById('docViewer');
+        const docViewerDialog = docViewer ? docViewer.querySelector('.modal__dialog') : null;
+        const docViewerTitle = document.getElementById('docViewerTitle');
+        const docViewerSubtitle = document.getElementById('docViewerSubtitle');
+        const docViewerMeta = document.getElementById('docViewerMeta');
+        const docViewerFrame = document.getElementById('docViewerFrame');
+        const docViewerPlaceholder = document.getElementById('docViewerPlaceholder');
+        const docViewerDownload = document.getElementById('docViewerDownload');
         const docForm = document.getElementById('uploadForm');
         const docTypeSelect = document.getElementById('docTypeSelect');
         const docFile = document.getElementById('docFile');
         const docAlert = document.getElementById('docAlert');
+        const tabcMetadata = document.getElementById('tabcMetadata');
+        const tabcMetadataHelper = document.getElementById('tabcMetadataHelper');
+        const tabcLicenseInput = document.getElementById('tabcLicense');
+        const tabcIssuedInput = document.getElementById('tabcIssued');
+        const tabcExpiresInput = document.getElementById('tabcExpires');
+        const docSubmitButton = docForm ? docForm.querySelector('button[type="submit"]') : null;
         const addEmployeeForm = document.getElementById('addEmployeeForm');
         const addEmployeeAlert = document.getElementById('addEmployeeAlert');
         const teamNameInput = document.getElementById('teamName');
         const teamRoleInput = document.getElementById('teamRole');
         const teamEmailInput = document.getElementById('teamEmail');
         const teamPhoneInput = document.getElementById('teamPhone');
+        const teamAddressLine1Input = document.getElementById('teamAddressLine1');
+        const teamAddressLine2Input = document.getElementById('teamAddressLine2');
+        const teamCityInput = document.getElementById('teamCity');
+        const teamStateInput = document.getElementById('teamState');
+        const teamPostalCodeInput = document.getElementById('teamPostalCode');
+        const teamSsnInput = document.getElementById('teamSsn');
+        const teamDobInput = document.getElementById('teamDob');
+        const teamDlNumberInput = document.getElementById('teamDlNumber');
+        const teamDlStateInput = document.getElementById('teamDlState');
         const teamNotesInput = document.getElementById('teamNotes');
 
         const complianceLists = {
@@ -592,9 +1016,18 @@
             limited: 'badge warning'
         };
 
+        const portalStatusClasses = {
+            active: 'badge success',
+            'invite-pending': 'badge warning',
+            disabled: 'badge danger',
+            locked: 'badge danger'
+        };
+
         const SMS_LIMIT = 160;
 
         let selectedEmployeeId = null;
+        let docViewerPreviousFocus = null;
+        let portalActivityExpanded = false;
 
         function setAlert(element, message, tone = 'info') {
             if (!element) return;
@@ -611,6 +1044,45 @@
                 element.classList.add('text-danger');
             } else {
                 element.classList.add('text-muted');
+            }
+        }
+
+        function toggleDocLoading(isLoading) {
+            if (!docSubmitButton) {
+                return;
+            }
+
+            docSubmitButton.disabled = isLoading;
+            if (isLoading) {
+                docSubmitButton.textContent = 'Saving…';
+            } else {
+                docSubmitButton.textContent = docSubmitDefaultText || 'Record document';
+            }
+        }
+
+        function updateDocMetadataVisibility() {
+            if (!docTypeSelect) {
+                return;
+            }
+
+            const isTabc = docTypeSelect.value.toLowerCase().includes('tabc');
+
+            if (tabcMetadata) {
+                tabcMetadata.hidden = !isTabc;
+                tabcMetadata.setAttribute('aria-hidden', String(!isTabc));
+            }
+
+            if (tabcMetadataHelper) {
+                tabcMetadataHelper.hidden = !isTabc;
+                tabcMetadataHelper.setAttribute('aria-hidden', String(!isTabc));
+            }
+
+            if (!isTabc) {
+                [tabcLicenseInput, tabcIssuedInput, tabcExpiresInput].forEach((input) => {
+                    if (input) {
+                        input.value = '';
+                    }
+                });
             }
         }
 
@@ -675,6 +1147,25 @@
             return checked ? checked.value === 'sms' : false;
         }
 
+        function formatDateTime(value, { includeTime = true } = {}) {
+            if (!value) {
+                return '';
+            }
+
+            const date = new Date(value);
+            if (Number.isNaN(date.getTime())) {
+                return value;
+            }
+
+            return new Intl.DateTimeFormat('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric',
+                hour: includeTime ? 'numeric' : undefined,
+                minute: includeTime ? '2-digit' : undefined
+            }).format(date);
+        }
+
         function generateEmployeeId(name) {
             const base = name
                 .toLowerCase()
@@ -684,9 +1175,253 @@
             return `${base || 'teammate'}-${suffix}`;
         }
 
+        function addDocViewerMeta(label, value) {
+            if (!docViewerMeta) {
+                return;
+            }
+
+            const dt = document.createElement('dt');
+            dt.textContent = label;
+            docViewerMeta.appendChild(dt);
+
+            const dd = document.createElement('dd');
+            dd.textContent = value || '—';
+            docViewerMeta.appendChild(dd);
+        }
+
+        function closeDocViewer() {
+            if (!docViewer) {
+                return;
+            }
+
+            docViewer.classList.remove('is-open');
+            docViewer.setAttribute('aria-hidden', 'true');
+            if (typeof document !== 'undefined' && document.body) {
+                document.body.classList.remove('modal-open');
+            }
+
+            if (docViewerFrame) {
+                docViewerFrame.removeAttribute('src');
+                docViewerFrame.hidden = true;
+            }
+
+            if (docViewerPlaceholder) {
+                docViewerPlaceholder.hidden = false;
+            }
+
+            if (docViewerDownload) {
+                docViewerDownload.href = '#';
+                docViewerDownload.setAttribute('aria-disabled', 'true');
+                docViewerDownload.classList.add('is-disabled');
+                docViewerDownload.tabIndex = -1;
+                docViewerDownload.removeAttribute('download');
+            }
+
+            if (docViewerMeta) {
+                docViewerMeta.innerHTML = '';
+            }
+
+            if (docViewerSubtitle) {
+                docViewerSubtitle.textContent = '';
+            }
+
+            if (docViewerTitle) {
+                docViewerTitle.textContent = 'Document preview';
+            }
+
+            if (docViewerPreviousFocus && typeof docViewerPreviousFocus.focus === 'function') {
+                docViewerPreviousFocus.focus();
+            }
+
+            docViewerPreviousFocus = null;
+        }
+
+        function openDocViewer(doc, employeeName) {
+            if (!doc) {
+                return;
+            }
+
+            const previewSource = doc.previewSource || doc.url || '';
+            const hasPreview = Boolean(previewSource);
+
+            if (!docViewer || !docViewerDialog) {
+                if (hasPreview) {
+                    window.open(previewSource, '_blank');
+                }
+                return;
+            }
+
+            docViewerPreviousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+
+            docViewer.classList.add('is-open');
+            docViewer.setAttribute('aria-hidden', 'false');
+            if (typeof document !== 'undefined' && document.body) {
+                document.body.classList.add('modal-open');
+            }
+
+            if (docViewerTitle) {
+                docViewerTitle.textContent = doc.type || 'Document preview';
+            }
+
+            if (docViewerSubtitle) {
+                const parts = [];
+                if (employeeName) {
+                    parts.push(employeeName);
+                }
+                if (doc.fileName) {
+                    parts.push(doc.fileName);
+                }
+                docViewerSubtitle.textContent = parts.join(' · ');
+            }
+
+            if (docViewerMeta) {
+                docViewerMeta.innerHTML = '';
+                addDocViewerMeta('Status', doc.status || '—');
+                addDocViewerMeta('Issued', ((doc.issuedDisplay || doc.issued || '') + '').trim() || '—');
+                addDocViewerMeta('Expires', ((doc.expiresDisplay || doc.expires || '') + '').trim() || '—');
+                addDocViewerMeta('License / ID', doc.licenseNumber || '—');
+                const uploadedLabel = formatDisplayDateTime(doc.uploadedAt);
+                if (uploadedLabel) {
+                    addDocViewerMeta('Uploaded', uploadedLabel);
+                }
+                if (doc.fileName) {
+                    addDocViewerMeta('File name', doc.fileName);
+                }
+            }
+
+            if (docViewerFrame) {
+                if (hasPreview) {
+                    docViewerFrame.src = previewSource;
+                    docViewerFrame.hidden = false;
+                } else {
+                    docViewerFrame.removeAttribute('src');
+                    docViewerFrame.hidden = true;
+                }
+            }
+
+            if (docViewerPlaceholder) {
+                docViewerPlaceholder.hidden = hasPreview;
+            }
+
+            if (docViewerDownload) {
+                if (hasPreview) {
+                    docViewerDownload.href = previewSource;
+                    docViewerDownload.removeAttribute('aria-disabled');
+                    docViewerDownload.classList.remove('is-disabled');
+                    docViewerDownload.tabIndex = 0;
+                    if (doc.fileName) {
+                        docViewerDownload.setAttribute('download', doc.fileName);
+                    } else {
+                        docViewerDownload.removeAttribute('download');
+                    }
+                } else {
+                    docViewerDownload.href = '#';
+                    docViewerDownload.setAttribute('aria-disabled', 'true');
+                    docViewerDownload.classList.add('is-disabled');
+                    docViewerDownload.tabIndex = -1;
+                    docViewerDownload.removeAttribute('download');
+                }
+            }
+
+            if (docViewerDialog) {
+                docViewerDialog.focus();
+        function updatePortalActivityVisibility(hasActivity) {
+            if (!portalLoginActivity || !togglePortalActivity) {
+                return;
+            }
+
+            if (!hasActivity) {
+                portalLoginActivity.classList.remove('is-hidden');
+                togglePortalActivity.textContent = 'No login activity';
+                togglePortalActivity.disabled = true;
+                return;
+            }
+
+            togglePortalActivity.disabled = false;
+            togglePortalActivity.textContent = portalActivityExpanded ? 'Hide login activity' : 'View login activity';
+            portalLoginActivity.classList.toggle('is-hidden', !portalActivityExpanded);
+        }
+
+        function updatePortalAccess(employee) {
+            if (
+                !employee ||
+                !portalStatusBadge ||
+                !portalLastLogin ||
+                !portalAccessLevel ||
+                !portalInviteSent ||
+                !portalMfa ||
+                !portalLoginList
+            ) {
+                return;
+            }
+
+            const portal = employee.portal || {};
+            const badgeClass = portalStatusClasses[portal.status] || 'badge';
+            portalStatusBadge.className = badgeClass;
+            portalStatusBadge.textContent = portal.statusLabel || 'Not invited';
+
+            const lastLoginText = formatDateTime(portal.lastLogin) || 'No logins yet';
+            portalLastLogin.textContent = portal.lastLogin ? lastLoginText : 'No logins yet';
+            portalAccessLevel.textContent = portal.accessLevel || '—';
+            portalInviteSent.textContent = formatDateTime(portal.inviteSentAt) || 'Not sent';
+            portalMfa.textContent = portal.mfaEnabled ? 'Enabled' : 'Not enabled';
+
+            portalLoginList.innerHTML = '';
+            const hasActivity = Array.isArray(portal.loginActivity) && portal.loginActivity.length > 0;
+
+            if (hasActivity) {
+                portal.loginActivity.slice(0, 6).forEach((activity) => {
+                    const item = document.createElement('li');
+                    item.className = 'portal-login-item';
+
+                    const meta = document.createElement('span');
+                    meta.className = 'portal-login-item__meta';
+                    meta.textContent = formatDateTime(activity.timestamp) || 'Timestamp unavailable';
+
+                    const details = document.createElement('span');
+                    details.className = 'portal-login-item__details';
+                    const detailBits = [activity.action, activity.location].filter(Boolean);
+                    details.textContent = detailBits.join(' • ') || 'Portal activity recorded';
+
+                    item.appendChild(meta);
+                    item.appendChild(details);
+                    portalLoginList.appendChild(item);
+                });
+            } else {
+                const item = document.createElement('li');
+                item.className = 'portal-login-item';
+                const details = document.createElement('span');
+                details.className = 'portal-login-item__details';
+                details.textContent = 'No login activity recorded yet.';
+                item.appendChild(details);
+                portalLoginList.appendChild(item);
+            }
+
+            portalActivityExpanded = false;
+            updatePortalActivityVisibility(hasActivity);
+
+            if (portalAlert) {
+                setAlert(portalAlert, '');
+            }
+
+            if (resetPortalPassword) {
+                resetPortalPassword.disabled = !portal.canResetPassword;
+                resetPortalPassword.classList.remove('is-hidden');
+                resetPortalPassword.textContent = portal.resetLabel || 'Reset password';
+            }
+
+            if (resendPortalInvite) {
+                const showResend = Boolean(portal.canResendInvite);
+                resendPortalInvite.classList.toggle('is-hidden', !showResend);
+                resendPortalInvite.disabled = !showResend;
+                resendPortalInvite.textContent = portal.inviteAction || 'Resend invite';
+            }
+        }
+
         let activeFilter = 'all';
         let suppressBlastAlertClear = false;
         let suppressDocAlertClear = false;
+        const docSubmitDefaultText = docSubmitButton ? docSubmitButton.textContent : '';
 
         function renderEmployeeList(list) {
             if (!employeeList) return;
@@ -740,6 +1475,52 @@
             selectEmployee(selectedEmployeeId);
         }
 
+        function formatAddress(employee) {
+            if (!employee) return '';
+            const segments = [];
+            const line1 = (employee.addressLine1 || '').trim();
+            const line2 = (employee.addressLine2 || '').trim();
+            const city = (employee.addressCity || '').trim();
+            const state = (employee.addressState || '').trim();
+            const postal = (employee.addressPostalCode || '').trim();
+
+            if (line1) segments.push(line1);
+            if (line2) segments.push(line2);
+
+            const cityState = [city, state].filter(Boolean).join(', ');
+            const finalLine = [cityState, postal].filter(Boolean).join(' ').trim();
+            if (finalLine) segments.push(finalLine);
+
+            return segments.join('\n');
+        }
+
+        function formatDob(value) {
+            if (!value) return '';
+            const parts = value.split('-').map((part) => parseInt(part, 10));
+            if (parts.length === 3 && parts.every((num) => !Number.isNaN(num))) {
+                const [year, month, day] = parts;
+                const parsed = new Date(year, month - 1, day);
+                if (!Number.isNaN(parsed.getTime())) {
+                    return new Intl.DateTimeFormat('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    }).format(parsed);
+                }
+            }
+
+            const fallback = new Date(value);
+            if (!Number.isNaN(fallback.getTime())) {
+                return new Intl.DateTimeFormat('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                }).format(fallback);
+            }
+
+            return value;
+        }
+
         function selectEmployee(id) {
             const previousId = selectedEmployeeId;
             selectedEmployeeId = id;
@@ -768,12 +1549,36 @@
             const digits = employee.phone.replace(/[^0-9]/g, '');
             detailPhone.href = digits ? `tel:+1${digits}` : '#';
             detailLocation.textContent = employee.location;
+            const address = formatAddress(employee);
+            if (detailAddress) {
+                detailAddress.textContent = address || '—';
+            }
+            if (detailTaxId) {
+                detailTaxId.textContent = employee.taxId && employee.taxId.trim() ? employee.taxId.trim() : '—';
+            }
+            if (detailLicense) {
+                const licenseParts = [];
+                if (employee.dlNumber && employee.dlNumber.trim()) {
+                    licenseParts.push(employee.dlNumber.trim());
+                }
+                if (employee.dlState && employee.dlState.trim()) {
+                    licenseParts.push(`(${employee.dlState.trim()})`);
+                }
+                detailLicense.textContent = licenseParts.length ? licenseParts.join(' ') : '—';
+            }
+            if (detailDob) {
+                const dob = formatDob(employee.dob);
+                detailDob.textContent = dob || '—';
+            }
             detailNotes.textContent = employee.notes;
+
+            updatePortalAccess(employee);
 
             detailDocs.innerHTML = '';
             if (employee.documents && employee.documents.length) {
-                employee.documents.forEach((doc) => {
+                employee.documents.forEach((doc, index) => {
                     const row = document.createElement('tr');
+                    row.dataset.docIndex = String(index);
 
                     const typeCell = document.createElement('td');
                     typeCell.textContent = doc.type;
@@ -786,21 +1591,53 @@
                     statusCell.appendChild(statusBadge);
                     row.appendChild(statusCell);
 
+                    const issuedCell = document.createElement('td');
+                    const issuedText = ((doc.issuedDisplay || doc.issued || '') + '').trim();
+                    issuedCell.textContent = issuedText || '—';
+                    row.appendChild(issuedCell);
+
                     const expiresCell = document.createElement('td');
-                    expiresCell.textContent = doc.expires && doc.expires.trim() ? doc.expires : '—';
+                    const expiresText = ((doc.expiresDisplay || doc.expires || '') + '').trim();
+                    expiresCell.textContent = expiresText || '—';
                     row.appendChild(expiresCell);
 
+                    const licenseCell = document.createElement('td');
+                    licenseCell.textContent = doc.licenseNumber || '—';
+                    row.appendChild(licenseCell);
+
                     const fileCell = document.createElement('td');
-                    if (doc.url) {
-                        const link = document.createElement('a');
-                        link.href = doc.url;
-                        link.textContent = doc.fileName || 'View';
-                        fileCell.appendChild(link);
-                    } else if (doc.fileName) {
-                        fileCell.textContent = doc.fileName;
-                    } else {
+                    const canPreview = Boolean(doc.previewSource);
+
+                    if (doc.fileName) {
+                        const nameSpan = document.createElement('span');
+                        nameSpan.className = 'doc-file-name';
+                        nameSpan.textContent = doc.fileName;
+                        fileCell.appendChild(nameSpan);
+                    }
+
+                    if (canPreview) {
+                        if (doc.fileName) {
+                            const separator = document.createElement('span');
+                            separator.className = 'doc-file-separator';
+                            separator.textContent = ' · ';
+                            fileCell.appendChild(separator);
+                        }
+
+                        const viewButton = document.createElement('button');
+                        viewButton.type = 'button';
+                        viewButton.className = 'link-button';
+                        viewButton.dataset.docAction = 'view';
+                        viewButton.textContent = 'View';
+                        fileCell.appendChild(viewButton);
+                    } else if (!doc.fileName) {
                         fileCell.textContent = '—';
                         fileCell.classList.add('text-muted');
+                    } else {
+                        const note = document.createElement('span');
+                        note.className = 'text-muted';
+                        note.textContent = 'No file on record';
+                        fileCell.appendChild(document.createElement('br'));
+                        fileCell.appendChild(note);
                     }
 
                     row.appendChild(fileCell);
@@ -809,7 +1646,7 @@
             } else {
                 const row = document.createElement('tr');
                 const cell = document.createElement('td');
-                cell.colSpan = 4;
+                cell.colSpan = 6;
                 cell.className = 'text-muted';
                 cell.textContent = 'No documentation on file yet.';
                 row.appendChild(cell);
@@ -835,6 +1672,35 @@
             if (removeEmployeeButton) {
                 removeEmployeeButton.disabled = false;
             }
+        }
+
+        if (detailDocs) {
+            detailDocs.addEventListener('click', (event) => {
+                const trigger = event.target instanceof Element ? event.target.closest('[data-doc-action="view"]') : null;
+                if (!trigger) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                const row = trigger.closest('tr');
+                const employee = getSelectedEmployee();
+                if (!row || !employee) {
+                    return;
+                }
+
+                const index = Number.parseInt(row.dataset.docIndex || '', 10);
+                if (Number.isNaN(index)) {
+                    return;
+                }
+
+                const documentRecord = employee.documents ? employee.documents[index] : null;
+                if (!documentRecord) {
+                    return;
+                }
+
+                openDocViewer(documentRecord, employee.name);
+            });
         }
 
         function applyFilters() {
@@ -870,6 +1736,11 @@
             });
         });
 
+        if (docTypeSelect) {
+            docTypeSelect.addEventListener('change', updateDocMetadataVisibility);
+        }
+
+        updateDocMetadataVisibility();
         function removeSelectedEmployee() {
             const employee = getSelectedEmployee();
             if (!employee) {
@@ -901,7 +1772,9 @@
             employees.forEach((employee) => {
                 (employee.documents || []).forEach((doc) => {
                     if (doc.type === 'TABC Certificate' && doc.attention) {
-                        tabcExpiring.push(`${employee.name} — renew by ${doc.expires}`);
+                        const expiryLabel = doc.expiresDisplay || doc.expires || 'TBC';
+                        const licenseLabel = doc.licenseNumber ? ` (${doc.licenseNumber})` : '';
+                        tabcExpiring.push(`${employee.name}${licenseLabel} — renew by ${expiryLabel}`);
                     }
                     if (doc.type === 'Food Handler' && doc.attention) {
                         foodPending.push(`${employee.name} — pending upload`);
@@ -999,6 +1872,61 @@
             });
         });
 
+        if (togglePortalActivity) {
+            togglePortalActivity.addEventListener('click', () => {
+                const employee = getSelectedEmployee();
+                const portal = employee ? employee.portal : null;
+                if (!portal || !Array.isArray(portal.loginActivity) || portal.loginActivity.length === 0) {
+                    return;
+                }
+
+                portalActivityExpanded = !portalActivityExpanded;
+                updatePortalActivityVisibility(true);
+            });
+        }
+
+        if (resetPortalPassword) {
+            resetPortalPassword.addEventListener('click', () => {
+                const employee = getSelectedEmployee();
+                if (!employee) {
+                    return;
+                }
+
+                const portal = employee.portal;
+                if (!portal || !portal.canResetPassword) {
+                    setAlert(portalAlert, 'Portal password reset is unavailable for this teammate.', 'danger');
+                    return;
+                }
+
+                const recipient = employee.email || employee.name || 'this teammate';
+                setAlert(portalAlert, `Password reset instructions were emailed to ${recipient}.`, 'success');
+            });
+        }
+
+        if (resendPortalInvite) {
+            resendPortalInvite.addEventListener('click', () => {
+                const employee = getSelectedEmployee();
+                if (!employee) {
+                    return;
+                }
+
+                const portal = employee.portal;
+                if (!portal || !portal.canResendInvite) {
+                    setAlert(portalAlert, 'Portal invite cannot be resent right now.', 'danger');
+                    return;
+                }
+
+                portal.canResendInvite = false;
+                portal.status = portal.status || 'invite-pending';
+                portal.statusLabel = portal.statusLabel || 'Invite pending';
+                portal.inviteSentAt = new Date().toISOString();
+                updatePortalAccess(employee);
+
+                const recipient = employee.email || employee.name || 'this teammate';
+                setAlert(portalAlert, `Portal invite has been re-sent to ${recipient}.`, 'success');
+            });
+        }
+
         if (docForm) {
             docForm.addEventListener('submit', (event) => {
                 event.preventDefault();
@@ -1017,25 +1945,62 @@
                     return;
                 }
 
-                const fileName = file.name;
                 const isTabc = type.toLowerCase().includes('tabc');
-                const newDoc = {
-                    type,
-                    status: isTabc ? 'Needs review' : 'Submitted',
-                    expires: isTabc ? 'To be confirmed' : '—',
-                    attention: true,
-                    fileName,
-                    url: ''
-                };
+                const licenseValue = tabcLicenseInput ? tabcLicenseInput.value.trim() : '';
+                const issuedValue = tabcIssuedInput ? tabcIssuedInput.value : '';
+                const expiresValue = tabcExpiresInput ? tabcExpiresInput.value : '';
 
-                employee.documents = employee.documents || [];
-                employee.documents.push(newDoc);
+                if (isTabc && (!licenseValue || !issuedValue || !expiresValue)) {
+                    setAlert(
+                        docAlert,
+                        'Add the license ID along with issued and expiration dates for TABC uploads.',
+                        'danger'
+                    );
+                    return;
+                }
 
-                selectEmployee(employee.id);
-                suppressDocAlertClear = true;
-                docForm.reset();
-                setAlert(docAlert, `${type} saved for ${employee.name}.`, 'success');
-                buildComplianceLists();
+                if (typeof FileReader === 'undefined') {
+                    setAlert(docAlert, 'Your browser does not support file uploads here yet.', 'danger');
+                    return;
+                }
+
+                toggleDocLoading(true);
+                setAlert(docAlert, 'Processing document upload…', 'info');
+
+                const reader = new FileReader();
+                reader.addEventListener('load', () => {
+                    toggleDocLoading(false);
+                    const previewSource = typeof reader.result === 'string' ? reader.result : '';
+                    const record = prepareDocument({
+                        type,
+                        status: isTabc ? 'Needs review' : 'Submitted',
+                        issued: isTabc ? issuedValue : '',
+                        expires: isTabc ? expiresValue : '',
+                        licenseNumber: isTabc ? licenseValue : '',
+                        attention: true,
+                        fileName: file.name,
+                        previewSource,
+                        url: previewSource,
+                        uploadedAt: new Date().toISOString()
+                    });
+
+                    employee.documents = employee.documents || [];
+                    employee.documents.push(record);
+
+                    selectEmployee(employee.id);
+                    suppressDocAlertClear = true;
+                    docForm.reset();
+                    updateDocMetadataVisibility();
+                    buildComplianceLists();
+                    setAlert(docAlert, `${type} saved for ${employee.name}.`, 'success');
+                });
+
+                reader.addEventListener('error', () => {
+                    toggleDocLoading(false);
+                    setAlert(docAlert, 'We could not read that file. Try uploading again.', 'danger');
+                });
+
+                reader.readAsDataURL(file);
             });
 
             docForm.addEventListener('reset', () => {
@@ -1043,8 +2008,30 @@
                     setAlert(docAlert, '');
                 }
                 suppressDocAlertClear = false;
+                toggleDocLoading(false);
+                updateDocMetadataVisibility();
             });
         }
+
+        if (docViewer) {
+            docViewer.addEventListener('click', (event) => {
+                const target = event.target;
+                if (!(target instanceof Element)) {
+                    return;
+                }
+
+                if (target.hasAttribute('data-modal-close')) {
+                    event.preventDefault();
+                    closeDocViewer();
+                }
+            });
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && docViewer && docViewer.classList.contains('is-open')) {
+                closeDocViewer();
+            }
+        });
 
         if (addEmployeeForm) {
             addEmployeeForm.addEventListener('submit', (event) => {
@@ -1054,12 +2041,23 @@
                 const role = teamRoleInput ? teamRoleInput.value.trim() : '';
                 const email = teamEmailInput ? teamEmailInput.value.trim() : '';
                 const phone = teamPhoneInput ? teamPhoneInput.value.trim() : '';
+                const addressLine1 = teamAddressLine1Input ? teamAddressLine1Input.value.trim() : '';
+                const addressLine2 = teamAddressLine2Input ? teamAddressLine2Input.value.trim() : '';
+                const addressCity = teamCityInput ? teamCityInput.value.trim() : '';
+                const addressState = teamStateInput ? teamStateInput.value.trim() : '';
+                const addressPostalCode = teamPostalCodeInput ? teamPostalCodeInput.value.trim() : '';
+                const taxId = teamSsnInput ? teamSsnInput.value.trim() : '';
+                const dobRaw = teamDobInput ? teamDobInput.value : '';
+                const dlNumber = teamDlNumberInput ? teamDlNumberInput.value.trim() : '';
+                const dlState = teamDlStateInput ? teamDlStateInput.value.trim() : '';
                 const notes = teamNotesInput ? teamNotesInput.value.trim() : '';
 
                 if (!name || !email) {
                     setAlert(addEmployeeAlert, 'Please add a name and email before inviting a teammate.', 'danger');
                     return;
                 }
+
+                const locationLabel = [addressCity, addressState].filter(Boolean).join(', ') || 'TBD';
 
                 const summaryRaw = notes
                     ? notes
@@ -1082,9 +2080,18 @@
                     specialties,
                     status: 'available',
                     statusLabel: 'Available',
-                    location: 'TBD',
+                    location: locationLabel,
                     email,
                     phone: phone || '—',
+                    addressLine1,
+                    addressLine2,
+                    addressCity,
+                    addressState,
+                    addressPostalCode,
+                    taxId,
+                    dob: dobRaw,
+                    dlNumber,
+                    dlState,
                     notes: detailNotes,
                     assignments: [],
                     documents: []

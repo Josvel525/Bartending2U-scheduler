@@ -12,12 +12,15 @@
                 package: 'Signature Cocktail Bar',
                 guestCount: 120,
                 payout: 3800,
+                requiredStaff: 4,
+                assignedStaffIds: ['emp-1', 'emp-3', 'emp-4', 'emp-6'],
                 status: 'Confirmed',
                 statusLevel: 'success',
                 staffingStatus: 'Fully staffed',
                 staffingLevel: 'success',
                 assignedTeam: ['emp-1', 'emp-3', 'emp-6'],
                 notes: 'Deposit received. Call time 6:00 PM.',
+                lastReminderSent: Date.now() - 1000 * 60 * 60 * 24,
                 createdAt: Date.now() - 1000 * 60 * 20,
                 checklist: [
                     { id: 'chk-evt-1-1', label: 'Confirm final guest count', completed: true },
@@ -38,12 +41,15 @@
                 package: 'Premium Mixology',
                 guestCount: 180,
                 payout: 5200,
+                requiredStaff: 5,
+                assignedStaffIds: ['emp-1', 'emp-4'],
                 status: 'Awaiting deposit',
                 statusLevel: 'warning',
                 staffingStatus: 'Needs 2 bartenders',
                 staffingLevel: 'warning',
                 assignedTeam: [],
                 notes: 'Send reminder for deposit. Discuss signature cocktail list.',
+                lastReminderSent: null,
                 createdAt: Date.now() - 1000 * 60 * 60 * 3,
                 checklist: [
                     { id: 'chk-evt-2-1', label: 'Follow up on deposit invoice', completed: false },
@@ -64,12 +70,15 @@
                 package: 'Craft Experience',
                 guestCount: 250,
                 payout: 7600,
+                requiredStaff: 8,
+                assignedStaffIds: ['emp-2', 'emp-5'],
                 status: 'Contract overdue',
                 statusLevel: 'danger',
                 staffingStatus: 'Partial coverage',
                 staffingLevel: 'warning',
                 assignedTeam: ['emp-5'],
                 notes: 'Client reviewing updated package. Follow up Friday.',
+                lastReminderSent: null,
                 createdAt: Date.now() - 1000 * 60 * 60 * 10,
                 checklist: [
                     { id: 'chk-evt-3-1', label: 'Update proposal with vegan options', completed: false },
@@ -90,12 +99,15 @@
                 package: 'Interactive Workshop',
                 guestCount: 25,
                 payout: 1400,
+                requiredStaff: 2,
+                assignedStaffIds: ['emp-3', 'emp-6'],
                 status: 'Confirmed',
                 statusLevel: 'success',
                 staffingStatus: 'Ready',
                 staffingLevel: 'success',
                 assignedTeam: ['emp-4'],
                 notes: 'Include mocktail options and allergy-friendly mixers.',
+                lastReminderSent: Date.now() - 1000 * 60 * 60 * 12,
                 createdAt: Date.now() - 1000 * 60 * 5,
                 checklist: [
                     { id: 'chk-evt-4-1', label: 'Prepare ingredient kits', completed: true },
@@ -231,6 +243,86 @@
         next.prepSheet = sanitisePrepSheet(next.prepSheet);
 
         return next;
+    function mapStatusLevel(value) {
+        if (!value) {
+            return 'neutral';
+        }
+
+        const lower = String(value).toLowerCase();
+
+        if (lower.includes('unassign') || lower.includes('overdue') || lower.includes('contract')) {
+            return 'danger';
+        }
+
+        if (
+            lower.includes('confirm') ||
+            lower.includes('ready') ||
+            lower.includes('available') ||
+            lower.includes('staffed') ||
+            lower.includes('assign')
+        ) {
+            return 'success';
+        }
+
+        if (lower.includes('need') || lower.includes('limited') || lower.includes('await') || lower.includes('pto')) {
+            return 'warning';
+        }
+
+        return 'info';
+    }
+
+    function normaliseEvent(event) {
+        const base = Object.assign(
+            {
+                assignedStaffIds: [],
+                assignedTeam: [],
+                requiredStaff: 0,
+                lastReminderSent: null,
+            },
+            event || {}
+        );
+
+        if (!Array.isArray(base.assignedStaffIds)) {
+            base.assignedStaffIds = [];
+        }
+
+        if (!Array.isArray(base.assignedTeam)) {
+            base.assignedTeam = [];
+        }
+
+        if (!base.statusLevel && base.status) {
+            base.statusLevel = mapStatusLevel(base.status);
+        }
+
+        if (!base.staffingLevel && base.staffingStatus) {
+            base.staffingLevel = mapStatusLevel(base.staffingStatus);
+        }
+
+        return base;
+    }
+
+    function normaliseEmployee(employee) {
+        const base = Object.assign({}, employee || {});
+
+        if (!base.statusLevel && base.status) {
+            base.statusLevel = mapStatusLevel(base.status);
+        }
+
+        return base;
+    }
+
+    function normalise(data) {
+        if (!data || typeof data !== 'object') {
+            return clone(defaultData);
+        }
+
+        const eventsSource = Array.isArray(data.events) ? data.events : defaultData.events;
+        const employeesSource = Array.isArray(data.employees) ? data.employees : defaultData.employees;
+
+        return {
+            events: eventsSource.map((event) => normaliseEvent(event)),
+            employees: employeesSource.map((employee) => normaliseEmployee(employee)),
+        };
     }
 
     function localStorageAvailable() {
@@ -261,20 +353,14 @@
         if (hasLocalStorage) {
             try {
                 const raw = global.localStorage.getItem(STORAGE_KEY);
-                if (!raw) {
-                    const seeded = clone(defaultData);
-                    cache = seeded;
-                    try {
-                        global.localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
-                    } catch (seedError) {
-                        console.warn('Unable to seed scheduler data to localStorage. Falling back to memory store.', seedError);
-                        memoryStore = clone(seeded);
-                    }
+                if (raw) {
+                    cache = normalise(JSON.parse(raw));
                     return cache;
                 }
 
-                const parsed = JSON.parse(raw);
-                cache = normalise(parsed);
+                const seeded = normalise(clone(defaultData));
+                global.localStorage.setItem(STORAGE_KEY, JSON.stringify(seeded));
+                cache = seeded;
                 return cache;
             } catch (error) {
                 console.warn('Unable to read scheduler data from localStorage. Using in-memory fallback.', error);
@@ -282,7 +368,7 @@
         }
 
         if (!memoryStore) {
-            memoryStore = clone(defaultData);
+            memoryStore = normalise(clone(defaultData));
         }
 
         cache = clone(memoryStore);
@@ -332,31 +418,6 @@
         return `${prefix}-${randomPart}-${timePart}`;
     }
 
-    function mapStatusLevel(value) {
-        if (!value) {
-            return 'neutral';
-        }
-
-        const lower = value.toLowerCase();
-        if (lower.includes('unassign')) {
-            return 'danger';
-        }
-
-        if (lower.includes('confirm') || lower.includes('ready') || lower.includes('available') || lower.includes('staffed') || lower.includes('assign')) {
-            return 'success';
-        }
-
-        if (lower.includes('need') || lower.includes('limited') || lower.includes('await') || lower.includes('pto')) {
-            return 'warning';
-        }
-
-        if (lower.includes('overdue') || lower.includes('contract')) {
-            return 'danger';
-        }
-
-        return 'info';
-    }
-
     const store = {
         getSnapshot() {
             return clone(readRaw());
@@ -380,26 +441,38 @@
         },
         addEvent(eventInput) {
             const snapshot = readRaw();
-            const event = Object.assign(
-                {
-                    id: generateId('evt'),
-                    createdAt: Date.now(),
-                },
-                eventInput
+            const event = normaliseEvent(
+                Object.assign(
+                    {
+                        id: generateId('evt'),
+                        createdAt: Date.now(),
+                    },
+                    eventInput || {}
+                )
             );
 
             const normalisedEvent = normaliseEvent(event);
             snapshot.events.push(normalisedEvent);
             writeRaw(snapshot);
             return clone(normalisedEvent);
+            snapshot.events.push(event);
+            writeRaw(snapshot);
+            return clone(event);
         },
         removeEvent(eventId) {
+            if (!eventId) {
+                return;
+            }
+
             const snapshot = readRaw();
-            const nextEvents = snapshot.events.filter((event) => event.id !== eventId);
-            snapshot.events = nextEvents;
+            snapshot.events = snapshot.events.filter((event) => event.id !== eventId);
             writeRaw(snapshot);
         },
         updateEvent(eventId, updates) {
+            if (!eventId) {
+                return null;
+            }
+
             const snapshot = readRaw();
             const index = snapshot.events.findIndex((event) => event.id === eventId);
 
@@ -478,31 +551,78 @@
             }
 
             target.prepSheet = sanitisePrepSheet(prepSheet);
+            const patch = typeof updates === 'function' ? updates(clone(current)) : updates || {};
+            const nextEvent = normaliseEvent(
+                Object.assign({}, current, patch, {
+                    updatedAt: Date.now(),
+                })
+            );
+
+            snapshot.events[index] = nextEvent;
+            writeRaw(snapshot);
+            return clone(nextEvent);
+        },
+        assignStaff(eventId, staffIds) {
+            const ids = Array.isArray(staffIds) ? staffIds.filter(Boolean) : [];
+            const snapshot = readRaw();
+            const index = snapshot.events.findIndex((event) => event.id === eventId);
+
+            if (index === -1) {
+                return null;
+            }
+
+            const current = snapshot.events[index];
+            const required = typeof current.requiredStaff === 'number' ? current.requiredStaff : 0;
+            const assignedCount = ids.length;
+
+            let staffingStatus = 'Unassigned';
+            if (assignedCount === 0) {
+                staffingStatus = required > 0 ? `Needs ${required} staff` : 'Unassigned';
+            } else if (required && assignedCount < required) {
+                const remaining = required - assignedCount;
+                staffingStatus = remaining === 0 ? 'Fully staffed' : `Needs ${remaining} more`;
+            } else if (required && assignedCount >= required) {
+                staffingStatus = 'Fully staffed';
+            } else {
+                staffingStatus = `Assigned ${assignedCount} team`;
+            }
+
+            const nextEvent = normaliseEvent(
+                Object.assign({}, current, {
+                    assignedStaffIds: ids,
+                    staffingStatus,
+                    staffingLevel: mapStatusLevel(staffingStatus),
+                    updatedAt: Date.now(),
+                })
+            );
+
+            snapshot.events[index] = nextEvent;
             writeRaw(snapshot);
             return clone(target.prepSheet);
         },
         addEmployee(employeeInput) {
             const snapshot = readRaw();
-            const employee = Object.assign(
-                {
-                    id: generateId('emp'),
-                    createdAt: Date.now(),
-                },
-                employeeInput
+            const employee = normaliseEmployee(
+                Object.assign(
+                    {
+                        id: generateId('emp'),
+                        createdAt: Date.now(),
+                    },
+                    employeeInput || {}
+                )
             );
-
-            if (!employee.statusLevel) {
-                employee.statusLevel = mapStatusLevel(employee.status);
-            }
 
             snapshot.employees.push(employee);
             writeRaw(snapshot);
-            return employee;
+            return clone(employee);
         },
         removeEmployee(employeeId) {
+            if (!employeeId) {
+                return;
+            }
+
             const snapshot = readRaw();
-            const nextEmployees = snapshot.employees.filter((employee) => employee.id !== employeeId);
-            snapshot.employees = nextEmployees;
+            snapshot.employees = snapshot.employees.filter((employee) => employee.id !== employeeId);
             writeRaw(snapshot);
         },
         clearAll() {
