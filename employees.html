@@ -653,7 +653,7 @@
             };
         }
 
-        let employees = [
+        const fallbackEmployees = [
             {
                 id: 'john-doe',
                 name: 'John Doe',
@@ -953,7 +953,62 @@
                     ]
                 }
             }
-        ].map(prepareEmployee);
+        ];
+
+        let employees = fallbackEmployees.map(prepareEmployee);
+        const store = window.B2UStore;
+        let scheduledEvents = [];
+
+        function stripDocumentComputedFields(document) {
+            const copy = Object.assign({}, document);
+            delete copy.expiresDisplay;
+            delete copy.issuedDisplay;
+            delete copy.canPreview;
+            return copy;
+        }
+
+        function serialiseEmployeeForStorage(employee) {
+            const plain = JSON.parse(JSON.stringify(employee));
+            if (Array.isArray(plain.documents)) {
+                plain.documents = plain.documents.map(stripDocumentComputedFields);
+            }
+            return plain;
+        }
+
+        function persistEmployees() {
+            if (!store) {
+                return;
+            }
+
+            try {
+                const snapshot = store.getSnapshot();
+                snapshot.employees = employees.map(serialiseEmployeeForStorage);
+                store.saveSnapshot(snapshot);
+                try {
+                    scheduledEvents = store.getEvents();
+                } catch (eventError) {
+                    scheduledEvents = Array.isArray(snapshot.events) ? snapshot.events : scheduledEvents;
+                }
+            } catch (error) {
+                console.warn('Unable to persist employees to storage.', error);
+            }
+        }
+
+        if (store) {
+            try {
+                const snapshot = store.getSnapshot();
+                scheduledEvents = Array.isArray(snapshot.events) ? snapshot.events : [];
+
+                if (Array.isArray(snapshot.employees) && snapshot.employees.length) {
+                    employees = snapshot.employees.map(prepareEmployee);
+                } else {
+                    persistEmployees();
+                }
+            } catch (error) {
+                console.warn('Unable to load scheduler data from storage. Using defaults.', error);
+                scheduledEvents = [];
+            }
+        }
 
         const employeeList = document.getElementById('employeeList');
         const employeeDetails = document.getElementById('employeeDetails');
@@ -1883,6 +1938,29 @@
         }
 
         updateDocMetadataVisibility();
+        function removeEmployeeRecord(employeeId) {
+            if (!employeeId) {
+                return false;
+            }
+
+            const exists = employees.some((employee) => employee.id === employeeId);
+            if (!exists) {
+                return false;
+            }
+
+            employees = employees.filter((employee) => employee.id !== employeeId);
+            if (selectedEmployeeId === employeeId) {
+                selectedEmployeeId = null;
+            }
+
+            persistEmployees();
+            applyFilters();
+            buildComplianceLists();
+            updateBlastPreview();
+            refresh({ reloadEvents: false });
+            return true;
+        }
+
         function removeSelectedEmployee() {
             const employee = getSelectedEmployee();
             if (!employee) {
@@ -1894,12 +1972,9 @@
                 return;
             }
 
-            employees = employees.filter((person) => person.id !== employee.id);
-            selectedEmployeeId = null;
-            setAlert(docAlert, '');
-            applyFilters();
-            buildComplianceLists();
-            updateBlastPreview();
+            if (removeEmployeeRecord(employee.id)) {
+                setAlert(docAlert, '');
+            }
         }
 
         if (removeEmployeeButton) {
@@ -2074,6 +2149,8 @@
                 portal.statusLabel = portal.statusLabel || 'Invite pending';
                 portal.inviteSentAt = new Date().toISOString();
                 updatePortalAccess(employee);
+                persistEmployees();
+                refresh({ reloadEvents: false });
 
                 const recipient = employee.email || employee.name || 'this teammate';
                 setAlert(portalAlert, `Portal invite has been re-sent to ${recipient}.`, 'success');
@@ -2141,6 +2218,8 @@
                     employee.documents.push(record);
 
                     selectEmployee(employee.id);
+                    persistEmployees();
+                    refresh({ reloadEvents: false });
                     suppressDocAlertClear = true;
                     docForm.reset();
                     updateDocMetadataVisibility();
@@ -2250,8 +2329,20 @@
                     documents: []
                 };
 
-                employees.push(newEmployee);
-                selectedEmployeeId = newEmployee.id;
+                let savedEmployee = newEmployee;
+                if (store) {
+                    try {
+                        savedEmployee = store.addEmployee(newEmployee);
+                    } catch (error) {
+                        console.warn('Unable to save employee to storage. Using local data only.', error);
+                        savedEmployee = newEmployee;
+                    }
+                }
+
+                const preparedEmployee = prepareEmployee(savedEmployee);
+                employees.push(preparedEmployee);
+                selectedEmployeeId = preparedEmployee.id;
+                persistEmployees();
                 addEmployeeForm.reset();
                 setAlert(addEmployeeAlert, `${name} has been added to the roster.`, 'success');
 
@@ -2264,6 +2355,7 @@
                 renderEmployeeList(employees);
                 buildComplianceLists();
                 updateBlastPreview();
+                refresh({ reloadEvents: false });
             });
 
             addEmployeeForm.addEventListener('reset', () => setAlert(addEmployeeAlert, ''));
@@ -2328,7 +2420,6 @@
         updateCharacterCount();
         updateBlastTypeVisibility();
         updateBlastPreview();
-        const store = window.B2UStore;
         const teamList = document.getElementById('teamList');
         const teamForm = document.getElementById('teamForm');
         const upcomingShifts = document.getElementById('upcomingShifts');
@@ -2381,14 +2472,6 @@
             }
 
             teamList.innerHTML = '';
-
-            if (!store) {
-                const message = document.createElement('p');
-                message.className = 'empty-state';
-                message.textContent = 'Unable to load staff directory. Refresh the page to retry.';
-                teamList.appendChild(message);
-                return;
-            }
 
             if (employees.length === 0) {
                 const message = document.createElement('p');
@@ -2499,14 +2582,6 @@
 
             upcomingShifts.innerHTML = '';
 
-            if (!store) {
-                const message = document.createElement('p');
-                message.className = 'empty-state';
-                message.textContent = 'Unable to load schedule previews.';
-                upcomingShifts.appendChild(message);
-                return;
-            }
-
             const upcomingEvents = events
                 .slice()
                 .sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b))
@@ -2555,55 +2630,83 @@
             });
         }
 
-        function refresh() {
-            if (!store) {
-                renderTeamList([]);
-                renderUpcomingShifts([]);
-                updateStats([]);
-                return;
+        function refresh({ reloadEvents = true } = {}) {
+            if (store && reloadEvents) {
+                try {
+                    scheduledEvents = store.getEvents();
+                } catch (error) {
+                    console.warn('Unable to load events from storage.', error);
+                    scheduledEvents = [];
+                }
             }
 
-            const employees = store.getEmployees();
-            const events = store.getEvents();
             renderTeamList(employees);
             updateStats(employees);
-            renderUpcomingShifts(events);
+            renderUpcomingShifts(scheduledEvents);
         }
 
         if (teamList) {
             teamList.addEventListener('click', (event) => {
                 const target = event.target.closest('[data-remove-employee]');
-                if (!target || !store) {
+                if (!target) {
                     return;
                 }
 
-                store.removeEmployee(target.dataset.removeEmployee);
-                refresh();
+                const employeeId = target.dataset.removeEmployee;
+                const employee = employees.find((person) => person.id === employeeId);
+                if (!employee) {
+                    return;
+                }
+
+                const confirmed = window.confirm(`Remove ${employee.name} from your roster? This action cannot be undone.`);
+                if (!confirmed) {
+                    return;
+                }
+
+                removeEmployeeRecord(employeeId);
             });
         }
 
-        if (teamForm && store) {
+        if (teamForm) {
             teamForm.addEventListener('submit', (event) => {
                 event.preventDefault();
 
                 const data = new FormData(teamForm);
-                const statusOption = teamForm.teamStatus.options[teamForm.teamStatus.selectedIndex];
-
-                store.addEmployee({
+                const statusOption = teamForm.teamStatus ? teamForm.teamStatus.options[teamForm.teamStatus.selectedIndex] : null;
+                const quickEmployee = {
+                    id: generateEmployeeId((data.get('name') || '').trim() || 'teammate'),
                     name: (data.get('name') || '').trim() || 'Unnamed team member',
                     role: data.get('role') || '',
                     email: (data.get('email') || '').trim(),
                     phone: (data.get('phone') || '').trim(),
                     status: data.get('status') || 'Available',
+                    statusLabel: statusOption ? statusOption.textContent || statusOption.value : 'Available',
                     statusLevel: statusOption ? statusOption.dataset.level : undefined,
                     notes: (data.get('notes') || '').trim(),
-                });
+                };
 
+                let savedQuickEmployee = quickEmployee;
+                if (store) {
+                    try {
+                        savedQuickEmployee = store.addEmployee(quickEmployee);
+                    } catch (error) {
+                        console.warn('Unable to save quick-add employee to storage.', error);
+                        savedQuickEmployee = quickEmployee;
+                    }
+                }
+
+                const preparedQuickEmployee = prepareEmployee(savedQuickEmployee);
+                employees.push(preparedQuickEmployee);
+                selectedEmployeeId = preparedQuickEmployee.id;
+                persistEmployees();
                 teamForm.reset();
                 if (teamForm.teamStatus) {
                     teamForm.teamStatus.value = 'Available';
                 }
-                refresh();
+                refresh({ reloadEvents: false });
+                applyFilters();
+                buildComplianceLists();
+                updateBlastPreview();
             });
         }
 
