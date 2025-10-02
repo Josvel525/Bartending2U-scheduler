@@ -107,7 +107,12 @@
                             <h3 class="details-name" id="detailName">Select a teammate</h3>
                             <p class="details-role" id="detailRole">Profile details will appear here.</p>
                         </div>
-                        <span class="badge" id="detailStatus">—</span>
+                        <div class="details-header__meta">
+                            <span class="badge" id="detailStatus">—</span>
+                            <button class="button danger small" type="button" id="removeEmployeeButton" disabled>
+                                Remove teammate
+                            </button>
+                        </div>
                     </div>
 
                     <div class="details-section">
@@ -124,6 +129,28 @@
                             <div>
                                 <dt>Primary location</dt>
                                 <dd id="detailLocation">Houston Metro</dd>
+                            </div>
+                        </dl>
+                    </div>
+
+                    <div class="details-section">
+                        <h4>Tax &amp; identification</h4>
+                        <dl class="details-list">
+                            <div>
+                                <dt>Home address</dt>
+                                <dd id="detailAddress" class="multiline">—</dd>
+                            </div>
+                            <div>
+                                <dt>Tax ID / SSN</dt>
+                                <dd id="detailTaxId">—</dd>
+                            </div>
+                            <div>
+                                <dt>Driver's license</dt>
+                                <dd id="detailLicense">—</dd>
+                            </div>
+                            <div>
+                                <dt>Date of birth</dt>
+                                <dd id="detailDob">—</dd>
                             </div>
                         </dl>
                     </div>
@@ -344,6 +371,46 @@
                             </select>
                         </div>
                     </div>
+                    <div class="form-grid">
+                        <div class="form-field full-width">
+                            <label for="teamAddressLine1">Home address</label>
+                            <input id="teamAddressLine1" name="addressLine1" type="text" placeholder="Street address" />
+                        </div>
+                        <div class="form-field full-width">
+                            <label for="teamAddressLine2">Apartment, suite, etc. (optional)</label>
+                            <input id="teamAddressLine2" name="addressLine2" type="text" placeholder="Unit or floor" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamCity">City</label>
+                            <input id="teamCity" name="city" type="text" placeholder="City" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamState">State</label>
+                            <input id="teamState" name="state" type="text" maxlength="2" placeholder="TX" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamPostalCode">ZIP code</label>
+                            <input id="teamPostalCode" name="postalCode" type="text" placeholder="75201" />
+                        </div>
+                    </div>
+                    <div class="form-grid">
+                        <div class="form-field">
+                            <label for="teamSsn">Tax ID / SSN</label>
+                            <input id="teamSsn" name="taxId" type="text" placeholder="123-45-6789" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamDob">Date of birth</label>
+                            <input id="teamDob" name="dob" type="date" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamDlNumber">Driver's license number</label>
+                            <input id="teamDlNumber" name="dlNumber" type="text" placeholder="TX1234567" />
+                        </div>
+                        <div class="form-field">
+                            <label for="teamDlState">Issuing state</label>
+                            <input id="teamDlState" name="dlState" type="text" maxlength="2" placeholder="TX" />
+                        </div>
+                    </div>
                     <div class="form-field">
                         <label for="teamNotes">Specialties & certifications</label>
                         <textarea id="teamNotes" name="notes" placeholder="E.g. flair bartending, wine pairing, bilingual"></textarea>
@@ -458,7 +525,7 @@
             });
         }
 
-        const employees = [
+        let employees = [
             {
                 id: 'john-doe',
                 name: 'John Doe',
@@ -469,6 +536,15 @@
                 location: 'Houston, TX',
                 email: 'john.doe@bartending2u.com',
                 phone: '(713) 555-0114',
+                addressLine1: '1901 Market St',
+                addressLine2: 'Suite 210',
+                addressCity: 'Houston',
+                addressState: 'TX',
+                addressPostalCode: '77002',
+                taxId: '123-45-6789',
+                dob: '1984-07-19',
+                dlNumber: 'TX12345678',
+                dlState: 'TX',
                 notes: 'Lead trainer for new hires. Loves crafting signature welcome cocktails.',
                 assignments: [
                     'Corporate Party — Oct 5 (Lead bartender)',
@@ -505,6 +581,15 @@
                 location: 'Austin, TX',
                 email: 'jane.smith@bartending2u.com',
                 phone: '(512) 555-0199',
+                addressLine1: '501 Congress Ave',
+                addressLine2: 'Apt 9B',
+                addressCity: 'Austin',
+                addressState: 'TX',
+                addressPostalCode: '78701',
+                taxId: '234-56-7890',
+                dob: '1990-02-11',
+                dlNumber: 'TX87654321',
+                dlState: 'TX',
                 notes: 'Certified sommelier. Currently on PTO returning Oct 14.',
                 assignments: [
                     'Mocktail Workshop — Oct 22 (Program design)'
@@ -536,6 +621,15 @@
                 location: 'Dallas, TX',
                 email: 'alex.rivera@bartending2u.com',
                 phone: '(469) 555-0147',
+                addressLine1: '1400 Elm St',
+                addressLine2: '',
+                addressCity: 'Dallas',
+                addressState: 'TX',
+                addressPostalCode: '75202',
+                taxId: '345-67-8901',
+                dob: '1988-11-03',
+                dlNumber: 'TX44556677',
+                dlState: 'TX',
                 notes: 'Lead for sports stadium activations. Fluent in Spanish and English.',
                 assignments: [
                     'Corporate Party — Oct 5 (Support)',
@@ -571,6 +665,15 @@
                 location: 'Houston, TX',
                 email: 'priya.singh@bartending2u.com',
                 phone: '(832) 555-0177',
+                addressLine1: '2220 Westheimer Rd',
+                addressLine2: 'Unit 5',
+                addressCity: 'Houston',
+                addressState: 'TX',
+                addressPostalCode: '77098',
+                taxId: '456-78-9012',
+                dob: '1986-05-27',
+                dlNumber: 'TX99887766',
+                dlState: 'TX',
                 notes: 'Hosts quarterly workshops and champions zero-proof menu innovation.',
                 assignments: [
                     'Mixology Workshop — Oct 18 (Instructor)',
@@ -607,6 +710,15 @@
                 location: 'San Antonio, TX',
                 email: 'jamie.lee@bartending2u.com',
                 phone: '(210) 555-0188',
+                addressLine1: '815 Avenue B',
+                addressLine2: '',
+                addressCity: 'San Antonio',
+                addressState: 'TX',
+                addressPostalCode: '78215',
+                taxId: '567-89-0123',
+                dob: '1992-09-14',
+                dlNumber: 'TX11223344',
+                dlState: 'TX',
                 notes: 'Available for load-ins and barback duties Thursdays through Sundays.',
                 assignments: [
                     'Mixology Workshop — Oct 18 (Support)'
@@ -640,6 +752,15 @@
                 location: 'Houston, TX',
                 email: 'marcus.allen@bartending2u.com',
                 phone: '(713) 555-0160',
+                addressLine1: '3710 Main St',
+                addressLine2: '',
+                addressCity: 'Houston',
+                addressState: 'TX',
+                addressPostalCode: '77002',
+                taxId: '678-90-1234',
+                dob: '1987-03-08',
+                dlNumber: 'TX55667788',
+                dlState: 'TX',
                 notes: 'Great with tight timelines and closing shifts. CDL certified.',
                 assignments: [
                     'Wedding Reception — Oct 15 (Barback)',
@@ -676,6 +797,10 @@
         const detailEmail = document.getElementById('detailEmail');
         const detailPhone = document.getElementById('detailPhone');
         const detailLocation = document.getElementById('detailLocation');
+        const detailAddress = document.getElementById('detailAddress');
+        const detailTaxId = document.getElementById('detailTaxId');
+        const detailLicense = document.getElementById('detailLicense');
+        const detailDob = document.getElementById('detailDob');
         const detailNotes = document.getElementById('detailNotes');
         const detailDocs = document.getElementById('detailDocs');
         const detailAssignments = document.getElementById('detailAssignments');
@@ -690,6 +815,7 @@
         const togglePortalActivity = document.getElementById('togglePortalActivity');
         const resetPortalPassword = document.getElementById('resetPortalPassword');
         const resendPortalInvite = document.getElementById('resendPortalInvite');
+        const removeEmployeeButton = document.getElementById('removeEmployeeButton');
         const characterCount = document.getElementById('characterCount');
         const blastMessage = document.getElementById('blastMessage');
         const blastSubject = document.getElementById('blastSubject');
@@ -709,6 +835,15 @@
         const teamRoleInput = document.getElementById('teamRole');
         const teamEmailInput = document.getElementById('teamEmail');
         const teamPhoneInput = document.getElementById('teamPhone');
+        const teamAddressLine1Input = document.getElementById('teamAddressLine1');
+        const teamAddressLine2Input = document.getElementById('teamAddressLine2');
+        const teamCityInput = document.getElementById('teamCity');
+        const teamStateInput = document.getElementById('teamState');
+        const teamPostalCodeInput = document.getElementById('teamPostalCode');
+        const teamSsnInput = document.getElementById('teamSsn');
+        const teamDobInput = document.getElementById('teamDob');
+        const teamDlNumberInput = document.getElementById('teamDlNumber');
+        const teamDlStateInput = document.getElementById('teamDlState');
         const teamNotesInput = document.getElementById('teamNotes');
 
         const complianceLists = {
@@ -755,6 +890,58 @@
 
         function getSelectedEmployee() {
             return employees.find((person) => person.id === selectedEmployeeId);
+        }
+
+        function clearEmployeeDetails() {
+            if (!detailName || !detailRole || !detailStatus) {
+                return;
+            }
+
+            detailName.textContent = 'Select a teammate';
+            detailRole.textContent = 'Profile details will appear here.';
+            detailStatus.textContent = '—';
+            detailStatus.className = 'badge';
+
+            if (detailEmail) {
+                detailEmail.textContent = 'team@bartending2u.com';
+                detailEmail.href = 'mailto:team@bartending2u.com';
+            }
+
+            if (detailPhone) {
+                detailPhone.textContent = '(555) 123-4567';
+                detailPhone.href = 'tel:+15551234567';
+            }
+
+            if (detailLocation) {
+                detailLocation.textContent = 'Houston Metro';
+            }
+
+            if (detailNotes) {
+                detailNotes.textContent = 'Document specialties, awards, and go-to pairings for your star team members.';
+            }
+
+            if (detailAssignments) {
+                detailAssignments.innerHTML = '';
+                const pill = document.createElement('li');
+                pill.className = 'text-muted';
+                pill.textContent = 'Assignments will populate once you select a teammate.';
+                detailAssignments.appendChild(pill);
+            }
+
+            if (detailDocs) {
+                detailDocs.innerHTML = '';
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 4;
+                cell.className = 'text-muted';
+                cell.textContent = 'Select a teammate to review documentation.';
+                row.appendChild(cell);
+                detailDocs.appendChild(row);
+            }
+
+            if (removeEmployeeButton) {
+                removeEmployeeButton.disabled = true;
+            }
         }
 
         function isSmsSelected() {
@@ -896,6 +1083,8 @@
                 emptyState.className = 'empty-state';
                 emptyState.textContent = 'No teammates match your filters just yet.';
                 employeeList.appendChild(emptyState);
+                selectedEmployeeId = null;
+                clearEmployeeDetails();
                 return;
             }
 
@@ -937,11 +1126,60 @@
             selectEmployee(selectedEmployeeId);
         }
 
+        function formatAddress(employee) {
+            if (!employee) return '';
+            const segments = [];
+            const line1 = (employee.addressLine1 || '').trim();
+            const line2 = (employee.addressLine2 || '').trim();
+            const city = (employee.addressCity || '').trim();
+            const state = (employee.addressState || '').trim();
+            const postal = (employee.addressPostalCode || '').trim();
+
+            if (line1) segments.push(line1);
+            if (line2) segments.push(line2);
+
+            const cityState = [city, state].filter(Boolean).join(', ');
+            const finalLine = [cityState, postal].filter(Boolean).join(' ').trim();
+            if (finalLine) segments.push(finalLine);
+
+            return segments.join('\n');
+        }
+
+        function formatDob(value) {
+            if (!value) return '';
+            const parts = value.split('-').map((part) => parseInt(part, 10));
+            if (parts.length === 3 && parts.every((num) => !Number.isNaN(num))) {
+                const [year, month, day] = parts;
+                const parsed = new Date(year, month - 1, day);
+                if (!Number.isNaN(parsed.getTime())) {
+                    return new Intl.DateTimeFormat('en-US', {
+                        month: 'short',
+                        day: 'numeric',
+                        year: 'numeric'
+                    }).format(parsed);
+                }
+            }
+
+            const fallback = new Date(value);
+            if (!Number.isNaN(fallback.getTime())) {
+                return new Intl.DateTimeFormat('en-US', {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                }).format(fallback);
+            }
+
+            return value;
+        }
+
         function selectEmployee(id) {
             const previousId = selectedEmployeeId;
             selectedEmployeeId = id;
             const employee = getSelectedEmployee();
-            if (!employee || !employeeDetails) return;
+            if (!employee || !employeeDetails) {
+                clearEmployeeDetails();
+                return;
+            }
 
             const cards = employeeList.querySelectorAll('.person-card');
             cards.forEach((card) => {
@@ -962,6 +1200,27 @@
             const digits = employee.phone.replace(/[^0-9]/g, '');
             detailPhone.href = digits ? `tel:+1${digits}` : '#';
             detailLocation.textContent = employee.location;
+            const address = formatAddress(employee);
+            if (detailAddress) {
+                detailAddress.textContent = address || '—';
+            }
+            if (detailTaxId) {
+                detailTaxId.textContent = employee.taxId && employee.taxId.trim() ? employee.taxId.trim() : '—';
+            }
+            if (detailLicense) {
+                const licenseParts = [];
+                if (employee.dlNumber && employee.dlNumber.trim()) {
+                    licenseParts.push(employee.dlNumber.trim());
+                }
+                if (employee.dlState && employee.dlState.trim()) {
+                    licenseParts.push(`(${employee.dlState.trim()})`);
+                }
+                detailLicense.textContent = licenseParts.length ? licenseParts.join(' ') : '—';
+            }
+            if (detailDob) {
+                const dob = formatDob(employee.dob);
+                detailDob.textContent = dob || '—';
+            }
             detailNotes.textContent = employee.notes;
 
             updatePortalAccess(employee);
@@ -1027,6 +1286,10 @@
                     detailAssignments.appendChild(pill);
                 }
             }
+
+            if (removeEmployeeButton) {
+                removeEmployeeButton.disabled = false;
+            }
         }
 
         function applyFilters() {
@@ -1061,6 +1324,29 @@
                 applyFilters();
             });
         });
+
+        function removeSelectedEmployee() {
+            const employee = getSelectedEmployee();
+            if (!employee) {
+                return;
+            }
+
+            const confirmed = window.confirm(`Remove ${employee.name} from your roster? This action cannot be undone.`);
+            if (!confirmed) {
+                return;
+            }
+
+            employees = employees.filter((person) => person.id !== employee.id);
+            selectedEmployeeId = null;
+            setAlert(docAlert, '');
+            applyFilters();
+            buildComplianceLists();
+            updateBlastPreview();
+        }
+
+        if (removeEmployeeButton) {
+            removeEmployeeButton.addEventListener('click', removeSelectedEmployee);
+        }
 
         function buildComplianceLists() {
             const tabcExpiring = [];
@@ -1278,12 +1564,23 @@
                 const role = teamRoleInput ? teamRoleInput.value.trim() : '';
                 const email = teamEmailInput ? teamEmailInput.value.trim() : '';
                 const phone = teamPhoneInput ? teamPhoneInput.value.trim() : '';
+                const addressLine1 = teamAddressLine1Input ? teamAddressLine1Input.value.trim() : '';
+                const addressLine2 = teamAddressLine2Input ? teamAddressLine2Input.value.trim() : '';
+                const addressCity = teamCityInput ? teamCityInput.value.trim() : '';
+                const addressState = teamStateInput ? teamStateInput.value.trim() : '';
+                const addressPostalCode = teamPostalCodeInput ? teamPostalCodeInput.value.trim() : '';
+                const taxId = teamSsnInput ? teamSsnInput.value.trim() : '';
+                const dobRaw = teamDobInput ? teamDobInput.value : '';
+                const dlNumber = teamDlNumberInput ? teamDlNumberInput.value.trim() : '';
+                const dlState = teamDlStateInput ? teamDlStateInput.value.trim() : '';
                 const notes = teamNotesInput ? teamNotesInput.value.trim() : '';
 
                 if (!name || !email) {
                     setAlert(addEmployeeAlert, 'Please add a name and email before inviting a teammate.', 'danger');
                     return;
                 }
+
+                const locationLabel = [addressCity, addressState].filter(Boolean).join(', ') || 'TBD';
 
                 const summaryRaw = notes
                     ? notes
@@ -1306,9 +1603,18 @@
                     specialties,
                     status: 'available',
                     statusLabel: 'Available',
-                    location: 'TBD',
+                    location: locationLabel,
                     email,
                     phone: phone || '—',
+                    addressLine1,
+                    addressLine2,
+                    addressCity,
+                    addressState,
+                    addressPostalCode,
+                    taxId,
+                    dob: dobRaw,
+                    dlNumber,
+                    dlState,
                     notes: detailNotes,
                     assignments: [],
                     documents: []

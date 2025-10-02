@@ -12,11 +12,15 @@
                 package: 'Signature Cocktail Bar',
                 guestCount: 120,
                 payout: 3800,
+                requiredStaff: 4,
+                assignedStaffIds: ['emp-1', 'emp-3', 'emp-4', 'emp-6'],
                 status: 'Confirmed',
                 statusLevel: 'success',
                 staffingStatus: 'Fully staffed',
                 staffingLevel: 'success',
+                assignedTeam: ['emp-1', 'emp-3', 'emp-6'],
                 notes: 'Deposit received. Call time 6:00 PM.',
+                lastReminderSent: Date.now() - 1000 * 60 * 60 * 24,
                 createdAt: Date.now() - 1000 * 60 * 20,
             },
             {
@@ -28,11 +32,15 @@
                 package: 'Premium Mixology',
                 guestCount: 180,
                 payout: 5200,
+                requiredStaff: 5,
+                assignedStaffIds: ['emp-1', 'emp-4'],
                 status: 'Awaiting deposit',
                 statusLevel: 'warning',
                 staffingStatus: 'Needs 2 bartenders',
                 staffingLevel: 'warning',
+                assignedTeam: [],
                 notes: 'Send reminder for deposit. Discuss signature cocktail list.',
+                lastReminderSent: null,
                 createdAt: Date.now() - 1000 * 60 * 60 * 3,
             },
             {
@@ -44,11 +52,15 @@
                 package: 'Craft Experience',
                 guestCount: 250,
                 payout: 7600,
+                requiredStaff: 8,
+                assignedStaffIds: ['emp-2', 'emp-5'],
                 status: 'Contract overdue',
                 statusLevel: 'danger',
                 staffingStatus: 'Partial coverage',
                 staffingLevel: 'warning',
+                assignedTeam: ['emp-5'],
                 notes: 'Client reviewing updated package. Follow up Friday.',
+                lastReminderSent: null,
                 createdAt: Date.now() - 1000 * 60 * 60 * 10,
             },
             {
@@ -60,11 +72,15 @@
                 package: 'Interactive Workshop',
                 guestCount: 25,
                 payout: 1400,
+                requiredStaff: 2,
+                assignedStaffIds: ['emp-3', 'emp-6'],
                 status: 'Confirmed',
                 statusLevel: 'success',
                 staffingStatus: 'Ready',
                 staffingLevel: 'success',
+                assignedTeam: ['emp-4'],
                 notes: 'Include mocktail options and allergy-friendly mixers.',
+                lastReminderSent: Date.now() - 1000 * 60 * 60 * 12,
                 createdAt: Date.now() - 1000 * 60 * 5,
             },
         ],
@@ -219,9 +235,70 @@
             return clone(defaultData);
         }
 
+        const events = Array.isArray(data.events) ? data.events : clone(defaultData.events);
+        const employees = Array.isArray(data.employees) ? data.employees : clone(defaultData.employees);
+
+        const hydratedEvents = events.map((event) => {
+            const base = Object.assign(
+                {
+                    assignedStaffIds: [],
+                    requiredStaff: 0,
+                    lastReminderSent: null,
+                },
+                event
+            );
+
+            if (!base.statusLevel) {
+                base.statusLevel = mapStatusLevel(base.status);
+            }
+
+            if (!base.staffingLevel) {
+                base.staffingLevel = mapStatusLevel(base.staffingStatus);
+            }
+
+            if (!Array.isArray(base.assignedStaffIds)) {
+                base.assignedStaffIds = [];
+            }
+
+            return base;
+        });
+
+        const hydratedEmployees = employees.map((employee) => {
+            const base = Object.assign({}, employee);
+            if (!base.statusLevel) {
+                base.statusLevel = mapStatusLevel(base.status);
+            }
+            return base;
+        });
+
         return {
-            events: Array.isArray(data.events) ? data.events : clone(defaultData.events),
-            employees: Array.isArray(data.employees) ? data.employees : clone(defaultData.employees),
+            events: hydratedEvents,
+            employees: hydratedEmployees,
+        const normalisedEvents = (Array.isArray(data.events) ? data.events : clone(defaultData.events)).map((event) => {
+            const next = Object.assign({}, event);
+            if (!next.statusLevel && next.status) {
+                next.statusLevel = mapStatusLevel(next.status);
+            }
+            if (!next.staffingLevel && next.staffingStatus) {
+                next.staffingLevel = mapStatusLevel(next.staffingStatus);
+            }
+            if (!Array.isArray(next.assignedTeam)) {
+                next.assignedTeam = [];
+            }
+            return next;
+        });
+
+        const normalisedEmployees = (Array.isArray(data.employees) ? data.employees : clone(defaultData.employees)).map((employee) => {
+            const next = Object.assign({}, employee);
+            if (!next.statusLevel && next.status) {
+                next.statusLevel = mapStatusLevel(next.status);
+            }
+            return next;
+        });
+
+        return {
+            events: normalisedEvents,
+            employees: normalisedEmployees,
         };
     }
 
@@ -237,7 +314,11 @@
         }
 
         const lower = value.toLowerCase();
-        if (lower.includes('confirm') || lower.includes('ready') || lower.includes('available') || lower.includes('staffed')) {
+        if (lower.includes('unassign')) {
+            return 'danger';
+        }
+
+        if (lower.includes('confirm') || lower.includes('ready') || lower.includes('available') || lower.includes('staffed') || lower.includes('assign')) {
             return 'success';
         }
 
@@ -245,7 +326,7 @@
             return 'warning';
         }
 
-        if (lower.includes('overdue') || lower.includes('unassign') || lower.includes('contract')) {
+        if (lower.includes('overdue') || lower.includes('contract')) {
             return 'danger';
         }
 
@@ -271,6 +352,9 @@
                 {
                     id: generateId('evt'),
                     createdAt: Date.now(),
+                    assignedStaffIds: [],
+                    requiredStaff: 0,
+                    lastReminderSent: null,
                 },
                 eventInput
             );
@@ -291,6 +375,87 @@
             const nextEvents = snapshot.events.filter((event) => event.id !== eventId);
             snapshot.events = nextEvents;
             writeRaw(snapshot);
+        },
+        updateEvent(eventId, updates) {
+            if (!eventId) {
+                return null;
+            }
+
+            const snapshot = readRaw();
+            const index = snapshot.events.findIndex((event) => event.id === eventId);
+            const snapshot = readRaw();
+            const index = snapshot.events.findIndex((event) => event.id === eventId);
+
+            if (index === -1) {
+                return null;
+            }
+
+            const current = snapshot.events[index];
+            const nextEvent = Object.assign({}, current, updates, {
+                updatedAt: Date.now(),
+            });
+
+            if (Object.prototype.hasOwnProperty.call(updates, 'status')) {
+                nextEvent.statusLevel = mapStatusLevel(nextEvent.status);
+            }
+
+            if (Object.prototype.hasOwnProperty.call(updates, 'staffingStatus')) {
+                nextEvent.staffingLevel = mapStatusLevel(nextEvent.staffingStatus);
+            }
+
+            snapshot.events[index] = nextEvent;
+            writeRaw(snapshot);
+            return clone(nextEvent);
+        },
+        assignStaff(eventId, staffIds) {
+            const ids = Array.isArray(staffIds) ? staffIds.filter(Boolean) : [];
+            const snapshot = readRaw();
+            const index = snapshot.events.findIndex((event) => event.id === eventId);
+            if (index === -1) {
+                return null;
+            }
+
+            const current = snapshot.events[index];
+            const required = typeof current.requiredStaff === 'number' ? current.requiredStaff : 0;
+            const assignedCount = ids.length;
+
+            let staffingStatus = 'Unassigned';
+            if (assignedCount === 0) {
+                staffingStatus = required > 0 ? `Needs ${required} staff` : 'Unassigned';
+            } else if (required && assignedCount < required) {
+                const remaining = required - assignedCount;
+                staffingStatus = remaining === 0 ? 'Fully staffed' : `Needs ${remaining} more`;
+            } else if (required && assignedCount >= required) {
+                staffingStatus = 'Fully staffed';
+            } else {
+                staffingStatus = `Assigned ${assignedCount} team`;
+            }
+
+            const nextEvent = Object.assign({}, current, {
+                assignedStaffIds: ids,
+                staffingStatus,
+                staffingLevel: mapStatusLevel(staffingStatus),
+                updatedAt: Date.now(),
+            });
+
+            const patch = typeof updates === 'function' ? updates(clone(current)) : updates;
+            const nextEvent = Object.assign({}, current, patch);
+
+            if (!nextEvent.statusLevel || (patch && Object.prototype.hasOwnProperty.call(patch, 'status'))) {
+                nextEvent.statusLevel = mapStatusLevel(nextEvent.status);
+            }
+
+            if (!nextEvent.staffingLevel || (patch && (Object.prototype.hasOwnProperty.call(patch, 'staffingStatus') || Object.prototype.hasOwnProperty.call(patch, 'staffingLevel')))) {
+                nextEvent.staffingLevel = mapStatusLevel(nextEvent.staffingStatus);
+            }
+
+            if (!Array.isArray(nextEvent.assignedTeam)) {
+                nextEvent.assignedTeam = [];
+            }
+
+            snapshot.events[index] = nextEvent;
+            writeRaw(snapshot);
+            return clone(nextEvent);
         },
         addEmployee(employeeInput) {
             const snapshot = readRaw();
