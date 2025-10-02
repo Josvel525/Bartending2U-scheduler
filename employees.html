@@ -140,7 +140,7 @@
 
                     <div class="details-section">
                         <h4>Upload new documentation</h4>
-                        <form class="upload-form">
+                        <form class="upload-form" id="uploadForm">
                             <label class="form-field">
                                 <span>Document type</span>
                                 <select id="docTypeSelect">
@@ -156,9 +156,10 @@
                             </label>
                             <div class="table-actions" style="justify-content:flex-end;">
                                 <button class="button ghost" type="reset">Clear</button>
-                                <button class="button primary" type="button">Record document</button>
+                                <button class="button primary" type="submit">Record document</button>
                             </div>
                         </form>
+                        <p class="form-alert" id="docAlert" role="status" aria-live="polite"></p>
                     </div>
 
                     <div class="details-section">
@@ -219,7 +220,7 @@
                         <p class="card-subtitle">Invite freelancers or seasonal staff to upcoming shifts.</p>
                     </div>
                 </div>
-                <form>
+                <form id="addEmployeeForm">
                     <div class="form-grid">
                         <div class="form-field">
                             <label for="teamName">Name</label>
@@ -228,7 +229,7 @@
                         <div class="form-field">
                             <label for="teamRole">Role</label>
                             <select id="teamRole">
-                                <option selected disabled>Select role</option>
+                                <option value="" selected disabled>Select role</option>
                                 <option>Bartender</option>
                                 <option>Mixologist</option>
                                 <option>Bar Lead</option>
@@ -253,6 +254,7 @@
                         <button class="button primary" type="submit">Invite</button>
                     </div>
                 </form>
+                <p class="form-alert" id="addEmployeeAlert" role="status" aria-live="polite"></p>
             </article>
         </section>
 
@@ -289,7 +291,7 @@
                     <p class="card-subtitle">Send an email blast or SMS update to the exact crew you need.</p>
                 </div>
             </div>
-            <form class="communication-form">
+            <form class="communication-form" id="communicationForm">
                 <div class="blast-type-toggle" role="radiogroup" aria-label="Select blast type">
                     <label class="chip-toggle">
                         <input type="radio" name="blastType" value="email" checked />
@@ -332,6 +334,7 @@
                     </div>
                 </div>
             </form>
+            <p class="form-alert" id="blastAlert" role="status" aria-live="polite"></p>
         </section>
     </main>
 
@@ -482,10 +485,24 @@
         const detailAssignments = document.getElementById('detailAssignments');
         const characterCount = document.getElementById('characterCount');
         const blastMessage = document.getElementById('blastMessage');
+        const blastSubject = document.getElementById('blastSubject');
         const subjectField = document.getElementById('subjectField');
         const blastTypeRadios = document.querySelectorAll('input[name="blastType"]');
         const blastAudience = document.getElementById('blastAudience');
         const blastPreview = document.getElementById('blastPreview');
+        const blastAlert = document.getElementById('blastAlert');
+        const communicationForm = document.getElementById('communicationForm');
+        const docForm = document.getElementById('uploadForm');
+        const docTypeSelect = document.getElementById('docTypeSelect');
+        const docFile = document.getElementById('docFile');
+        const docAlert = document.getElementById('docAlert');
+        const addEmployeeForm = document.getElementById('addEmployeeForm');
+        const addEmployeeAlert = document.getElementById('addEmployeeAlert');
+        const teamNameInput = document.getElementById('teamName');
+        const teamRoleInput = document.getElementById('teamRole');
+        const teamEmailInput = document.getElementById('teamEmail');
+        const teamPhoneInput = document.getElementById('teamPhone');
+        const teamNotesInput = document.getElementById('teamNotes');
 
         const complianceLists = {
             tabcExpiring: document.getElementById('tabcExpiring'),
@@ -499,7 +516,49 @@
             limited: 'badge warning'
         };
 
+        const SMS_LIMIT = 160;
+
+        let selectedEmployeeId = null;
+
+        function setAlert(element, message, tone = 'info') {
+            if (!element) return;
+            element.textContent = message;
+            element.className = 'form-alert';
+
+            if (!message) {
+                return;
+            }
+
+            if (tone === 'success') {
+                element.classList.add('text-success');
+            } else if (tone === 'danger') {
+                element.classList.add('text-danger');
+            } else {
+                element.classList.add('text-muted');
+            }
+        }
+
+        function getSelectedEmployee() {
+            return employees.find((person) => person.id === selectedEmployeeId);
+        }
+
+        function isSmsSelected() {
+            const checked = document.querySelector('input[name="blastType"]:checked');
+            return checked ? checked.value === 'sms' : false;
+        }
+
+        function generateEmployeeId(name) {
+            const base = name
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '');
+            const suffix = Date.now().toString(36);
+            return `${base || 'teammate'}-${suffix}`;
+        }
+
         let activeFilter = 'all';
+        let suppressBlastAlertClear = false;
+        let suppressDocAlertClear = false;
 
         function renderEmployeeList(list) {
             if (!employeeList) return;
@@ -513,7 +572,9 @@
                 return;
             }
 
-            list.forEach((employee, index) => {
+            let hasActive = false;
+
+            list.forEach((employee) => {
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'person-card';
@@ -528,23 +589,41 @@
 
                 button.addEventListener('click', () => selectEmployee(employee.id));
 
-                if (index === 0 && !employeeList.querySelector('.person-card.is-active')) {
+                if (employee.id === selectedEmployeeId) {
                     button.classList.add('is-active');
-                    selectEmployee(employee.id);
+                    hasActive = true;
                 }
 
                 employeeList.appendChild(button);
             });
+
+            if (hasActive) {
+                selectEmployee(selectedEmployeeId);
+                return;
+            }
+
+            selectedEmployeeId = list[0].id;
+            const firstCard = employeeList.querySelector('.person-card');
+            if (firstCard) {
+                firstCard.classList.add('is-active');
+            }
+            selectEmployee(selectedEmployeeId);
         }
 
         function selectEmployee(id) {
-            const employee = employees.find((person) => person.id === id);
+            const previousId = selectedEmployeeId;
+            selectedEmployeeId = id;
+            const employee = getSelectedEmployee();
             if (!employee || !employeeDetails) return;
 
             const cards = employeeList.querySelectorAll('.person-card');
             cards.forEach((card) => {
                 card.classList.toggle('is-active', card.dataset.id === id);
             });
+
+            if (previousId !== id) {
+                setAlert(docAlert, '');
+            }
 
             detailName.textContent = employee.name;
             detailRole.textContent = `${employee.role} · ${employee.specialties}`;
@@ -562,12 +641,36 @@
             if (employee.documents && employee.documents.length) {
                 employee.documents.forEach((doc) => {
                     const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${doc.type}</td>
-                        <td><span class="badge ${doc.attention ? 'warning' : 'success'}">${doc.status}</span></td>
-                        <td>${doc.expires}</td>
-                        <td><a href="${doc.url}">View</a></td>
-                    `;
+
+                    const typeCell = document.createElement('td');
+                    typeCell.textContent = doc.type;
+                    row.appendChild(typeCell);
+
+                    const statusCell = document.createElement('td');
+                    const statusBadge = document.createElement('span');
+                    statusBadge.className = `badge ${doc.attention ? 'warning' : 'success'}`;
+                    statusBadge.textContent = doc.status;
+                    statusCell.appendChild(statusBadge);
+                    row.appendChild(statusCell);
+
+                    const expiresCell = document.createElement('td');
+                    expiresCell.textContent = doc.expires && doc.expires.trim() ? doc.expires : '—';
+                    row.appendChild(expiresCell);
+
+                    const fileCell = document.createElement('td');
+                    if (doc.url) {
+                        const link = document.createElement('a');
+                        link.href = doc.url;
+                        link.textContent = doc.fileName || 'View';
+                        fileCell.appendChild(link);
+                    } else if (doc.fileName) {
+                        fileCell.textContent = doc.fileName;
+                    } else {
+                        fileCell.textContent = '—';
+                        fileCell.classList.add('text-muted');
+                    }
+
+                    row.appendChild(fileCell);
                     detailDocs.appendChild(row);
                 });
             } else {
@@ -636,7 +739,7 @@
             const needsAttention = [];
 
             employees.forEach((employee) => {
-                employee.documents.forEach((doc) => {
+                (employee.documents || []).forEach((doc) => {
                     if (doc.type === 'TABC Certificate' && doc.attention) {
                         tabcExpiring.push(`${employee.name} — renew by ${doc.expires}`);
                     }
@@ -679,8 +782,10 @@
         function updateCharacterCount() {
             if (!blastMessage || !characterCount) return;
             const length = blastMessage.value.length;
-            characterCount.textContent = `Characters: ${length} / 160`;
-            characterCount.classList.toggle('text-warning', length > 160);
+            const smsSelected = isSmsSelected();
+            const limitText = smsSelected ? ` / ${SMS_LIMIT}` : '';
+            characterCount.textContent = `Characters: ${length}${limitText}`;
+            characterCount.classList.toggle('text-warning', smsSelected && length > SMS_LIMIT);
         }
 
         if (blastMessage) {
@@ -713,7 +818,10 @@
         }
 
         if (blastAudience) {
-            blastAudience.addEventListener('change', updateBlastPreview);
+            blastAudience.addEventListener('change', () => {
+                updateBlastPreview();
+                setAlert(blastAlert, '');
+            });
         }
 
         function updateBlastTypeVisibility() {
@@ -721,11 +829,178 @@
             const checked = document.querySelector('input[name="blastType"]:checked');
             const isEmail = checked ? checked.value === 'email' : true;
             subjectField.style.display = isEmail ? '' : 'none';
+            updateCharacterCount();
         }
 
         blastTypeRadios.forEach((radio) => {
-            radio.addEventListener('change', updateBlastTypeVisibility);
+            radio.addEventListener('change', () => {
+                setAlert(blastAlert, '');
+                updateBlastTypeVisibility();
+            });
         });
+
+        if (docForm) {
+            docForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+                const employee = getSelectedEmployee();
+
+                if (!employee) {
+                    setAlert(docAlert, 'Select a teammate before recording documentation.', 'danger');
+                    return;
+                }
+
+                const type = docTypeSelect ? docTypeSelect.value.trim() : '';
+                const file = docFile ? docFile.files[0] : null;
+
+                if (!type || !file) {
+                    setAlert(docAlert, 'Choose a document type and attach a file.', 'danger');
+                    return;
+                }
+
+                const fileName = file.name;
+                const isTabc = type.toLowerCase().includes('tabc');
+                const newDoc = {
+                    type,
+                    status: isTabc ? 'Needs review' : 'Submitted',
+                    expires: isTabc ? 'To be confirmed' : '—',
+                    attention: true,
+                    fileName,
+                    url: ''
+                };
+
+                employee.documents = employee.documents || [];
+                employee.documents.push(newDoc);
+
+                selectEmployee(employee.id);
+                suppressDocAlertClear = true;
+                docForm.reset();
+                setAlert(docAlert, `${type} saved for ${employee.name}.`, 'success');
+                buildComplianceLists();
+            });
+
+            docForm.addEventListener('reset', () => {
+                if (!suppressDocAlertClear) {
+                    setAlert(docAlert, '');
+                }
+                suppressDocAlertClear = false;
+            });
+        }
+
+        if (addEmployeeForm) {
+            addEmployeeForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const name = teamNameInput ? teamNameInput.value.trim() : '';
+                const role = teamRoleInput ? teamRoleInput.value.trim() : '';
+                const email = teamEmailInput ? teamEmailInput.value.trim() : '';
+                const phone = teamPhoneInput ? teamPhoneInput.value.trim() : '';
+                const notes = teamNotesInput ? teamNotesInput.value.trim() : '';
+
+                if (!name || !email) {
+                    setAlert(addEmployeeAlert, 'Please add a name and email before inviting a teammate.', 'danger');
+                    return;
+                }
+
+                const summaryRaw = notes
+                    ? notes
+                          .split(/[\n\r]+/)[0]
+                          .split('.')
+                          .shift()
+                          .trim()
+                    : '';
+                const specialties = summaryRaw
+                    ? summaryRaw.length > 60
+                        ? `${summaryRaw.slice(0, 57)}…`
+                        : summaryRaw
+                    : 'Ready for assignments';
+                const detailNotes = notes || 'Add notes so dispatch knows their strengths.';
+
+                const newEmployee = {
+                    id: generateEmployeeId(name),
+                    name,
+                    role: role || 'Bartender',
+                    specialties,
+                    status: 'available',
+                    statusLabel: 'Available',
+                    location: 'TBD',
+                    email,
+                    phone: phone || '—',
+                    notes: detailNotes,
+                    assignments: [],
+                    documents: []
+                };
+
+                employees.push(newEmployee);
+                selectedEmployeeId = newEmployee.id;
+                addEmployeeForm.reset();
+                setAlert(addEmployeeAlert, `${name} has been added to the roster.`, 'success');
+
+                activeFilter = 'all';
+                filterChips.forEach((btn) => btn.classList.toggle('active', btn.dataset.filter === 'all'));
+                if (employeeSearch) {
+                    employeeSearch.value = '';
+                }
+
+                renderEmployeeList(employees);
+                buildComplianceLists();
+                updateBlastPreview();
+            });
+
+            addEmployeeForm.addEventListener('reset', () => setAlert(addEmployeeAlert, ''));
+        }
+
+        if (communicationForm) {
+            communicationForm.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const blastType = isSmsSelected() ? 'sms' : 'email';
+                const message = blastMessage ? blastMessage.value.trim() : '';
+                const subject = blastSubject ? blastSubject.value.trim() : '';
+                const audienceLabel = blastAudience
+                    ? blastAudience.options[blastAudience.selectedIndex]?.textContent || 'selected staff'
+                    : 'selected staff';
+
+                if (!message) {
+                    setAlert(blastAlert, 'Message cannot be empty.', 'danger');
+                    return;
+                }
+
+                if (blastType === 'sms' && message.length > SMS_LIMIT) {
+                    setAlert(blastAlert, `Text blasts are limited to ${SMS_LIMIT} characters.`, 'danger');
+                    return;
+                }
+
+                if (blastType === 'email' && !subject) {
+                    setAlert(blastAlert, 'Add a subject for your email blast.', 'danger');
+                    return;
+                }
+
+                const recipientCount = getAudienceCount();
+                const suffix = recipientCount === 1 ? '' : 's';
+                const typeLabel = blastType === 'email' ? 'Email' : 'Text';
+
+                setAlert(
+                    blastAlert,
+                    `${typeLabel} blast scheduled for ${recipientCount} teammate${suffix} in "${audienceLabel.trim()}".`,
+                    'success'
+                );
+
+                suppressBlastAlertClear = true;
+                communicationForm.reset();
+            });
+
+            communicationForm.addEventListener('reset', () => {
+                if (!suppressBlastAlertClear) {
+                    setAlert(blastAlert, '');
+                }
+                suppressBlastAlertClear = false;
+                setTimeout(() => {
+                    updateBlastTypeVisibility();
+                    updateCharacterCount();
+                    updateBlastPreview();
+                }, 0);
+            });
+        }
 
         // Initialize directory
         renderEmployeeList(employees);

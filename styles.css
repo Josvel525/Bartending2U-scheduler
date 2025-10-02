@@ -854,8 +854,26 @@ textarea {
   display: block;
 }
 
+.form-alert {
+  font-size: 0.85rem;
+  margin-top: 0.5rem;
+  color: var(--slate-600);
+}
+
+.form-alert:empty {
+  display: none;
+}
+
 .text-warning {
   color: var(--warning-500);
+}
+
+.text-success {
+  color: var(--success-500);
+}
+
+.text-danger {
+  color: var(--danger-500);
 }
 
 .text-muted {
