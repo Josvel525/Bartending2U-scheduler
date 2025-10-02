@@ -57,121 +57,18 @@
             </div>
         </section>
 
-        <section class="content-card">
+        <section id="calendar-overview" class="content-card" data-subsection="Monthly overview">
             <div class="card-header">
                 <div>
-                    <h2 class="card-title">October 2025 overview</h2>
+                    <h2 class="card-title" id="calendarMonthHeading">Monthly overview</h2>
                     <p class="card-subtitle">Hover over a day to reveal assignments and prep checklists.</p>
                 </div>
             </div>
-            <div class="calendar-grid">
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Mon 1</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Tue 2</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Wed 3</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Thu 4</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Fri 5</span>
-                    <div class="calendar-event">Corporate Party</div>
-                    <p class="card-subtitle">Call time 6:00 PM · 4 staff</p>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Sat 6</span>
-                    <div class="calendar-event">Tasting Prep</div>
-                    <p class="card-subtitle">Inventory pull · Syrups ready</p>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Sun 7</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Mon 8</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Tue 9</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Wed 10</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Thu 11</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Fri 12</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Sat 13</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Sun 14</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Mon 15</span>
-                    <div class="calendar-event">Wedding Reception</div>
-                    <p class="card-subtitle">Needs staffing</p>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Tue 16</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Wed 17</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Thu 18</span>
-                    <div class="calendar-event">Mixology Workshop</div>
-                    <p class="card-subtitle">Priya · Jamie · 5:30 PM</p>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Fri 19</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Sat 20</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Sun 21</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Mon 22</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Tue 23</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Wed 24</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Thu 25</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Fri 26</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Sat 27</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Sun 28</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Mon 29</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Tue 30</span>
-                </div>
-                <div class="calendar-cell">
-                    <span class="calendar-cell__date">Wed 31</span>
-                    <div class="calendar-event">Inventory Audit</div>
-                </div>
-            </div>
+            <div class="calendar-grid" id="calendarGrid"></div>
         </section>
 
         <section class="split-layout">
-            <article class="content-card">
+            <article id="prep-checklist" class="content-card" data-subsection="Prep checklist">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Prep checklist</h2>
@@ -186,7 +83,7 @@
                 </div>
             </article>
 
-            <article class="content-card">
+            <article id="week-glance" class="content-card" data-subsection="Week at a glance">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Week at a glance</h2>
@@ -223,6 +120,7 @@
                                 <td data-label="Prep hours">3</td>
                             </tr>
                         </tbody>
+                        <tbody id="weekSummaryTable"></tbody>
                     </table>
                 </div>
             </article>
@@ -232,5 +130,202 @@
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
     <script src="scripts.js"></script>
+    <script src="storage.js"></script>
+    <script>
+        const navToggle = document.getElementById('mobileNavToggle');
+        const nav = document.getElementById('primaryNav');
+
+        if (navToggle && nav) {
+            navToggle.addEventListener('click', () => {
+                nav.classList.toggle('open');
+            });
+        }
+
+        const store = window.B2UStore;
+        const calendarGrid = document.getElementById('calendarGrid');
+        const calendarHeading = document.getElementById('calendarMonthHeading');
+        const weekSummaryTable = document.getElementById('weekSummaryTable');
+
+        const weekdayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'short' });
+        const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' });
+
+        function getEventTimestamp(event) {
+            if (!event || !event.date) {
+                return Number.MAX_SAFE_INTEGER;
+            }
+
+            const timestamp = new Date(`${event.date}T${event.time || '00:00'}`).getTime();
+            return Number.isNaN(timestamp) ? Number.MAX_SAFE_INTEGER : timestamp;
+        }
+
+        function renderCalendar(events) {
+            if (!calendarGrid) {
+                return;
+            }
+
+            calendarGrid.innerHTML = '';
+
+            if (!store) {
+                const message = document.createElement('p');
+                message.className = 'empty-state';
+                message.textContent = 'Calendar data unavailable. Refresh to retry.';
+                calendarGrid.appendChild(message);
+                return;
+            }
+
+            const today = new Date();
+            const sorted = events.slice().sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b));
+            const firstUpcoming = sorted.find((event) => getEventTimestamp(event) !== Number.MAX_SAFE_INTEGER);
+            const referenceDate = firstUpcoming && firstUpcoming.date ? new Date(`${firstUpcoming.date}T00:00`) : today;
+
+            const year = referenceDate.getFullYear();
+            const month = referenceDate.getMonth();
+            const monthStart = new Date(year, month, 1);
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const leadingEmpty = monthStart.getDay();
+
+            if (calendarHeading) {
+                calendarHeading.textContent = `${monthFormatter.format(referenceDate)} overview`;
+            }
+
+            const eventsByDate = events.reduce((acc, event) => {
+                if (!event.date) {
+                    return acc;
+                }
+                (acc[event.date] = acc[event.date] || []).push(event);
+                return acc;
+            }, {});
+
+            for (let i = 0; i < leadingEmpty; i += 1) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'calendar-cell calendar-cell--empty';
+                calendarGrid.appendChild(emptyCell);
+            }
+
+            for (let day = 1; day <= daysInMonth; day += 1) {
+                const cellDate = new Date(year, month, day);
+                const isoDate = cellDate.toISOString().slice(0, 10);
+                const cell = document.createElement('div');
+                cell.className = 'calendar-cell';
+
+                if (cellDate.toDateString() === today.toDateString()) {
+                    cell.classList.add('calendar-cell--today');
+                }
+
+                const dateLabel = document.createElement('span');
+                dateLabel.className = 'calendar-cell__date';
+                dateLabel.textContent = `${weekdayFormatter.format(cellDate)} ${day}`;
+                cell.appendChild(dateLabel);
+
+                const dayEvents = eventsByDate[isoDate] || [];
+                dayEvents
+                    .slice()
+                    .sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b))
+                    .forEach((event) => {
+                        const eventBlock = document.createElement('div');
+                        eventBlock.className = 'calendar-event';
+                        eventBlock.textContent = event.name;
+                        cell.appendChild(eventBlock);
+
+                        const details = document.createElement('p');
+                        details.className = 'card-subtitle';
+                        const time = event.time ? ` · ${event.time}` : '';
+                        const location = event.location ? ` · ${event.location}` : '';
+                        details.textContent = `${event.staffingStatus || 'Staffing pending'}${time}${location}`;
+                        cell.appendChild(details);
+                    });
+
+                calendarGrid.appendChild(cell);
+            }
+        }
+
+        function estimatePrepHours(event) {
+            if (!event) {
+                return 0;
+            }
+
+            const guests = event.guestCount || 0;
+            const base = guests ? Math.max(2, Math.ceil(guests / 40)) : 3;
+            return event.staffingLevel === 'success' ? base : base + 1;
+        }
+
+        function renderWeekSummary(events) {
+            if (!weekSummaryTable) {
+                return;
+            }
+
+            weekSummaryTable.innerHTML = '';
+
+            if (!store) {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 4;
+                cell.className = 'empty-state';
+                cell.textContent = 'Unable to load weekly summary.';
+                row.appendChild(cell);
+                weekSummaryTable.appendChild(row);
+                return;
+            }
+
+            const now = Date.now();
+            const oneWeek = 1000 * 60 * 60 * 24 * 7;
+            const upcomingWeek = events
+                .slice()
+                .sort((a, b) => getEventTimestamp(a) - getEventTimestamp(b))
+                .filter((event) => {
+                    const timestamp = getEventTimestamp(event);
+                    return timestamp >= now && timestamp <= now + oneWeek;
+                })
+                .slice(0, 6);
+
+            if (upcomingWeek.length === 0) {
+                const row = document.createElement('tr');
+                const cell = document.createElement('td');
+                cell.colSpan = 4;
+                cell.className = 'empty-state';
+                cell.textContent = 'Nothing booked for the next seven days.';
+                row.appendChild(cell);
+                weekSummaryTable.appendChild(row);
+                return;
+            }
+
+            upcomingWeek.forEach((event) => {
+                const row = document.createElement('tr');
+
+                const nameCell = document.createElement('td');
+                nameCell.textContent = event.name;
+
+                const guestCell = document.createElement('td');
+                guestCell.textContent = event.guestCount ? event.guestCount : '—';
+
+                const teamCell = document.createElement('td');
+                teamCell.textContent = event.staffingStatus || 'Staffing pending';
+
+                const prepCell = document.createElement('td');
+                prepCell.textContent = estimatePrepHours(event);
+
+                row.appendChild(nameCell);
+                row.appendChild(guestCell);
+                row.appendChild(teamCell);
+                row.appendChild(prepCell);
+                weekSummaryTable.appendChild(row);
+            });
+        }
+
+        function renderCalendarPage() {
+            if (!store) {
+                renderCalendar([]);
+                renderWeekSummary([]);
+                return;
+            }
+
+            const events = store.getEvents();
+            renderCalendar(events);
+            renderWeekSummary(events);
+        }
+
+        renderCalendarPage();
+    </script>
+    <script src="app.js"></script>
 </body>
 </html>

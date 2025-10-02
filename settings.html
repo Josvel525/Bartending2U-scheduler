@@ -52,12 +52,12 @@
                 <p class="lead-text">Update company info, adjust notifications, and align the platform with your brand.</p>
             </div>
             <div class="hero-actions">
-                <a class="button primary" href="#account-settings">Save changes</a>
+                <a class="button primary" href="#account-settings" data-subsection-target="account-settings">Save changes</a>
                 <a class="secondary-link" href="index.html">Return to dashboard →</a>
             </div>
         </section>
 
-        <section id="account-settings" class="content-card">
+        <section id="account-settings" class="content-card" data-subsection="Account preferences">
             <div class="card-header">
                 <div>
                     <h2 class="card-title">Account preferences</h2>
@@ -106,7 +106,7 @@
         </section>
 
         <section class="split-layout">
-            <article class="content-card">
+            <article id="notification-settings" class="content-card" data-subsection="Notification settings">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Notification settings</h2>
@@ -121,7 +121,7 @@
                 </div>
             </article>
 
-            <article class="content-card">
+            <article id="branding-settings" class="content-card" data-subsection="Branding">
                 <div class="card-header">
                     <div>
                         <h2 class="card-title">Branding</h2>
@@ -153,5 +153,6 @@
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
     <script src="scripts.js"></script>
+    <script src="app.js"></script>
 </body>
 </html>
