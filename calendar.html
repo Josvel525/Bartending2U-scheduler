@@ -20,7 +20,17 @@
                 </div>
             </div>
 
-            <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+            <button
+                class="mobile-nav-toggle"
+                id="mobileNavToggle"
+                type="button"
+                aria-label="Toggle navigation"
+                aria-expanded="false"
+                data-mobile-nav-toggle
+            >
+                <span class="mobile-nav-toggle__icon" aria-hidden="true">☰</span>
+                <span class="sr-only">Toggle navigation</span>
+            </button>
 
             <nav class="nav-links" id="primaryNav">
                 <a class="nav-link" href="index.html">Dashboard</a>
@@ -221,33 +231,6 @@
 
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
-    <script>
-        const navToggle = document.getElementById('mobileNavToggle');
-        const nav = document.getElementById('primaryNav');
-
-        if (navToggle && nav) {
-            navToggle.addEventListener('click', () => {
-                const isOpen = nav.classList.toggle('open');
-                navToggle.setAttribute('aria-expanded', String(isOpen));
-                document.body.classList.toggle('nav-open', isOpen);
-            });
-
-            nav.querySelectorAll('a').forEach((link) => {
-                link.addEventListener('click', () => {
-                    nav.classList.remove('open');
-                    document.body.classList.remove('nav-open');
-                    navToggle.setAttribute('aria-expanded', 'false');
-                });
-            });
-
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'Escape') {
-                    nav.classList.remove('open');
-                    document.body.classList.remove('nav-open');
-                    navToggle.setAttribute('aria-expanded', 'false');
-                }
-            });
-        }
-    </script>
+    <script src="scripts.js"></script>
 </body>
 </html>
