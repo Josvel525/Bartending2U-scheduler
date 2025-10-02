@@ -84,56 +84,6 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        <tr>
-                            <td data-label="Event">Corporate Party</td>
-                            <td data-label="Date">Oct 5, 2025</td>
-                            <td data-label="Location">Downtown Houston</td>
-                            <td data-label="Package">Signature Cocktail Bar</td>
-                            <td data-label="Status"><span class="badge success">Confirmed</span></td>
-                            <td data-label="Staffing"><span class="badge success">Fully staffed</span></td>
-                            <td class="table-actions" data-label="Actions">
-                                <a class="card-action" href="#">View</a>
-                                <a class="card-action" href="#">Staff</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td data-label="Event">Wedding Reception</td>
-                            <td data-label="Date">Oct 15, 2025</td>
-                            <td data-label="Location">The Grand Hall</td>
-                            <td data-label="Package">Premium Mixology</td>
-                            <td data-label="Status"><span class="badge warning">Awaiting deposit</span></td>
-                            <td data-label="Staffing"><span class="badge warning">Needs 2 bartenders</span></td>
-                            <td class="table-actions" data-label="Actions">
-                                <a class="card-action" href="#">Send reminder</a>
-                                <a class="card-action" href="#">Assign</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td data-label="Event">Holiday Gala</td>
-                            <td data-label="Date">Nov 30, 2025</td>
-                            <td data-label="Location">Skyline Ballroom</td>
-                            <td data-label="Package">Craft Experience</td>
-                            <td data-label="Status"><span class="badge danger">Contract overdue</span></td>
-                            <td data-label="Staffing"><span class="badge warning">Partial coverage</span></td>
-                            <td class="table-actions" data-label="Actions">
-                                <a class="card-action" href="#">Follow up</a>
-                                <a class="card-action" href="#">View notes</a>
-                            </td>
-                        </tr>
-                        <tr>
-                            <td data-label="Event">Mixology Workshop</td>
-                            <td data-label="Date">Dec 3, 2025</td>
-                            <td data-label="Location">Private Residence</td>
-                            <td data-label="Package">Interactive Class</td>
-                            <td data-label="Status"><span class="badge success">Confirmed</span></td>
-                            <td data-label="Staffing"><span class="badge success">Ready</span></td>
-                            <td class="table-actions" data-label="Actions">
-                                <a class="card-action" href="#">Checklist</a>
-                                <a class="card-action" href="#">Prep sheet</a>
-                            </td>
-                        </tr>
-                    </tbody>
                     <tbody id="eventsTableBody"></tbody>
                 </table>
             </div>
@@ -217,6 +167,52 @@
                 </div>
             </form>
         </section>
+
+        <div id="eventModal" class="modal" hidden>
+            <div class="modal__backdrop" data-modal-dismiss></div>
+            <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
+                <button class="modal__close" type="button" aria-label="Close" data-modal-dismiss>&times;</button>
+                <div class="modal__header">
+                    <h3 class="modal__title" id="eventModalTitle"></h3>
+                    <p class="modal__subtitle" data-modal-subtitle></p>
+                </div>
+                <div class="modal__content" data-modal-content></div>
+            </div>
+        </div>
+
+        <template id="checklistTemplate">
+            <div class="event-checklist">
+                <ul class="event-checklist__items" data-checklist-items></ul>
+                <form class="event-checklist__form" data-checklist-form>
+                    <label class="sr-only" for="checklistNewItem">Add checklist item</label>
+                    <input id="checklistNewItem" name="label" type="text" placeholder="Add new item" required autocomplete="off" />
+                    <button class="button primary" type="submit">Add</button>
+                </form>
+            </div>
+        </template>
+
+        <template id="prepSheetTemplate">
+            <form class="prep-sheet" data-prep-form>
+                <div class="prep-sheet__fields">
+                    <label class="form-field">
+                        <span class="form-field__label">Menu focus</span>
+                        <textarea name="menu" rows="3" placeholder="Signature cocktails, mocktail options, etc."></textarea>
+                    </label>
+                    <label class="form-field">
+                        <span class="form-field__label">Equipment & logistics</span>
+                        <textarea name="equipment" rows="3" placeholder="Bar kits, glassware counts, load-in notes"></textarea>
+                    </label>
+                    <label class="form-field">
+                        <span class="form-field__label">Staffing notes</span>
+                        <textarea name="staffing" rows="3" placeholder="Arrival times, attire, assignments"></textarea>
+                    </label>
+                </div>
+                <div class="prep-sheet__actions">
+                    <span class="prep-sheet__status" aria-live="polite" data-prep-status></span>
+                    <button class="button primary" type="submit">Save prep sheet</button>
+                </div>
+            </form>
+        </template>
     </main>
 
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
@@ -238,6 +234,14 @@
         const form = document.getElementById('eventForm');
         const tabs = document.querySelectorAll('.tab');
         let activeFilter = 'all';
+        const modal = document.getElementById('eventModal');
+        const modalTitleEl = modal ? modal.querySelector('#eventModalTitle') : null;
+        const modalSubtitleEl = modal ? modal.querySelector('[data-modal-subtitle]') : null;
+        const modalContentEl = modal ? modal.querySelector('[data-modal-content]') : null;
+        const checklistTemplate = document.getElementById('checklistTemplate');
+        const prepSheetTemplate = document.getElementById('prepSheetTemplate');
+        let activeModal = null;
+        let activeEvent = null;
 
         function formatDate(dateStr, timeStr) {
             if (!dateStr) {
@@ -275,6 +279,266 @@
             badge.className = `badge ${level || 'neutral'}`;
             badge.textContent = text;
             return badge;
+        }
+
+        function formatModalSubtitle(event) {
+            if (!event) {
+                return '';
+            }
+
+            const parts = [];
+            if (event.date) {
+                parts.push(formatDate(event.date, event.time));
+            }
+            if (event.location) {
+                parts.push(event.location);
+            }
+            return parts.join(' • ');
+        }
+
+        function refreshActiveEvent(eventId) {
+            if (!store) {
+                return null;
+            }
+
+            const idToFetch = eventId || (activeModal && activeModal.eventId);
+            if (!idToFetch) {
+                return null;
+            }
+
+            const next = store.getEvent(idToFetch);
+            if (next) {
+                activeEvent = next;
+            }
+            return next;
+        }
+
+        function createChecklistView(eventData) {
+            const fragment = checklistTemplate && 'content' in checklistTemplate ? checklistTemplate.content.cloneNode(true) : null;
+            const wrapper = fragment ? fragment.querySelector('.event-checklist') : document.createElement('div');
+
+            if (!fragment) {
+                wrapper.className = 'event-checklist';
+                wrapper.innerHTML = '<ul class="event-checklist__items" data-checklist-items></ul>';
+            }
+
+            const list = wrapper.querySelector('[data-checklist-items]');
+            const formEl = wrapper.querySelector('[data-checklist-form]');
+
+            if (list) {
+                list.innerHTML = '';
+                const items = Array.isArray(eventData.checklist) ? eventData.checklist : [];
+
+                if (!items.length) {
+                    const empty = document.createElement('li');
+                    empty.className = 'event-checklist__empty';
+                    empty.textContent = 'No checklist items yet. Add one to get started.';
+                    list.appendChild(empty);
+                } else {
+                    items.forEach((item) => {
+                        const li = document.createElement('li');
+                        li.className = 'event-checklist__item';
+                        li.dataset.itemId = item.id;
+                        if (item.completed) {
+                            li.classList.add('is-complete');
+                        }
+
+                        const checkboxId = `${eventData.id}-${item.id}`;
+                        const labelEl = document.createElement('label');
+                        labelEl.className = 'checkbox-field';
+                        labelEl.setAttribute('for', checkboxId);
+
+                        const checkbox = document.createElement('input');
+                        checkbox.type = 'checkbox';
+                        checkbox.id = checkboxId;
+                        checkbox.checked = Boolean(item.completed);
+                        checkbox.dataset.checklistToggle = item.id;
+
+                        const text = document.createElement('span');
+                        text.textContent = item.label;
+
+                        labelEl.appendChild(checkbox);
+                        labelEl.appendChild(text);
+
+                        const actions = document.createElement('div');
+                        actions.className = 'event-checklist__item-actions';
+
+                        const removeButton = document.createElement('button');
+                        removeButton.type = 'button';
+                        removeButton.className = 'link-button event-checklist__remove';
+                        removeButton.dataset.checklistRemove = item.id;
+                        removeButton.textContent = 'Remove';
+
+                        actions.appendChild(removeButton);
+
+                        li.appendChild(labelEl);
+                        li.appendChild(actions);
+                        list.appendChild(li);
+                    });
+                }
+
+                list.addEventListener('change', (event) => {
+                    const toggle = event.target instanceof Element ? event.target.closest('[data-checklist-toggle]') : null;
+                    if (!toggle) {
+                        return;
+                    }
+
+                    const itemId = toggle.dataset.checklistToggle;
+                    store.updateChecklistItem(eventData.id, itemId, { completed: toggle.checked });
+                    refreshActiveEvent(eventData.id);
+                    renderEvents();
+                    renderModal();
+                });
+
+                list.addEventListener('click', (event) => {
+                    const remove = event.target instanceof Element ? event.target.closest('[data-checklist-remove]') : null;
+                    if (!remove) {
+                        return;
+                    }
+
+                    const itemId = remove.dataset.checklistRemove;
+                    store.removeChecklistItem(eventData.id, itemId);
+                    refreshActiveEvent(eventData.id);
+                    renderEvents();
+                    renderModal();
+                });
+            }
+
+            if (formEl) {
+                const input = formEl.querySelector('input[name="label"]');
+                const label = formEl.querySelector('label');
+                if (input && label) {
+                    const uniqueId = `checklist-${eventData.id}-${Date.now()}`;
+                    input.id = uniqueId;
+                    label.setAttribute('for', uniqueId);
+                }
+
+                formEl.addEventListener('submit', (event) => {
+                    event.preventDefault();
+                    const formData = new FormData(formEl);
+                    const labelValue = (formData.get('label') || '').toString();
+                    const created = store.addChecklistItem(eventData.id, labelValue);
+                    if (!created) {
+                        return;
+                    }
+
+                    formEl.reset();
+                    refreshActiveEvent(eventData.id);
+                    renderEvents();
+                    renderModal();
+                });
+            }
+
+            return wrapper;
+        }
+
+        function createPrepSheetView(eventData) {
+            const fragment = prepSheetTemplate && 'content' in prepSheetTemplate ? prepSheetTemplate.content.cloneNode(true) : null;
+            const formEl = fragment ? fragment.querySelector('[data-prep-form]') : null;
+
+            if (!formEl) {
+                const fallback = document.createElement('div');
+                fallback.className = 'prep-sheet';
+                fallback.textContent = 'Prep sheet template unavailable.';
+                return fallback;
+            }
+
+            const menuField = formEl.querySelector('[name="menu"]');
+            const equipmentField = formEl.querySelector('[name="equipment"]');
+            const staffingField = formEl.querySelector('[name="staffing"]');
+            const statusEl = formEl.querySelector('[data-prep-status]');
+
+            if (menuField) {
+                menuField.value = eventData.prepSheet ? eventData.prepSheet.menu || '' : '';
+            }
+            if (equipmentField) {
+                equipmentField.value = eventData.prepSheet ? eventData.prepSheet.equipment || '' : '';
+            }
+            if (staffingField) {
+                staffingField.value = eventData.prepSheet ? eventData.prepSheet.staffing || '' : '';
+            }
+
+            formEl.addEventListener('submit', (event) => {
+                event.preventDefault();
+
+                const payload = {
+                    menu: menuField ? menuField.value.trim() : '',
+                    equipment: equipmentField ? equipmentField.value.trim() : '',
+                    staffing: staffingField ? staffingField.value.trim() : '',
+                };
+
+                store.savePrepSheet(eventData.id, payload);
+                refreshActiveEvent(eventData.id);
+                renderEvents();
+
+                if (statusEl) {
+                    statusEl.textContent = 'Saved';
+                    setTimeout(() => {
+                        statusEl.textContent = '';
+                    }, 2000);
+                }
+            });
+
+            return formEl;
+        }
+
+        function renderModal() {
+            if (!modal || !modalContentEl || !activeModal) {
+                return;
+            }
+
+            const eventData = refreshActiveEvent(activeModal.eventId);
+            if (!eventData) {
+                closeModal();
+                return;
+            }
+
+            const mode = activeModal.mode === 'prep' ? 'prep' : 'checklist';
+
+            if (modalTitleEl) {
+                modalTitleEl.textContent = `${eventData.name || 'Event'} · ${mode === 'prep' ? 'Prep sheet' : 'Checklist'}`;
+            }
+            if (modalSubtitleEl) {
+                modalSubtitleEl.textContent = formatModalSubtitle(eventData);
+            }
+
+            modalContentEl.innerHTML = '';
+            const view = mode === 'prep' ? createPrepSheetView(eventData) : createChecklistView(eventData);
+            modalContentEl.appendChild(view);
+
+            modal.classList.add('is-open');
+            modal.removeAttribute('hidden');
+            document.body.classList.add('modal-open');
+        }
+
+        function openModal(mode, eventId) {
+            if (!modal || !store) {
+                return;
+            }
+
+            activeModal = {
+                mode,
+                eventId,
+            };
+
+            renderModal();
+        }
+
+        function closeModal() {
+            if (!modal) {
+                return;
+            }
+
+            modal.classList.remove('is-open');
+            modal.setAttribute('hidden', '');
+            document.body.classList.remove('modal-open');
+
+            if (modalContentEl) {
+                modalContentEl.innerHTML = '';
+            }
+
+            activeModal = null;
+            activeEvent = null;
         }
 
         function getEventTimestamp(event) {
@@ -374,6 +638,20 @@
                 viewLink.href = '#new-event';
                 viewLink.textContent = 'View';
 
+                const checklistButton = document.createElement('button');
+                checklistButton.type = 'button';
+                checklistButton.className = 'card-action link-button';
+                checklistButton.dataset.eventAction = 'checklist';
+                checklistButton.dataset.eventId = event.id;
+                checklistButton.textContent = 'Checklist';
+
+                const prepButton = document.createElement('button');
+                prepButton.type = 'button';
+                prepButton.className = 'card-action link-button';
+                prepButton.dataset.eventAction = 'prep';
+                prepButton.dataset.eventId = event.id;
+                prepButton.textContent = 'Prep sheet';
+
                 const removeButton = document.createElement('button');
                 removeButton.type = 'button';
                 removeButton.className = 'card-action link-button';
@@ -381,6 +659,8 @@
                 removeButton.textContent = 'Remove';
 
                 actionsCell.appendChild(viewLink);
+                actionsCell.appendChild(checklistButton);
+                actionsCell.appendChild(prepButton);
                 actionsCell.appendChild(removeButton);
 
                 row.appendChild(nameCell);
@@ -407,15 +687,53 @@
 
         if (tableBody) {
             tableBody.addEventListener('click', (event) => {
+                if (!(event.target instanceof Element)) {
+                    return;
+                }
+
+                const actionTrigger = event.target.closest('[data-event-action]');
+                if (actionTrigger) {
+                    event.preventDefault();
+                    const action = actionTrigger.dataset.eventAction;
+                    const eventId = actionTrigger.dataset.eventId;
+
+                    if (action === 'checklist' || action === 'prep') {
+                        openModal(action, eventId);
+                    }
+                    return;
+                }
+
                 const target = event.target.closest('[data-remove-event]');
                 if (!target || !store) {
                     return;
                 }
 
-                store.removeEvent(target.dataset.removeEvent);
+                const eventId = target.dataset.removeEvent;
+                store.removeEvent(eventId);
+                if (activeModal && activeModal.eventId === eventId) {
+                    closeModal();
+                }
                 renderEvents();
             });
         }
+
+        if (modal) {
+            modal.addEventListener('click', (event) => {
+                if (!(event.target instanceof Element)) {
+                    return;
+                }
+
+                if (event.target.closest('[data-modal-dismiss]')) {
+                    closeModal();
+                }
+            });
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && modal && modal.classList.contains('is-open')) {
+                closeModal();
+            }
+        });
 
         if (form && store) {
             form.addEventListener('submit', (event) => {

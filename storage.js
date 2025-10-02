@@ -19,6 +19,15 @@
                 assignedTeam: ['emp-1', 'emp-3', 'emp-6'],
                 notes: 'Deposit received. Call time 6:00 PM.',
                 createdAt: Date.now() - 1000 * 60 * 20,
+                checklist: [
+                    { id: 'chk-evt-1-1', label: 'Confirm final guest count', completed: true },
+                    { id: 'chk-evt-1-2', label: 'Print bar menu cards', completed: false },
+                ],
+                prepSheet: {
+                    menu: 'Seasonal welcome cocktail + corporate-branded old fashioned.',
+                    equipment: '2 portable bars, branded napkins, 150 coupe glasses.',
+                    staffing: 'Lead + 2 bartenders onsite by 5:30 PM.',
+                },
             },
             {
                 id: 'evt-2',
@@ -36,6 +45,15 @@
                 assignedTeam: [],
                 notes: 'Send reminder for deposit. Discuss signature cocktail list.',
                 createdAt: Date.now() - 1000 * 60 * 60 * 3,
+                checklist: [
+                    { id: 'chk-evt-2-1', label: 'Follow up on deposit invoice', completed: false },
+                    { id: 'chk-evt-2-2', label: 'Confirm champagne toast timing', completed: false },
+                ],
+                prepSheet: {
+                    menu: 'Bride + groom his & hers cocktails, late-night espresso bar.',
+                    equipment: 'Champagne tower, coffee urns, ice tubs.',
+                    staffing: 'Need 2 more bartenders for reception coverage.',
+                },
             },
             {
                 id: 'evt-3',
@@ -53,6 +71,15 @@
                 assignedTeam: ['emp-5'],
                 notes: 'Client reviewing updated package. Follow up Friday.',
                 createdAt: Date.now() - 1000 * 60 * 60 * 10,
+                checklist: [
+                    { id: 'chk-evt-3-1', label: 'Update proposal with vegan options', completed: false },
+                    { id: 'chk-evt-3-2', label: 'Schedule tasting with chef partner', completed: false },
+                ],
+                prepSheet: {
+                    menu: 'Craft martini flight + winter mocktails.',
+                    equipment: 'Large ice sculptures, stage back-bar, 3 garnish trays.',
+                    staffing: 'Pending confirmation of additional support staff.',
+                },
             },
             {
                 id: 'evt-4',
@@ -70,6 +97,15 @@
                 assignedTeam: ['emp-4'],
                 notes: 'Include mocktail options and allergy-friendly mixers.',
                 createdAt: Date.now() - 1000 * 60 * 5,
+                checklist: [
+                    { id: 'chk-evt-4-1', label: 'Prepare ingredient kits', completed: true },
+                    { id: 'chk-evt-4-2', label: 'Email pre-event survey', completed: false },
+                ],
+                prepSheet: {
+                    menu: 'Hands-on margarita build + zero-proof paloma.',
+                    equipment: 'Cutting boards, shakers for 15 stations, demo monitor.',
+                    staffing: 'Priya onsite at 4:30 PM. Need 1 assistant for setup.',
+                },
             },
         ],
         employees: [
@@ -144,6 +180,57 @@
 
     function clone(data) {
         return JSON.parse(JSON.stringify(data));
+    }
+
+    function sanitisePrepSheet(prepSheet) {
+        if (!prepSheet || typeof prepSheet !== 'object') {
+            return {
+                menu: '',
+                equipment: '',
+                staffing: '',
+            };
+        }
+
+        return {
+            menu: typeof prepSheet.menu === 'string' ? prepSheet.menu : '',
+            equipment: typeof prepSheet.equipment === 'string' ? prepSheet.equipment : '',
+            staffing: typeof prepSheet.staffing === 'string' ? prepSheet.staffing : '',
+        };
+    }
+
+    function normaliseChecklist(checklist) {
+        if (!Array.isArray(checklist)) {
+            return [];
+        }
+
+        return checklist
+            .filter((item) => item && typeof item === 'object' && item.label)
+            .map((item) => ({
+                id: item.id || generateId('chk'),
+                label: String(item.label),
+                completed: Boolean(item.completed),
+            }));
+    }
+
+    function normaliseEvent(event) {
+        const next = Object.assign({}, event);
+
+        if (!next.statusLevel && next.status) {
+            next.statusLevel = mapStatusLevel(next.status);
+        }
+
+        if (!next.staffingLevel && next.staffingStatus) {
+            next.staffingLevel = mapStatusLevel(next.staffingStatus);
+        }
+
+        if (!Array.isArray(next.assignedTeam)) {
+            next.assignedTeam = [];
+        }
+
+        next.checklist = normaliseChecklist(next.checklist);
+        next.prepSheet = sanitisePrepSheet(next.prepSheet);
+
+        return next;
     }
 
     function localStorageAvailable() {
@@ -223,19 +310,7 @@
             return clone(defaultData);
         }
 
-        const normalisedEvents = (Array.isArray(data.events) ? data.events : clone(defaultData.events)).map((event) => {
-            const next = Object.assign({}, event);
-            if (!next.statusLevel && next.status) {
-                next.statusLevel = mapStatusLevel(next.status);
-            }
-            if (!next.staffingLevel && next.staffingStatus) {
-                next.staffingLevel = mapStatusLevel(next.staffingStatus);
-            }
-            if (!Array.isArray(next.assignedTeam)) {
-                next.assignedTeam = [];
-            }
-            return next;
-        });
+        const normalisedEvents = (Array.isArray(data.events) ? data.events : clone(defaultData.events)).map(normaliseEvent);
 
         const normalisedEmployees = (Array.isArray(data.employees) ? data.employees : clone(defaultData.employees)).map((employee) => {
             const next = Object.assign({}, employee);
@@ -289,6 +364,14 @@
         getEvents() {
             return clone(readRaw().events);
         },
+        getEvent(eventId) {
+            if (!eventId) {
+                return null;
+            }
+
+            const event = readRaw().events.find((item) => item.id === eventId);
+            return event ? clone(event) : null;
+        },
         getEmployees() {
             return clone(readRaw().employees);
         },
@@ -305,16 +388,10 @@
                 eventInput
             );
 
-            if (!event.statusLevel) {
-                event.statusLevel = mapStatusLevel(event.status);
-            }
-            if (!event.staffingLevel) {
-                event.staffingLevel = mapStatusLevel(event.staffingStatus);
-            }
-
-            snapshot.events.push(event);
+            const normalisedEvent = normaliseEvent(event);
+            snapshot.events.push(normalisedEvent);
             writeRaw(snapshot);
-            return event;
+            return clone(normalisedEvent);
         },
         removeEvent(eventId) {
             const snapshot = readRaw();
@@ -333,22 +410,76 @@
             const current = snapshot.events[index];
             const patch = typeof updates === 'function' ? updates(clone(current)) : updates;
             const nextEvent = Object.assign({}, current, patch);
-
-            if (!nextEvent.statusLevel || (patch && Object.prototype.hasOwnProperty.call(patch, 'status'))) {
-                nextEvent.statusLevel = mapStatusLevel(nextEvent.status);
-            }
-
-            if (!nextEvent.staffingLevel || (patch && (Object.prototype.hasOwnProperty.call(patch, 'staffingStatus') || Object.prototype.hasOwnProperty.call(patch, 'staffingLevel')))) {
-                nextEvent.staffingLevel = mapStatusLevel(nextEvent.staffingStatus);
-            }
-
-            if (!Array.isArray(nextEvent.assignedTeam)) {
-                nextEvent.assignedTeam = [];
-            }
-
-            snapshot.events[index] = nextEvent;
+            const normalisedEvent = normaliseEvent(nextEvent);
+            snapshot.events[index] = normalisedEvent;
             writeRaw(snapshot);
-            return clone(nextEvent);
+            return clone(normalisedEvent);
+        },
+        addChecklistItem(eventId, label) {
+            if (!label) {
+                return null;
+            }
+
+            const trimmed = String(label).trim();
+            if (!trimmed) {
+                return null;
+            }
+
+            const snapshot = readRaw();
+            const target = snapshot.events.find((event) => event.id === eventId);
+            if (!target) {
+                return null;
+            }
+
+            const item = {
+                id: generateId('chk'),
+                label: trimmed,
+                completed: false,
+            };
+
+            target.checklist = normaliseChecklist((target.checklist || []).concat(item));
+            writeRaw(snapshot);
+            return clone(item);
+        },
+        updateChecklistItem(eventId, itemId, updates) {
+            const snapshot = readRaw();
+            const target = snapshot.events.find((event) => event.id === eventId);
+            if (!target || !Array.isArray(target.checklist)) {
+                return null;
+            }
+
+            const index = target.checklist.findIndex((item) => item.id === itemId);
+            if (index === -1) {
+                return null;
+            }
+
+            const current = target.checklist[index];
+            const patch = typeof updates === 'function' ? updates(clone(current)) : updates;
+            target.checklist[index] = Object.assign({}, current, patch);
+            target.checklist = normaliseChecklist(target.checklist);
+            writeRaw(snapshot);
+            return clone(target.checklist[index]);
+        },
+        removeChecklistItem(eventId, itemId) {
+            const snapshot = readRaw();
+            const target = snapshot.events.find((event) => event.id === eventId);
+            if (!target || !Array.isArray(target.checklist)) {
+                return;
+            }
+
+            target.checklist = normaliseChecklist(target.checklist.filter((item) => item.id !== itemId));
+            writeRaw(snapshot);
+        },
+        savePrepSheet(eventId, prepSheet) {
+            const snapshot = readRaw();
+            const target = snapshot.events.find((event) => event.id === eventId);
+            if (!target) {
+                return null;
+            }
+
+            target.prepSheet = sanitisePrepSheet(prepSheet);
+            writeRaw(snapshot);
+            return clone(target.prepSheet);
         },
         addEmployee(employeeInput) {
             const snapshot = readRaw();
