@@ -861,7 +861,7 @@
 
             snapshot.events[index] = nextEvent;
             writeRaw(snapshot);
-            return clone(nextEvent.prepSheet);
+            return clone(nextEvent);
         },
         addEmployee(employeeInput) {
             const snapshot = readRaw();
