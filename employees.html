@@ -580,6 +580,8 @@
 
     <script src="scripts.js"></script>
     <script src="storage.js"></script>
+    <script src="assets/js/api.js"></script>
+    <script src="assets/js/employees-modal.js"></script>
     <script>
         const navToggle = document.getElementById('mobileNavToggle');
         const nav = document.getElementById('primaryNav');
@@ -954,6 +956,8 @@
                 }
             }
         ];
+
+        const fallbackEmployeeMap = new Map(fallbackEmployees.map((employee) => [employee.id, employee]));
 
         let employees = fallbackEmployees.map(prepareEmployee);
         const store = window.B2UStore;
@@ -2486,8 +2490,9 @@
                 .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
                 .forEach((employee) => {
                     const card = document.createElement('article');
-                    card.className = 'person-card';
+                    card.className = 'person-card employee-card';
                     card.dataset.employeeId = employee.id;
+                    card.setAttribute('data-employee-id', employee.id);
 
                     const name = document.createElement('h3');
                     name.className = 'person-card__name';
@@ -2710,6 +2715,97 @@
             });
         }
 
+        async function hydrateEmployeesFromApi() {
+            const apiClient = window.B2UApi;
+            if (!apiClient || typeof apiClient.getEmployees !== 'function') {
+                return;
+            }
+
+            try {
+                const records = await apiClient.getEmployees();
+                if (!Array.isArray(records) || records.length === 0) {
+                    return;
+                }
+
+                const hydrated = records.map((record) => {
+                    const fallback = fallbackEmployeeMap.get(record.id) || {};
+                    const apiStatus = (record.status || '').toString().toLowerCase();
+                    const fallbackStatus = (fallback.status || '').toString().toLowerCase();
+                    let status = fallbackStatus || 'available';
+                    if (apiStatus === 'inactive') {
+                        status = 'inactive';
+                    } else if (!fallbackStatus) {
+                        status = apiStatus === 'active' || apiStatus === 'available' ? 'available' : apiStatus || 'available';
+                    }
+
+                    const statusLabel =
+                        record.statusLabel ||
+                        fallback.statusLabel ||
+                        (status === 'available' ? 'Available' : status === 'pto' ? 'On PTO' : 'Unavailable');
+                    const statusLevel =
+                        record.statusLevel ||
+                        fallback.statusLevel ||
+                        (status === 'available' ? 'success' : status === 'pto' ? 'warning' : 'danger');
+
+                    const fullName =
+                        record.fullName ||
+                        `${record.firstName || ''} ${record.lastName || ''}`.trim() ||
+                        fallback.name ||
+                        'Teammate';
+
+                    const specialties =
+                        (Array.isArray(record.skills) && record.skills.length
+                            ? record.skills.join(' · ')
+                            : null) ||
+                        fallback.specialties ||
+                        'Ready for assignments';
+
+                    const mapped = prepareEmployee({
+                        ...fallback,
+                        id: record.id,
+                        name: fullName,
+                        role: record.role || fallback.role || 'Role pending',
+                        specialties,
+                        status,
+                        statusLabel,
+                        statusLevel,
+                        email: record.email || fallback.email || '',
+                        phone: record.phone || fallback.phone || '',
+                        notes: record.notes || fallback.notes || '',
+                        hourlyRate: record.hourlyRate ?? fallback.hourlyRate,
+                        availability: record.availability ?? fallback.availability,
+                        assignments: Array.isArray(fallback.assignments) ? fallback.assignments : [],
+                        documents: Array.isArray(fallback.documents) ? fallback.documents : [],
+                        portal: fallback.portal || null,
+                        skills: Array.isArray(record.skills) ? record.skills : fallback.skills || [],
+                        certifications: Array.isArray(record.certifications)
+                            ? record.certifications
+                            : fallback.certifications || [],
+                        assignmentsCount: record.assignmentsCount ?? fallback.assignments?.length ?? 0,
+                    });
+
+                    return mapped;
+                });
+
+                const existingIds = new Set(hydrated.map((employee) => employee.id));
+                fallbackEmployees.forEach((employee) => {
+                    if (!existingIds.has(employee.id)) {
+                        hydrated.push(prepareEmployee(employee));
+                    }
+                });
+
+                employees = hydrated;
+                persistEmployees();
+                renderEmployeeList(employees);
+                buildComplianceLists();
+                applyFilters();
+                refresh({ reloadEvents: true });
+            } catch (error) {
+                console.warn('Unable to load employees from API. Using local data.', error);
+            }
+        }
+
+        hydrateEmployeesFromApi();
         refresh();
     </script>
     <script src="app.js"></script>

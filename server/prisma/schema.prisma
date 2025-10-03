@@ -1,0 +1,66 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = env("PRISMA_PROVIDER")
+  url      = env("DATABASE_URL")
+}
+
+enum EmployeeStatus {
+  active
+  inactive
+}
+
+enum EventStatus {
+  draft
+  scheduled
+  completed
+  canceled
+}
+
+model Employee {
+  id             String          @id @default(uuid())
+  firstName      String
+  lastName       String
+  email          String          @unique
+  phone          String?
+  role           String?
+  status         EmployeeStatus  @default(active)
+  skills         String[]        @default([])
+  certifications String[]        @default([])
+  hourlyRate     Decimal?        @db.Decimal(10, 2)
+  availability   Json?
+  notes          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  assignments    Assignment[]
+}
+
+model Event {
+  id         String       @id @default(uuid())
+  title      String
+  date       DateTime
+  startTime  DateTime
+  endTime    DateTime
+  location   String?
+  status     EventStatus  @default(scheduled)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
+  assignments Assignment[]
+}
+
+model Assignment {
+  id         String    @id @default(uuid())
+  eventId    String
+  employeeId String
+  role       String?
+  assignedAt DateTime  @default(now())
+
+  event    Event    @relation(fields: [eventId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id])
+
+  @@unique([eventId, employeeId])
+}
