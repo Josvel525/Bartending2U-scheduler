@@ -1,0 +1,9 @@
+node_modules/
+server/node_modules/
+server/dist/
+server/dev.db
+*.sqlite
+*.db
+.env
+server/.env
+server/dev.db-journal
