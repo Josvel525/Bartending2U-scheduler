@@ -324,7 +324,7 @@
             }, 3200);
         }
 
-        function closeModal() {
+        function closeBackdropModal() {
             if (!modalBackdrop) {
                 return;
             }
@@ -340,12 +340,12 @@
             document.body.classList.remove('modal-open');
         }
 
-        function openModal(options) {
+        function openBackdropModal(options) {
             if (!modalBackdrop || !modalTitle || !modalBody || !modalFooter) {
                 return;
             }
 
-            closeModal();
+            closeBackdropModal();
 
             const { title, body, actions = [] } = options || {};
 
@@ -384,20 +384,20 @@
         if (modalBackdrop) {
             modalBackdrop.addEventListener('click', (event) => {
                 if (event.target === modalBackdrop) {
-                    closeModal();
+                    closeBackdropModal();
                 }
             });
         }
 
         document.querySelectorAll('[data-modal-close]').forEach((button) => {
             button.addEventListener('click', () => {
-                closeModal();
+                closeBackdropModal();
             });
         });
 
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape' && modalBackdrop && !modalBackdrop.hidden) {
-                closeModal();
+                closeBackdropModal();
             }
         });
 
@@ -527,7 +527,7 @@
                     store.updateChecklistItem(eventData.id, itemId, { completed: toggle.checked });
                     refreshActiveEvent(eventData.id);
                     renderEvents();
-                    renderModal();
+                    renderEventModal();
                 });
 
                 list.addEventListener('click', (event) => {
@@ -540,7 +540,7 @@
                     store.removeChecklistItem(eventData.id, itemId);
                     refreshActiveEvent(eventData.id);
                     renderEvents();
-                    renderModal();
+                    renderEventModal();
                 });
             }
 
@@ -565,7 +565,7 @@
                     formEl.reset();
                     refreshActiveEvent(eventData.id);
                     renderEvents();
-                    renderModal();
+                    renderEventModal();
                 });
             }
 
@@ -622,14 +622,14 @@
             return formEl;
         }
 
-        function renderModal() {
+        function renderEventModal() {
             if (!modal || !modalContentEl || !activeModal) {
                 return;
             }
 
             const eventData = refreshActiveEvent(activeModal.eventId);
             if (!eventData) {
-                closeModal();
+                closeEventModal();
                 return;
             }
 
@@ -651,7 +651,7 @@
             document.body.classList.add('modal-open');
         }
 
-        function openModal(mode, eventId) {
+        function openEventModal(mode, eventId) {
             if (!modal || !store) {
                 return;
             }
@@ -661,10 +661,10 @@
                 eventId,
             };
 
-            renderModal();
+            renderEventModal();
         }
 
-        function closeModal() {
+        function closeEventModal() {
             if (!modal) {
                 return;
             }
@@ -760,8 +760,10 @@
         function getActionsForEvent(event) {
             const actions = [
                 { id: 'view', label: 'View' },
+                { id: 'edit', label: 'Modify' },
                 { id: 'staff', label: 'Staff' },
                 { id: 'notes', label: 'Notes' },
+                { id: 'prep', label: 'Prep sheet' },
             ];
 
             if (event.statusLevel === 'success') {
@@ -873,41 +875,6 @@
                 const actionsCell = document.createElement('td');
                 actionsCell.className = 'table-actions';
 
-                const viewLink = document.createElement('a');
-                viewLink.className = 'card-action';
-                viewLink.href = '#new-event';
-                viewLink.textContent = 'View';
-
-                const checklistButton = document.createElement('button');
-                checklistButton.type = 'button';
-                checklistButton.className = 'card-action link-button';
-                checklistButton.dataset.eventAction = 'checklist';
-                checklistButton.dataset.eventId = event.id;
-                checklistButton.textContent = 'Checklist';
-
-                const prepButton = document.createElement('button');
-                prepButton.type = 'button';
-                prepButton.className = 'card-action link-button';
-                prepButton.dataset.eventAction = 'prep';
-                prepButton.dataset.eventId = event.id;
-                prepButton.textContent = 'Prep sheet';
-                const editButton = document.createElement('button');
-                editButton.type = 'button';
-                editButton.className = 'card-action link-button';
-                editButton.dataset.editEvent = event.id;
-                editButton.textContent = 'Modify';
-
-                const removeButton = document.createElement('button');
-                removeButton.type = 'button';
-                removeButton.className = 'card-action link-button';
-                removeButton.dataset.removeEvent = event.id;
-                removeButton.textContent = 'Remove';
-
-                actionsCell.appendChild(viewLink);
-                actionsCell.appendChild(checklistButton);
-                actionsCell.appendChild(prepButton);
-                actionsCell.appendChild(editButton);
-                actionsCell.appendChild(removeButton);
                 getActionsForEvent(event).forEach((action) => {
                     const button = document.createElement('button');
                     button.type = 'button';
@@ -965,10 +932,10 @@
             notes.textContent = eventData.notes ? eventData.notes : 'No notes yet.';
             wrapper.appendChild(notes);
 
-            openModal({
+            openBackdropModal({
                 title: eventData.name,
                 body: wrapper,
-                actions: [{ label: 'Close', variant: 'primary', onClick: closeModal }],
+                actions: [{ label: 'Close', variant: 'primary', onClick: closeBackdropModal }],
             });
         }
 
@@ -1035,17 +1002,17 @@
 
                 const selected = Array.from(formElement.querySelectorAll('input[name="staffMembers"]:checked')).map((input) => input.value);
                 store.assignStaff(eventData.id, selected);
-                closeModal();
+                closeBackdropModal();
                 showToast('Staff assignments saved', 'success');
                 refreshData();
                 renderEvents();
             });
 
-            openModal({
+            openBackdropModal({
                 title: `Assign staff · ${eventData.name}`,
                 body: formElement,
                 actions: [
-                    { label: 'Cancel', variant: 'ghost', onClick: closeModal },
+                    { label: 'Cancel', variant: 'ghost', onClick: closeBackdropModal },
                     { label: 'Save assignments', variant: 'primary', onClick: () => formElement.requestSubmit() },
                 ],
             });
@@ -1086,17 +1053,17 @@
 
                 const nextNotes = textarea.value.trim();
                 store.updateEvent(eventData.id, { notes: nextNotes });
-                closeModal();
+                closeBackdropModal();
                 showToast('Notes saved', 'success');
                 refreshData();
                 renderEvents();
             });
 
-            openModal({
+            openBackdropModal({
                 title: `Notes · ${eventData.name}`,
                 body: formElement,
                 actions: [
-                    { label: 'Cancel', variant: 'ghost', onClick: closeModal },
+                    { label: 'Cancel', variant: 'ghost', onClick: closeBackdropModal },
                     { label: 'Save notes', variant: 'primary', onClick: () => formElement.requestSubmit() },
                 ],
             });
@@ -1145,17 +1112,17 @@
                     lastReminderSent: timestamp,
                     notes: nextNotes,
                 });
-                closeModal();
+                closeBackdropModal();
                 showToast('Reminder logged', 'success');
                 refreshData();
                 renderEvents();
             });
 
-            openModal({
+            openBackdropModal({
                 title: `Send reminder · ${eventData.name}`,
                 body: formElement,
                 actions: [
-                    { label: 'Cancel', variant: 'ghost', onClick: closeModal },
+                    { label: 'Cancel', variant: 'ghost', onClick: closeBackdropModal },
                     { label: 'Log reminder', variant: 'primary', onClick: () => formElement.requestSubmit() },
                 ],
             });
@@ -1212,10 +1179,10 @@
             list.addEventListener('change', updateProgress);
             updateProgress();
 
-            openModal({
+            openBackdropModal({
                 title: `Checklist · ${eventData.name}`,
                 body: wrapper,
-                actions: [{ label: 'Close', variant: 'primary', onClick: closeModal }],
+                actions: [{ label: 'Close', variant: 'primary', onClick: closeBackdropModal }],
             });
 
             const firstCheckbox = list.querySelector('input[type="checkbox"]');
@@ -1241,76 +1208,12 @@
                     return;
                 }
 
-                const actionTrigger = event.target.closest('[data-event-action]');
-                if (actionTrigger) {
-                    event.preventDefault();
-                    const action = actionTrigger.dataset.eventAction;
-                    const eventId = actionTrigger.dataset.eventId;
-
-                    if (action === 'checklist' || action === 'prep') {
-                        openModal(action, eventId);
-                    }
-                    return;
-                }
-
-                const target = event.target.closest('[data-remove-event]');
-                if (!target || !store) {
-                    return;
-                }
-
-                const eventId = target.dataset.removeEvent;
-                store.removeEvent(eventId);
-                if (activeModal && activeModal.eventId === eventId) {
-                    closeModal();
-                }
-                renderEvents();
-            });
-        }
-
-        if (modal) {
-            modal.addEventListener('click', (event) => {
-                if (!(event.target instanceof Element)) {
-                    return;
-                }
-
-                if (event.target.closest('[data-modal-dismiss]')) {
-                    closeModal();
-                }
-            });
-        }
-
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && modal && modal.classList.contains('is-open')) {
-                closeModal();
-            }
-        });
-                const removeTarget = event.target.closest('[data-remove-event]');
-                const editTarget = event.target.closest('[data-edit-event]');
-
-                if (removeTarget && store) {
-                    store.removeEvent(removeTarget.dataset.removeEvent);
-                    renderEvents();
-                    if (editingEventId === removeTarget.dataset.removeEvent) {
-                        exitEditMode();
-                        applyDefaultSelects();
-                    }
-                    return;
-                }
-
-                if (editTarget && store) {
-                    const existingEvent = store
-                        .getEvents()
-                        .find((item) => item.id === editTarget.dataset.editEvent);
-
-                    if (!existingEvent) {
-                        return;
-                    }
-
-                    enterEditMode(existingEvent);
                 const actionButton = event.target.closest('[data-action]');
                 if (!actionButton) {
                     return;
                 }
+
+                event.preventDefault();
 
                 const action = actionButton.dataset.action;
                 const eventId = actionButton.dataset.eventId;
@@ -1332,6 +1235,9 @@
                     case 'view':
                         handleViewEvent(eventData);
                         break;
+                    case 'edit':
+                        enterEditMode(eventData);
+                        break;
                     case 'staff':
                         handleStaffEvent(eventData);
                         break;
@@ -1341,20 +1247,63 @@
                     case 'reminder':
                         handleReminderEvent(eventData);
                         break;
+                    case 'prep':
+                        if (modal) {
+                            openEventModal('prep', eventId);
+                        } else {
+                            const message = document.createElement('p');
+                            message.className = 'empty-state';
+                            message.textContent = 'Prep sheet is unavailable in this view.';
+                            openBackdropModal({
+                                title: `Prep sheet · ${eventData.name}`,
+                                body: message,
+                                actions: [{ label: 'Close', variant: 'primary', onClick: closeBackdropModal }],
+                            });
+                        }
+                        break;
                     case 'checklist':
-                        handleChecklistEvent(eventData);
+                        if (modal) {
+                            openEventModal('checklist', eventId);
+                        } else {
+                            handleChecklistEvent(eventData);
+                        }
                         break;
                     case 'remove':
                         store.removeEvent(eventId);
+                        if (activeModal && activeModal.eventId === eventId) {
+                            closeEventModal();
+                        }
                         showToast('Event removed', 'success');
                         refreshData();
                         renderEvents();
+                        if (editingEventId === eventId) {
+                            exitEditMode();
+                            applyDefaultSelects();
+                        }
                         break;
                     default:
                         break;
                 }
             });
         }
+
+        if (modal) {
+            modal.addEventListener('click', (event) => {
+                if (!(event.target instanceof Element)) {
+                    return;
+                }
+
+                if (event.target.closest('[data-modal-dismiss]')) {
+                    closeEventModal();
+                }
+            });
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && modal && modal.classList.contains('is-open')) {
+                closeEventModal();
+            }
+        });
 
         function applyDefaultSelects() {
             if (!form) {
@@ -1487,35 +1436,31 @@
                     package: formData.get('package') || '',
                     guestCount: Number(formData.get('guestCount') || 0),
                     payout: Number(formData.get('payout') || 0),
-                    status: formData.get('status') || (statusSelect ? statusSelect.value : 'Draft'),
                     requiredStaff: Number(formData.get('requiredStaff') || 0),
-                    status: formData.get('status') || 'Draft',
+                    status: formData.get('status') || (statusSelect ? statusSelect.value : defaultStatusValue) || 'Draft',
                     statusLevel: statusOption ? statusOption.dataset.level : undefined,
                     staffingStatus:
-                        formData.get('staffingStatus') || (staffingSelect ? staffingSelect.value : 'Unassigned'),
+                        formData.get('staffingStatus') ||
+                        (staffingSelect ? staffingSelect.value : defaultStaffingValue) ||
+                        'Unassigned',
                     staffingLevel: staffingOption ? staffingOption.dataset.level : undefined,
                     notes: (formData.get('notes') || '').trim(),
                 };
 
-                if (editingEventId) {
+                const isEdit = Boolean(editingEventId);
+                if (isEdit) {
                     store.updateEvent(editingEventId, eventPayload);
                 } else {
                     store.addEvent(eventPayload);
                 }
 
+                const toastMessage = isEdit ? 'Event updated' : 'Event saved';
+
                 form.reset();
                 exitEditMode();
                 applyDefaultSelects();
-                store.addEvent(eventPayload);
-                showToast('Event saved', 'success');
 
-                form.reset();
-                if (form.eventStatus) {
-                    form.eventStatus.value = 'Confirmed';
-                }
-                if (form.eventStaffing) {
-                    form.eventStaffing.value = 'Fully staffed';
-                }
+                showToast(toastMessage, 'success');
 
                 refreshData();
                 renderEvents();
@@ -1535,6 +1480,8 @@
             });
         }
 
+        exitEditMode();
+        applyDefaultSelects();
         refreshData();
         renderEvents();
     </script>
