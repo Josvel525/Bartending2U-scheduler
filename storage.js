@@ -423,6 +423,7 @@
                 }
             }
         ],
+        leads: [],
     };
 
     function clone(value) {
@@ -767,6 +768,19 @@
         return `${prefix}-${randomPart}-${timePart}`;
     }
 
+    function ensureEventIndex(snapshot, eventId) {
+        if (!eventId) {
+            return { index: -1, current: null };
+        }
+
+        const index = snapshot.events.findIndex((event) => event.id === eventId);
+        if (index === -1) {
+            return { index: -1, current: null };
+        }
+
+        return { index, current: snapshot.events[index] };
+    }
+
     const store = {
         getSnapshot() {
             return clone(readRaw());
@@ -862,6 +876,153 @@
             snapshot.events[index] = nextEvent;
             writeRaw(snapshot);
             return clone(nextEvent);
+        },
+        addChecklistItem(eventId, label) {
+            const trimmed = typeof label === 'string' ? label.trim() : '';
+            if (!eventId || !trimmed) {
+                return null;
+            }
+
+            const snapshot = readRaw();
+            const { index, current } = ensureEventIndex(snapshot, eventId);
+            if (index === -1 || !current) {
+                return null;
+            }
+
+            const nextChecklist = Array.isArray(current.checklist) ? current.checklist.slice() : [];
+            const newItem = {
+                id: generateId('chk'),
+                label: trimmed,
+                completed: false,
+            };
+
+            nextChecklist.push(newItem);
+
+            const nextEvent = normaliseEvent(
+                Object.assign({}, current, {
+                    checklist: nextChecklist,
+                    updatedAt: Date.now(),
+                })
+            );
+
+            snapshot.events[index] = nextEvent;
+            writeRaw(snapshot);
+
+            const savedItem = nextEvent.checklist.find((item) => item.id === newItem.id);
+            return savedItem ? clone(savedItem) : clone(newItem);
+        },
+        updateChecklistItem(eventId, itemId, updates) {
+            if (!eventId || !itemId) {
+                return null;
+            }
+
+            const snapshot = readRaw();
+            const { index, current } = ensureEventIndex(snapshot, eventId);
+            if (index === -1 || !current) {
+                return null;
+            }
+
+            const checklist = Array.isArray(current.checklist) ? current.checklist : [];
+            let matched = false;
+
+            const nextChecklist = checklist.map((item) => {
+                if (item.id !== itemId) {
+                    return item;
+                }
+
+                matched = true;
+                const patch = typeof updates === 'function' ? updates(clone(item)) : updates || {};
+                const nextItem = Object.assign({}, item, patch);
+
+                if (patch.label !== undefined) {
+                    const trimmed = String(patch.label).trim();
+                    if (trimmed) {
+                        nextItem.label = trimmed;
+                    } else {
+                        nextItem.label = item.label;
+                    }
+                }
+
+                if (patch.completed !== undefined) {
+                    nextItem.completed = Boolean(patch.completed);
+                } else {
+                    nextItem.completed = Boolean(nextItem.completed);
+                }
+
+                nextItem.id = item.id;
+                return nextItem;
+            });
+
+            if (!matched) {
+                return null;
+            }
+
+            const nextEvent = normaliseEvent(
+                Object.assign({}, current, {
+                    checklist: nextChecklist,
+                    updatedAt: Date.now(),
+                })
+            );
+
+            snapshot.events[index] = nextEvent;
+            writeRaw(snapshot);
+
+            const savedItem = nextEvent.checklist.find((item) => item.id === itemId);
+            return savedItem ? clone(savedItem) : null;
+        },
+        removeChecklistItem(eventId, itemId) {
+            if (!eventId || !itemId) {
+                return false;
+            }
+
+            const snapshot = readRaw();
+            const { index, current } = ensureEventIndex(snapshot, eventId);
+            if (index === -1 || !current) {
+                return false;
+            }
+
+            const checklist = Array.isArray(current.checklist) ? current.checklist : [];
+            const nextChecklist = checklist.filter((item) => item.id !== itemId);
+
+            if (nextChecklist.length === checklist.length) {
+                return false;
+            }
+
+            const nextEvent = normaliseEvent(
+                Object.assign({}, current, {
+                    checklist: nextChecklist,
+                    updatedAt: Date.now(),
+                })
+            );
+
+            snapshot.events[index] = nextEvent;
+            writeRaw(snapshot);
+            return true;
+        },
+        savePrepSheet(eventId, prepInput) {
+            if (!eventId) {
+                return null;
+            }
+
+            const snapshot = readRaw();
+            const { index, current } = ensureEventIndex(snapshot, eventId);
+            if (index === -1 || !current) {
+                return null;
+            }
+
+            const patch = typeof prepInput === 'function' ? prepInput(clone(current.prepSheet || {})) : prepInput;
+            const sanitised = sanitisePrepSheet(patch);
+
+            const nextEvent = normaliseEvent(
+                Object.assign({}, current, {
+                    prepSheet: sanitised,
+                    updatedAt: Date.now(),
+                })
+            );
+
+            snapshot.events[index] = nextEvent;
+            writeRaw(snapshot);
+            return clone(nextEvent.prepSheet);
         },
         addEmployee(employeeInput) {
             const snapshot = readRaw();
