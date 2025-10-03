@@ -1,0 +1,223 @@
+{
+  "info": {
+    "name": "Bartending2U Scheduler API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "c3f2396a-5ddc-4ed1-9fd0-7a1f4e3a5b72"
+  },
+  "item": [
+    {
+      "name": "Employees",
+      "item": [
+        {
+          "name": "List employees",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/employees",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees"]
+            }
+          }
+        },
+        {
+          "name": "Create employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"firstName\": \"Jamie\",\n  \"lastName\": \"Lee\",\n  \"email\": \"jamie.lee@bartending2u.com\",\n  \"phone\": \"(713) 555-0199\",\n  \"role\": \"Event Bartender\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/employees",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees"]
+            }
+          }
+        },
+        {
+          "name": "Update employee",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"inactive\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/employees/{{employeeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "employees", "{{employeeId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Events",
+      "item": [
+        {
+          "name": "List events",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/events?status=scheduled",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events"],
+              "query": [
+                { "key": "status", "value": "scheduled" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Create event",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Corporate Mixer\",\n  \"date\": \"2025-11-08\",\n  \"startTime\": \"18:00\",\n  \"endTime\": \"22:00\",\n  \"location\": \"Market St Loft\",\n  \"clientName\": \"Martinez & Co.\",\n  \"clientPhone\": \"(555) 431-2234\",\n  \"notes\": \"Client requests zero-proof welcome cocktails.\",\n  \"status\": \"draft\",\n  \"assignments\": [\n    { \"employeeId\": \"{{employeeId}}\", \"role\": \"Lead bartender\" }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events"]
+            }
+          }
+        },
+        {
+          "name": "Update event",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"location\": \"Updated venue\",\n  \"status\": \"scheduled\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{eventId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events", "{{eventId}}"]
+            }
+          }
+        },
+        {
+          "name": "Assign employee",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employeeId\": \"{{employeeId}}\",\n  \"role\": \"Support\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{eventId}}/assign",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events", "{{eventId}}", "assign"]
+            }
+          }
+        },
+        {
+          "name": "Remove assignment",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/events/{{eventId}}/assign/{{assignmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "events", "{{eventId}}", "assign", "{{assignmentId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Scheduler",
+      "item": [
+        {
+          "name": "Save draft",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"formKey\": \"scheduler:events:default\",\n  \"formVersion\": \"v1\",\n  \"payload\": {\n    \"event\": {\n      \"title\": \"Winter Soirée\",\n      \"date\": \"2025-12-05\",\n      \"startTime\": \"19:00\",\n      \"location\": \"Skyline Ballroom\",\n      \"status\": \"draft\"\n    },\n    \"assignments\": [],\n    \"metadata\": {\n      \"package\": \"Premium Mixology\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/scheduler/save",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "scheduler", "save"]
+            }
+          }
+        },
+        {
+          "name": "Fetch draft",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/scheduler/saved?formKey=scheduler:events:default",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "scheduler", "saved"],
+              "query": [
+                { "key": "formKey", "value": "scheduler:events:default" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Delete draft",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/scheduler/saved/{{savedItemId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "scheduler", "saved", "{{savedItemId}}"]
+            }
+          }
+        },
+        {
+          "name": "Submit scheduler",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"formKey\": \"scheduler:events:default\",\n  \"payload\": {\n    \"event\": {\n      \"title\": \"Winter Soirée\",\n      \"date\": \"2025-12-05\",\n      \"startTime\": \"19:00\",\n      \"endTime\": \"23:00\",\n      \"location\": \"Skyline Ballroom\",\n      \"clientName\": \"Martinez & Co.\",\n      \"clientPhone\": \"(555) 431-2234\",\n      \"notes\": \"Finalize specialty cocktail list.\",\n      \"status\": \"scheduled\"\n    },\n    \"assignments\": [\n      { \"employeeId\": \"{{employeeId}}\", \"role\": \"Lead bartender\" }\n    ],\n    \"metadata\": {\n      \"package\": \"Premium Mixology\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/scheduler/submit",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "scheduler", "submit"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:4000" },
+    { "key": "employeeId", "value": "00000000-0000-0000-0000-000000000000" },
+    { "key": "eventId", "value": "00000000-0000-0000-0000-000000000000" },
+    { "key": "assignmentId", "value": "00000000-0000-0000-0000-000000000000" },
+    { "key": "savedItemId", "value": "00000000-0000-0000-0000-000000000000" }
+  ]
+}

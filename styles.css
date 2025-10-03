@@ -658,6 +658,16 @@ img {
   color: var(--warning-500);
 }
 
+.badge.neutral {
+  background: rgba(148, 163, 184, 0.18);
+  color: var(--slate-600);
+}
+
+.badge.info {
+  background: rgba(37, 99, 235, 0.14);
+  color: var(--primary-600);
+}
+
 .split-layout {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
@@ -777,6 +787,25 @@ tr:hover td {
   flex-wrap: wrap;
 }
 
+.form-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.saved-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  color: var(--slate-600);
+}
+
+.saved-indicator__time {
+  font-size: 0.8rem;
+}
+
 .button {
   display: inline-flex;
   align-items: center;
@@ -806,6 +835,16 @@ tr:hover td {
 .button.primary:hover {
   background: var(--primary-700);
   transform: translateY(-1px);
+}
+
+.button.secondary {
+  background: var(--surface);
+  color: var(--primary-600);
+  border: 1px solid var(--border-soft);
+}
+
+.button.secondary:hover {
+  background: rgba(37, 99, 235, 0.08);
 }
 
 .button.ghost {
@@ -847,6 +886,12 @@ tr:hover td {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+}
+
+.field-help {
+  font-size: 0.8rem;
+  color: var(--slate-600);
+  margin-top: -0.25rem;
 }
 
 label {
