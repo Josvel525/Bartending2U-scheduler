@@ -1,70 +1,54 @@
 import { Router } from 'express';
-import { z } from 'zod';
-import { prisma } from '../lib/prisma.js';
-import { sendSuccess } from '../utils/responses.js';
+import prisma from '../lib/prisma.js';
+import { mapEmployeeDetail, mapEmployeeListItem } from '../utils/employeeMapper.js';
 
-const employeeRouter = Router();
+const router = Router();
 
-const employeeInputSchema = z.object({
-  firstName: z.string().trim().min(1),
-  lastName: z.string().trim().min(1),
-  email: z.string().trim().email(),
-  phone: z.string().trim().min(7).max(32).optional().or(z.literal('').transform(() => undefined)),
-  role: z.string().trim().min(1).optional().or(z.literal('').transform(() => undefined)),
-  status: z.enum(['active', 'inactive']).optional(),
-});
-
-const employeeUpdateSchema = employeeInputSchema.partial().refine((data) => Object.keys(data).length > 0, {
-  message: 'At least one field must be provided',
-});
-
-employeeRouter.get('/', async (_req, res, next) => {
+router.get('/', async (_req, res) => {
   try {
     const employees = await prisma.employee.findMany({
-      orderBy: [
-        { lastName: 'asc' },
-        { firstName: 'asc' },
-      ],
+      include: {
+        _count: {
+          select: { assignments: true },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
     });
 
-    sendSuccess(res, employees);
+    res.json({
+      ok: true,
+      data: employees.map((employee) => mapEmployeeListItem(employee)),
+    });
   } catch (error) {
-    next(error);
+    console.error('Error fetching employees', error);
+    res.status(500).json({ ok: false, error: { message: 'Unable to load employees' } });
   }
 });
 
-employeeRouter.post('/', async (req, res, next) => {
+router.get('/:id', async (req, res) => {
   try {
-    const result = employeeInputSchema.parse(req.body);
-    const employee = await prisma.employee.create({ data: result });
-    sendSuccess(res, employee, 201);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      error.cause = 'VALIDATION_ERROR';
-      (error as unknown as { status?: number; code?: string }).status = 400;
-      (error as unknown as { status?: number; code?: string }).code = 'VALIDATION_ERROR';
-      (error as unknown as { details?: unknown }).details = error.flatten();
+    const { id } = req.params;
+    const employee = await prisma.employee.findUnique({
+      where: { id },
+      include: {
+        assignments: {
+          include: {
+            event: true,
+          },
+        },
+      },
+    });
+
+    if (!employee) {
+      res.status(404).json({ ok: false, error: { message: 'Employee not found' } });
+      return;
     }
-    next(error);
+
+    res.json({ ok: true, data: mapEmployeeDetail(employee) });
+  } catch (error) {
+    console.error('Error fetching employee', error);
+    res.status(500).json({ ok: false, error: { message: 'Unable to load employee' } });
   }
 });
 
-employeeRouter.put('/:id', async (req, res, next) => {
-  const { id } = req.params;
-
-  try {
-    const result = employeeUpdateSchema.parse(req.body);
-    const employee = await prisma.employee.update({ where: { id }, data: result });
-    sendSuccess(res, employee);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      error.cause = 'VALIDATION_ERROR';
-      (error as unknown as { status?: number; code?: string }).status = 400;
-      (error as unknown as { status?: number; code?: string }).code = 'VALIDATION_ERROR';
-      (error as unknown as { details?: unknown }).details = error.flatten();
-    }
-    next(error);
-  }
-});
-
-export { employeeRouter };
+export default router;

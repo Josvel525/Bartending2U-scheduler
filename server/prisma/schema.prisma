@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = env("DATABASE_PROVIDER")
+  provider = env("PRISMA_PROVIDER")
   url      = env("DATABASE_URL")
 }
 
@@ -19,67 +19,48 @@ enum EventStatus {
   canceled
 }
 
-enum SavedItemKind {
-  scheduler_draft
-  note
-  template
-}
-
 model Employee {
-  id        String      @id @default(uuid())
-  firstName String
-  lastName  String
-  email     String      @unique
-  phone     String?
-  role      String?
-  status    EmployeeStatus @default(active)
-  createdAt DateTime    @default(now())
-  updatedAt DateTime    @updatedAt
-  assignments Assignment[]
+  id             String          @id @default(uuid())
+  firstName      String
+  lastName       String
+  email          String          @unique
+  phone          String?
+  role           String?
+  status         EmployeeStatus  @default(active)
+  skills         String[]        @default([])
+  certifications String[]        @default([])
+  hourlyRate     Decimal?        @db.Decimal(10, 2)
+  availability   Json?
+  notes          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  assignments    Assignment[]
 }
 
 model Event {
-  id          String      @id @default(uuid())
-  title       String
-  date        DateTime
-  startTime   DateTime?
-  endTime     DateTime?
-  location    String?
-  clientName  String?
-  clientPhone String?
-  notes       String?
-  status      EventStatus @default(draft)
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id         String       @id @default(uuid())
+  title      String
+  date       DateTime
+  startTime  DateTime
+  endTime    DateTime
+  location   String?
+  status     EventStatus  @default(scheduled)
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+
   assignments Assignment[]
-  savedItems  SavedItem[]
 }
 
 model Assignment {
-  id          String   @id @default(uuid())
-  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  eventId     String
-  employee    Employee @relation(fields: [employeeId], references: [id], onDelete: Cascade)
-  employeeId  String
-  role        String?
-  assignedAt  DateTime @default(now())
+  id         String    @id @default(uuid())
+  eventId    String
+  employeeId String
+  role       String?
+  assignedAt DateTime  @default(now())
+
+  event    Event    @relation(fields: [eventId], references: [id])
+  employee Employee @relation(fields: [employeeId], references: [id])
 
   @@unique([eventId, employeeId])
-  @@index([eventId])
-}
-
-model SavedItem {
-  id          String        @id @default(uuid())
-  formKey     String
-  kind        SavedItemKind
-  payload     Json
-  formVersion String?
-  createdBy   String?
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  event       Event?        @relation(fields: [eventId], references: [id], onDelete: SetNull)
-  eventId     String?
-
-  @@index([eventId])
-  @@unique([formKey, kind])
 }
