@@ -2198,13 +2198,17 @@ body.modal-open {
 }
 
 .modal-summary dt {
+  margin: 0;
+  line-height: 1.1;
+}
+
+.modal-summary__label {
+  display: block;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   font-weight: 700;
-  color: var(--slate-500);
-  margin: 0;
-  line-height: 1.1;
+  color: var(--slate-600);
 }
 
 .modal-summary dd {
