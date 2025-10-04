@@ -221,7 +221,10 @@
         }
 
         const dt = document.createElement('dt');
-        dt.textContent = label;
+        const labelText = document.createElement('strong');
+        labelText.className = 'modal-summary__label';
+        labelText.textContent = label;
+        dt.appendChild(labelText);
 
         const dd = document.createElement('dd');
         if (value instanceof Node) {
