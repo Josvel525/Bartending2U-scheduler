@@ -1942,6 +1942,8 @@ body.modal-open {
 }
 
 .calendar-cell__date {
+  display: flex;
+  justify-content: flex-end;
   font-size: 0.9rem;
   font-weight: 600;
   color: var(--slate-600);
