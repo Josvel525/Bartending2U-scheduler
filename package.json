@@ -27,7 +27,7 @@
     "@types/node": "^20.12.12",
     "@types/supertest": "^2.0.16",
     "prisma": "^5.16.1",
-    "supertest": "^6.4.2",
+    "supertest": "^6.3.3",
     "ts-node": "^10.9.2",
     "tslib": "^2.6.2",
     "tsx": "^4.16.2",
