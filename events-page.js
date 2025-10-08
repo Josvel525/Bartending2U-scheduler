@@ -5,6 +5,9 @@
         return;
     }
 
+    const EVENTS_API_BASE = 'http://127.0.0.1:8000';
+    const storage = window.B2UStorage || null;
+
     const form = document.getElementById('eventForm');
     const saveButton = document.getElementById('saveDraftButton');
     const submitButton = document.getElementById('submitSchedulerButton');
@@ -51,6 +54,12 @@
     function formatTime(dateString) {
         if (!dateString) {
             return '';
+        }
+        if (/^([01]?\d|2[0-3]):([0-5]\d)$/.test(dateString)) {
+            const [hours, minutes] = dateString.split(':').map((value) => Number.parseInt(value, 10));
+            const date = new Date();
+            date.setHours(Number.isFinite(hours) ? hours : 0, Number.isFinite(minutes) ? minutes : 0, 0, 0);
+            return new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit' }).format(date);
         }
         const date = new Date(dateString);
         if (Number.isNaN(date.getTime())) {
@@ -175,6 +184,153 @@
         return errors;
     }
 
+    function normaliseStatusValue(value) {
+        if (!value) {
+            return 'draft';
+        }
+        const status = String(value).trim().toLowerCase();
+        switch (status) {
+            case 'confirmed':
+            case 'in progress':
+                return 'scheduled';
+            case 'awaiting deposit':
+            case 'proposal':
+            case 'pending':
+                return 'draft';
+            case 'cancelled':
+                return 'canceled';
+            default:
+                return status;
+        }
+    }
+
+    function toNumber(value) {
+        if (value === undefined || value === null || value === '') {
+            return null;
+        }
+        const number = Number(value);
+        return Number.isFinite(number) ? number : null;
+    }
+
+    function normaliseApiEvent(event) {
+        if (!event || typeof event !== 'object') {
+            return null;
+        }
+        const assignments = Array.isArray(event.assign_employees) ? event.assign_employees.map((item) => String(item)) : [];
+        return {
+            id: event.id,
+            name: event.name || 'Untitled event',
+            date: event.date || '',
+            startTime: event.start_time || '',
+            endTime: event.end_time || '',
+            location: event.location || '',
+            package: event.package || '',
+            guestCount: event.guest_count ?? null,
+            payout: event.payout ?? null,
+            targetStaffCount: event.target_staff_count ?? null,
+            assignEmployees: assignments,
+            clientName: event.client_name || '',
+            clientPhone: event.client_phone || '',
+            status: normaliseStatusValue(event.status),
+            staffingStatus: event.staffing_status || '',
+            notes: event.notes || '',
+            updatedAt: event.updated_at || new Date().toISOString(),
+        };
+    }
+
+    function normaliseLocalEvent(event) {
+        if (!event || typeof event !== 'object') {
+            return null;
+        }
+        const assignedIds = Array.isArray(event.assignedStaffIds)
+            ? event.assignedStaffIds
+            : Array.isArray(event.assignEmployees)
+            ? event.assignEmployees
+            : [];
+        const timestamp = event.updatedAt || event.createdAt || Date.now();
+        return {
+            id: event.id,
+            name: event.name || event.title || 'Untitled event',
+            date: event.date || '',
+            startTime: event.time || event.startTime || '',
+            endTime: event.endTime || '',
+            location: event.location || '',
+            package: event.package || '',
+            guestCount: event.guestCount ?? null,
+            payout: event.payout ?? null,
+            targetStaffCount: event.requiredStaff ?? null,
+            assignEmployees: assignedIds.map((id) => String(id)).filter(Boolean),
+            clientName: event.clientName || '',
+            clientPhone: event.clientPhone || '',
+            status: normaliseStatusValue(event.status),
+            staffingStatus: event.staffingStatus || '',
+            notes: event.notes || '',
+            updatedAt: new Date(timestamp).toISOString(),
+        };
+    }
+
+    async function requestEventApi(path, options = {}) {
+        const requestOptions = Object.assign({ method: 'GET' }, options || {});
+        const headers = Object.assign({}, requestOptions.headers || {});
+        if (requestOptions.body && !headers['Content-Type']) {
+            headers['Content-Type'] = 'application/json';
+        }
+        requestOptions.headers = headers;
+
+        const response = await fetch(`${EVENTS_API_BASE}${path}`, requestOptions);
+        const contentType = response.headers.get('content-type') || '';
+        const isJson = contentType.includes('application/json');
+        const data = isJson ? await response.json() : await response.text();
+
+        if (!response.ok) {
+            const message = isJson && data && typeof data === 'object' && data.detail
+                ? data.detail
+                : response.statusText || 'Event request failed';
+            const error = new Error(message);
+            error.status = response.status;
+            error.payload = data;
+            throw error;
+        }
+
+        return data;
+    }
+
+    async function fetchEventsFromApi() {
+        const data = await requestEventApi('/events');
+        if (!Array.isArray(data)) {
+            return [];
+        }
+        return data.map((event) => normaliseApiEvent(event)).filter(Boolean);
+    }
+
+    function buildEventPayload(payload) {
+        const event = payload.event || {};
+        const metadata = payload.metadata || {};
+        const assignmentIds = Array.isArray(payload.assignments)
+            ? payload.assignments.map((assignment) => assignment && assignment.employeeId).filter(Boolean)
+            : [];
+
+        const uniqueAssignments = Array.from(new Set(assignmentIds.map((id) => String(id))));
+
+        return {
+            name: event.title || 'Untitled event',
+            date: event.date || null,
+            start_time: event.startTime || null,
+            end_time: event.endTime || null,
+            location: event.location || null,
+            package: metadata.package || null,
+            guest_count: toNumber(metadata.guestCount),
+            payout: toNumber(metadata.payout),
+            target_staff_count: toNumber(metadata.requiredStaff),
+            assign_employees: uniqueAssignments,
+            client_name: event.clientName || null,
+            client_phone: event.clientPhone || null,
+            status: normaliseStatusValue(event.status),
+            staffing_status: metadata.staffingStatus || null,
+            notes: event.notes || null,
+        };
+    }
+
     async function saveDraft(options = { silent: false }) {
         const { silent } = options;
         if (state.saveTimeout) {
@@ -224,17 +380,56 @@
         }
 
         try {
-            const result = await api.submitScheduler({ formKey, payload });
-            showToast('Event submitted and scheduled', 'success');
+            const eventPayload = buildEventPayload(payload);
+            const eventId = payload.event.id || hiddenIdField.value;
+            const isUpdate = Boolean(eventId);
+            const endpoint = isUpdate ? `/events/${eventId}` : '/events';
+            const method = isUpdate ? 'PUT' : 'POST';
+
+            await requestEventApi(endpoint, {
+                method,
+                body: JSON.stringify(eventPayload),
+            });
+
+            showToast(isUpdate ? 'Event updated successfully' : 'Event submitted and scheduled', 'success');
             clearForm();
-            await loadEvents();
-            if (result && result.id) {
-                hiddenIdField.value = '';
-            }
+            hiddenIdField.value = '';
             state.draftId = null;
+            await loadEvents();
         } catch (error) {
             console.error('Submit failed', error);
             showToast(error.message || 'Unable to submit event', 'danger');
+
+            if (storage && typeof storage.addEvent === 'function') {
+                const eventPayload = buildEventPayload(payload);
+                const offlineEvent = storage.addEvent({
+                    id: payload.event.id || undefined,
+                    name: eventPayload.name,
+                    date: eventPayload.date || undefined,
+                    time: eventPayload.start_time || undefined,
+                    endTime: eventPayload.end_time || undefined,
+                    location: eventPayload.location || undefined,
+                    package: eventPayload.package || undefined,
+                    guestCount: eventPayload.guest_count || undefined,
+                    payout: eventPayload.payout || undefined,
+                    requiredStaff: eventPayload.target_staff_count || undefined,
+                    assignedStaffIds: eventPayload.assign_employees,
+                    clientName: eventPayload.client_name || undefined,
+                    clientPhone: eventPayload.client_phone || undefined,
+                    notes: eventPayload.notes || undefined,
+                    status: eventPayload.status,
+                    staffingStatus: eventPayload.staffing_status || undefined,
+                });
+
+                const normalisedOfflineEvent = normaliseLocalEvent(offlineEvent);
+                if (normalisedOfflineEvent) {
+                    state.events.push(normalisedOfflineEvent);
+                    renderEvents();
+                    showToast('Saved event offline. It will sync when the API is available.', 'warning');
+                }
+                clearForm();
+                hiddenIdField.value = '';
+            }
         }
     }
 
@@ -261,19 +456,13 @@
             const row = document.createElement('tr');
             row.className = 'lead-row';
 
-            const staffingNames = Array.isArray(event.assignments)
-                ? event.assignments
-                      .map((assignment) => {
-                          if (assignment.employee) {
-                              return `${assignment.employee.firstName} ${assignment.employee.lastName}`.trim();
-                          }
-                          return assignment.employeeId;
-                      })
-                      .filter(Boolean)
+            const staffingNames = Array.isArray(event.assignEmployees)
+                ? event.assignEmployees.filter(Boolean)
                 : [];
+            const staffingLabel = event.staffingStatus || (staffingNames.length ? staffingNames.join(', ') : 'Unassigned');
 
             row.innerHTML = `
-                <td data-label="Event">${event.title}</td>
+                <td data-label="Event">${event.name}</td>
                 <td data-label="Date">${formatDate(event.date, {
                     month: 'short',
                     day: 'numeric',
@@ -282,7 +471,7 @@
                 <td data-label="Location">${event.location || 'TBD'}</td>
                 <td data-label="Status"><span class="badge ${statusBadgeMap[event.status] || 'neutral'}">${formatStatus(event.status)}</span></td>
                 <td data-label="Client">${event.clientName || '—'}</td>
-                <td data-label="Staffing">${staffingNames.length ? staffingNames.join(', ') : 'Unassigned'}</td>
+                <td data-label="Staffing">${staffingLabel}</td>
                 <td data-label="Updated">${formatDate(event.updatedAt, {
                     month: 'short',
                     day: 'numeric',
@@ -312,12 +501,22 @@
 
     async function loadEvents() {
         try {
-            const events = await api.listEvents();
+            const events = await fetchEventsFromApi();
             state.events = Array.isArray(events) ? events : [];
             renderEvents();
         } catch (error) {
             console.error('Failed to load events', error);
-            showToast('Unable to load events', 'danger');
+            if (storage && typeof storage.getEvents === 'function') {
+                const offlineEvents = storage
+                    .getEvents()
+                    .map((event) => normaliseLocalEvent(event))
+                    .filter(Boolean);
+                state.events = offlineEvents;
+                renderEvents();
+                showToast('Showing offline events (API unavailable)', 'warning');
+            } else {
+                showToast(error.message || 'Unable to load events', 'danger');
+            }
         }
     }
 

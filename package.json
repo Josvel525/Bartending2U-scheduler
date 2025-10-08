@@ -10,7 +10,8 @@
     "prisma:generate": "prisma generate --schema server/prisma/schema.prisma",
     "prisma:migrate": "prisma migrate dev --schema server/prisma/schema.prisma",
     "db:seed": "tsx server/prisma/seed.ts",
-    "test:server": "vitest run server/test"
+    "test:server": "vitest run server/test",
+    "dev:api": "uvicorn server:app --reload --port 8000"
   },
   "dependencies": {
     "@prisma/client": "^5.16.1",

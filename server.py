@@ -1,52 +1,34 @@
-"""
-FastAPI server implementation for the event pipeline.
+"""FastAPI server implementation for the Bartending2U event pipeline.
 
-This API exposes CRUD endpoints for managing events stored in
-a SQLite database. The server uses only built‑in modules
-(``sqlite3``) and ``pydantic`` from FastAPI to avoid additional
-dependencies. Events are persisted to the ``events.db`` file in
-the project root.
+The service exposes CRUD endpoints backed by SQLite. Only the
+``sqlite3`` module from the Python standard library and Pydantic
+models are used so the API can run without extra ORM dependencies.
 
-Each event record contains the fields necessary to support the
-"Create new event" form shown in the user's scheduling app,
-including name, date, time, location, package, guest count,
-payout, staffing details and notes. An ``id`` is automatically
-generated for each event using ``uuid.uuid4``.
-
-Endpoints
----------
-
-* ``GET /events``
-  Returns a list of all stored events.
-* ``POST /events``
-  Creates a new event. Accepts a JSON body with event fields.
-* ``PUT /events/{event_id}``
-  Updates an existing event by ID. Any missing fields will be
-  replaced by ``null`` or default values.
-* ``DELETE /events/{event_id}``
-  Deletes the specified event.
-
-To run the server locally:
-
-.. code-block:: bash
-
-   uvicorn server:app --reload --port 8000
-
-After starting the server, the API will be available at
-``http://127.0.0.1:8000``.
+The database file location can be customised with the
+``EVENTS_DB_PATH`` environment variable. When the application
+starts it automatically creates the ``events`` table (if needed)
+and logs where the database lives.
 """
 
 import json
+import logging
+import os
 import sqlite3
 import uuid
 from datetime import datetime
+from pathlib import Path
 from typing import List, Optional
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 
-DATABASE = "events.db"
+logger = logging.getLogger("events_api")
+logging.basicConfig(level=logging.INFO)
+
+
+DATABASE_PATH = Path(os.getenv("EVENTS_DB_PATH", "events.db")).resolve()
 
 
 def get_connection() -> sqlite3.Connection:
@@ -55,7 +37,7 @@ def get_connection() -> sqlite3.Connection:
     The connection uses ``sqlite3.Row`` so that rows can be
     accessed like dictionaries.
     """
-    conn = sqlite3.connect(DATABASE)
+    conn = sqlite3.connect(str(DATABASE_PATH))
     conn.row_factory = sqlite3.Row
     return conn
 
@@ -78,7 +60,7 @@ def init_db() -> None:
                 location TEXT,
                 package TEXT,
                 guest_count INTEGER,
-                payout INTEGER,
+                payout REAL,
                 target_staff_count INTEGER,
                 assign_employees TEXT,
                 client_name TEXT,
@@ -110,12 +92,12 @@ class EventIn(BaseModel):
     location: Optional[str] = Field(None, description="Event location")
     package: Optional[str] = Field(None, description="Service package")
     guest_count: Optional[int] = Field(None, description="Number of guests")
-    payout: Optional[int] = Field(None, description="Estimated payout in USD")
+    payout: Optional[float] = Field(None, description="Estimated payout in USD")
     target_staff_count: Optional[int] = Field(
         None, description="Desired number of staff for the event"
     )
-    assign_employees: Optional[List[str]] = Field(
-        None,
+    assign_employees: List[str] = Field(
+        default_factory=list,
         description=(
             "List of employee identifiers assigned to the event."
             " Stored as a JSON string in the database."
@@ -142,22 +124,50 @@ class Event(EventIn):
 
 app = FastAPI(title="Events API")
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.middleware("http")
+async def log_requests(request: Request, call_next):
+    """Log each incoming request with the response status code."""
+
+    start_time = datetime.utcnow()
+    response = await call_next(request)
+    duration = (datetime.utcnow() - start_time).total_seconds() * 1000
+    logger.info(
+        "%s %s -> %s (%.2f ms)",
+        request.method,
+        request.url.path,
+        response.status_code,
+        duration,
+    )
+    return response
+
 
 @app.on_event("startup")
 def on_startup() -> None:
     """Initialize the database on application startup."""
     init_db()
+    logger.info("Events API ready on http://127.0.0.1:8000 (db=%s)", DATABASE_PATH)
 
 
 def row_to_event(row: sqlite3.Row) -> Event:
     """Convert a database row to an Event model instance."""
     # Parse assign_employees JSON if present
-    assign_employees = None
+    assign_employees: List[str] = []
     if row["assign_employees"]:
         try:
-            assign_employees = json.loads(row["assign_employees"])
+            parsed = json.loads(row["assign_employees"])
+            if isinstance(parsed, list):
+                assign_employees = [str(item) for item in parsed if item is not None]
         except json.JSONDecodeError:
-            assign_employees = None
+            assign_employees = []
     return Event(
         id=row["id"],
         name=row["name"],
@@ -199,11 +209,7 @@ def create_event(event: EventIn) -> Event:
     event_id = str(uuid.uuid4())
     updated_at = datetime.utcnow().isoformat()
     # Serialize assign_employees list to JSON string
-    assign_json = (
-        json.dumps(event.assign_employees)
-        if event.assign_employees is not None
-        else None
-    )
+    assign_json = json.dumps(event.assign_employees) if event.assign_employees else None
     with get_connection() as conn:
         conn.execute(
             """
@@ -245,11 +251,7 @@ def update_event(event_id: str, event: EventIn) -> Event:
     The ``updated_at`` timestamp is refreshed.
     """
     updated_at = datetime.utcnow().isoformat()
-    assign_json = (
-        json.dumps(event.assign_employees)
-        if event.assign_employees is not None
-        else None
-    )
+    assign_json = json.dumps(event.assign_employees) if event.assign_employees else None
     with get_connection() as conn:
         cursor = conn.execute(
             "SELECT COUNT(1) FROM events WHERE id = ?", (event_id,)
@@ -316,4 +318,11 @@ def delete_event(event_id: str) -> dict:
         if count == 0:
             raise HTTPException(status_code=404, detail="Event not found")
         conn.execute("DELETE FROM events WHERE id = ?", (event_id,))
+    return {"ok": True}
+
+
+@app.get("/health")
+def healthcheck() -> dict:
+    """Basic health check endpoint used for monitoring."""
+
     return {"ok": True}
