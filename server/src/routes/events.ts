@@ -48,10 +48,33 @@ const listQuerySchema = z.object({
   dateTo: z.string().trim().optional(),
 });
 
-function mapEventResponse(event: Awaited<ReturnType<typeof prisma.event.findFirst>>): unknown {
+type PrismaEvent = Awaited<ReturnType<typeof prisma.event.findFirst>>;
+type AssignmentWithEmployee = {
+  id: string;
+  employeeId: string;
+  role: string | null;
+  assignedAt: Date;
+  employee?: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string | null;
+    role: string | null;
+    status: string;
+  } | null;
+};
+
+type PrismaEventWithAssignments = NonNullable<PrismaEvent> & {
+  assignments?: AssignmentWithEmployee[];
+};
+
+function mapEventResponse(event: PrismaEvent): unknown {
   if (!event) {
     return null;
   }
+  const withAssignments = event as PrismaEventWithAssignments;
+  const assignments: AssignmentWithEmployee[] = withAssignments.assignments ?? [];
   return {
     id: event.id,
     title: event.title,
@@ -65,7 +88,7 @@ function mapEventResponse(event: Awaited<ReturnType<typeof prisma.event.findFirs
     status: event.status,
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
-    assignments: event.assignments?.map((assignment) => ({
+    assignments: assignments.map((assignment) => ({
       id: assignment.id,
       employeeId: assignment.employeeId,
       role: assignment.role,
@@ -151,17 +174,21 @@ eventRouter.post('/', async (req, res, next) => {
       }
     }
 
+    const baseData = {
+      title: payload.title,
+      date,
+      location: payload.location,
+      clientName: payload.clientName,
+      clientPhone: payload.clientPhone,
+      notes: payload.notes,
+      status: payload.status ?? 'draft',
+    } satisfies Record<string, unknown>;
+
     const event = await prisma.event.create({
       data: {
-        title: payload.title,
-        date,
-        startTime,
-        endTime,
-        location: payload.location,
-        clientName: payload.clientName,
-        clientPhone: payload.clientPhone,
-        notes: payload.notes,
-        status: payload.status ?? 'draft',
+        ...baseData,
+        ...(startTime ? { startTime } : {}),
+        ...(endTime ? { endTime } : {}),
         assignments: assignments
           ? {
               create: assignments.map((assignment) => ({
@@ -211,19 +238,31 @@ eventRouter.put('/:id', async (req, res, next) => {
       const date = parseDateOnly(payload.date);
       data.date = date;
       if (payload.startTime) {
-        data.startTime = combineDateAndTime(date, payload.startTime);
+        const computedStart = combineDateAndTime(date, payload.startTime);
+        if (computedStart) {
+          data.startTime = computedStart;
+        }
       }
       if (payload.endTime) {
-        data.endTime = combineDateAndTime(date, payload.endTime);
+        const computedEnd = combineDateAndTime(date, payload.endTime);
+        if (computedEnd) {
+          data.endTime = computedEnd;
+        }
       }
     } else {
       if (payload.startTime !== undefined) {
         const date = await ensureExistingDate();
-        data.startTime = combineDateAndTime(date, payload.startTime ?? undefined);
+        const computedStart = combineDateAndTime(date, payload.startTime ?? undefined);
+        if (computedStart) {
+          data.startTime = computedStart;
+        }
       }
       if (payload.endTime !== undefined) {
         const date = await ensureExistingDate();
-        data.endTime = combineDateAndTime(date, payload.endTime ?? undefined);
+        const computedEnd = combineDateAndTime(date, payload.endTime ?? undefined);
+        if (computedEnd) {
+          data.endTime = computedEnd;
+        }
       }
     }
     if (payload.location !== undefined) data.location = payload.location;

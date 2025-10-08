@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import { EventStatus } from '@prisma/client';
 import { z } from 'zod';
 import { prisma } from '../lib/prisma.js';
 import { sendSuccess } from '../utils/responses.js';
@@ -153,33 +154,34 @@ schedulerRouter.post('/submit', async (req, res, next) => {
         },
       });
 
+      const baseEventData = {
+        title: eventData.title,
+        date,
+        location: eventData.location,
+        clientName: eventData.clientName,
+        clientPhone: eventData.clientPhone,
+        notes: eventData.notes,
+        status: EventStatus.scheduled,
+      } satisfies Record<string, unknown>;
+
+      const startEndFields = {
+        ...(startTime ? { startTime } : {}),
+        ...(endTime ? { endTime } : {}),
+      };
+
       const event = eventData.id
         ? await tx.event.update({
             where: { id: eventData.id },
             data: {
-              title: eventData.title,
-              date,
-              startTime,
-              endTime,
-              location: eventData.location,
-              clientName: eventData.clientName,
-              clientPhone: eventData.clientPhone,
-              notes: eventData.notes,
-              status: 'scheduled',
+              ...baseEventData,
+              ...startEndFields,
             },
             include: { assignments: true },
           })
         : await tx.event.create({
             data: {
-              title: eventData.title,
-              date,
-              startTime,
-              endTime,
-              location: eventData.location,
-              clientName: eventData.clientName,
-              clientPhone: eventData.clientPhone,
-              notes: eventData.notes,
-              status: 'scheduled',
+              ...baseEventData,
+              ...startEndFields,
             },
             include: { assignments: true },
           });

@@ -1,6 +1,5 @@
 import express from 'express';
 import cors from 'cors';
-import morgan from 'morgan';
 import employeesRouter from './routes/employees.js';
 import env from './utils/env.js';
 
@@ -12,7 +11,7 @@ const allowedOrigins = new Set(
 
 app.use(
   cors({
-    origin: (origin, callback) => {
+    origin: (origin: string | undefined, callback: (error: Error | null, allow?: boolean) => void) => {
       if (!origin || env.NODE_ENV === 'production') {
         return callback(null, true);
       }
@@ -28,7 +27,12 @@ app.use(
 );
 
 app.use(express.json());
-app.use(morgan(env.NODE_ENV === 'development' ? 'dev' : 'tiny'));
+app.use((req, res, next) => {
+  if (env.NODE_ENV === 'development') {
+    console.log(`${req.method} ${req.originalUrl}`);
+  }
+  next();
+});
 
 app.get('/api/health', (_req, res) => {
   res.json({ ok: true, data: { status: 'healthy' } });
