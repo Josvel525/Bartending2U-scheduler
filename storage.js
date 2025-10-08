@@ -1066,3 +1066,4 @@
 
     global.B2UStore = store;
 })(typeof window !== 'undefined' ? window : globalThis);
+window.B2UStorage = store;
