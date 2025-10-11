@@ -583,87 +583,6 @@
     <script src="assets/js/api.js"></script>
     <script src="assets/js/employees-modal.js"></script>
     <script>
-document.addEventListener("DOMContentLoaded", function() {
-  // Get all static team tiles from the grid
-  const staticCards = document.querySelectorAll(".team-grid .person-card");
-  const employeeDetails = document.getElementById("employeeDetails");
-
-  // Click handler for static employee tiles
-  staticCards.forEach((card) => {
-    const nameEl = card.querySelector(".person-card__name");
-    const roleEl = card.querySelector(".person-card__role");
-    const statusEl = card.querySelector(".badge");
-
-    // Extract name text and normalize it to match fallbackEmployeeMap
-    const nameText = nameEl ? nameEl.textContent.trim().toLowerCase() : "";
-    let matched = null;
-
-    // Try to find employee by name
-    fallbackEmployees.forEach((emp) => {
-      if (emp.name.toLowerCase() === nameText) {
-        matched = emp;
-      }
-    });
-
-    card.style.cursor = "pointer";
-    card.addEventListener("click", () => {
-      // Visually mark active card
-      staticCards.forEach((c) => c.classList.remove("is-active"));
-      card.classList.add("is-active");
-
-      if (!matched) {
-        console.warn("No matching employee found for", nameText);
-        return;
-      }
-
-      // Update main details panel
-      document.getElementById("detailName").textContent = matched.name;
-      document.getElementById("detailRole").textContent = `${matched.role} · ${matched.specialties}`;
-      document.getElementById("detailStatus").textContent = matched.statusLabel;
-      document.getElementById("detailStatus").className = `badge ${statusClasses[matched.status] || ""}`;
-      document.getElementById("detailEmail").textContent = matched.email;
-      document.getElementById("detailEmail").href = `mailto:${matched.email}`;
-      document.getElementById("detailPhone").textContent = matched.phone;
-      document.getElementById("detailPhone").href = `tel:+1${matched.phone.replace(/\D/g, "")}`;
-      document.getElementById("detailLocation").textContent = matched.location;
-      document.getElementById("detailAddress").textContent = `${matched.addressLine1 || ""}\n${matched.addressLine2 || ""}\n${matched.addressCity || ""}, ${matched.addressState || ""} ${matched.addressPostalCode || ""}`;
-      document.getElementById("detailTaxId").textContent = matched.taxId || "—";
-      document.getElementById("detailLicense").textContent = `${matched.dlNumber || ""} (${matched.dlState || ""})`;
-      document.getElementById("detailDob").textContent = matched.dob || "—";
-      document.getElementById("detailNotes").textContent = matched.notes || "—";
-
-      // Assignments
-      const detailAssignments = document.getElementById("detailAssignments");
-      detailAssignments.innerHTML = "";
-      matched.assignments.forEach((a) => {
-        const li = document.createElement("li");
-        li.textContent = a;
-        detailAssignments.appendChild(li);
-      });
-
-      // Documents
-      const detailDocs = document.getElementById("detailDocs");
-      detailDocs.innerHTML = "";
-      matched.documents.forEach((doc) => {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${doc.type}</td>
-          <td><span class="badge ${doc.attention ? "warning" : "success"}">${doc.status}</span></td>
-          <td>${doc.issued || "—"}</td>
-          <td>${doc.expires || "—"}</td>
-          <td>${doc.licenseNumber || "—"}</td>
-          <td><a href="${doc.url}" target="_blank">View</a></td>
-        `;
-        detailDocs.appendChild(row);
-      });
-
-      // Enable "Remove teammate" button
-      document.getElementById("removeEmployeeButton").disabled = false;
-    });
-  });
-});
-</script>
-    <script>
         const navToggle = document.getElementById('mobileNavToggle');
         const nav = document.getElementById('primaryNav');
 
@@ -1812,10 +1731,19 @@ document.addEventListener("DOMContentLoaded", function() {
                 return;
             }
 
-            const cards = employeeList.querySelectorAll('.person-card');
-            cards.forEach((card) => {
-                card.classList.toggle('is-active', card.dataset.id === id);
-            });
+            if (employeeList) {
+                const cards = employeeList.querySelectorAll('.person-card');
+                cards.forEach((card) => {
+                    card.classList.toggle('is-active', card.dataset.id === id);
+                });
+            }
+
+            if (teamList) {
+                const teamCards = teamList.querySelectorAll('.person-card');
+                teamCards.forEach((card) => {
+                    card.classList.toggle('is-active', card.dataset.employeeId === id);
+                });
+            }
 
             if (previousId !== id) {
                 setAlert(docAlert, '');
@@ -2616,8 +2544,24 @@ document.addEventListener("DOMContentLoaded", function() {
                     actions.appendChild(removeButton);
                     card.appendChild(actions);
 
+                    if (employee.id === selectedEmployeeId) {
+                        card.classList.add('is-active');
+                    }
+
+                    card.addEventListener('click', (event) => {
+                        if (event.target.closest('[data-remove-employee]')) {
+                            return;
+                        }
+
+                        selectEmployee(employee.id);
+                    });
+
                     teamList.appendChild(card);
                 });
+
+            if (selectedEmployeeId) {
+                selectEmployee(selectedEmployeeId);
+            }
         }
 
         function updateStats(employees) {
