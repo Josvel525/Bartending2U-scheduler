@@ -2840,5 +2840,25 @@
         refresh();
     </script>
     <script src="app.js"></script>
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const teamCards = document.querySelectorAll("#teamList .person-card");
+  teamCards.forEach(card => {
+    card.addEventListener("click", () => {
+      const name = card.querySelector(".person-card__name")?.textContent?.trim();
+      if (!name) return;
+
+      // Find employee by name (case-insensitive)
+      const employee = employees.find(e => e.name.toLowerCase() === name.toLowerCase());
+      if (employee) {
+        selectEmployee(employee.id);
+      } else {
+        console.warn(`No match found for ${name}`);
+      }
+    });
+  });
+});
+</script>
+
 </body>
 </html>
