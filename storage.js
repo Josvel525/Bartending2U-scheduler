@@ -573,7 +573,13 @@
 
         const lower = String(value).toLowerCase();
 
-        if (lower.includes('confirm') || lower.includes('ready') || lower.includes('won') || lower.includes('staffed')) {
+        if (
+            lower.includes('confirm') ||
+            lower.includes('ready') ||
+            lower.includes('won') ||
+            lower.includes('staffed') ||
+            lower.includes('avail')
+        ) {
             return 'success';
         }
 
@@ -1066,3 +1072,4 @@
 
     global.B2UStore = store;
 })(typeof window !== 'undefined' ? window : globalThis);
+window.B2UStorage = store;

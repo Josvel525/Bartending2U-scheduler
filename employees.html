@@ -1731,10 +1731,19 @@
                 return;
             }
 
-            const cards = employeeList.querySelectorAll('.person-card');
-            cards.forEach((card) => {
-                card.classList.toggle('is-active', card.dataset.id === id);
-            });
+            if (employeeList) {
+                const cards = employeeList.querySelectorAll('.person-card');
+                cards.forEach((card) => {
+                    card.classList.toggle('is-active', card.dataset.id === id);
+                });
+            }
+
+            if (teamList) {
+                const teamCards = teamList.querySelectorAll('.person-card');
+                teamCards.forEach((card) => {
+                    card.classList.toggle('is-active', card.dataset.employeeId === id);
+                });
+            }
 
             if (previousId !== id) {
                 setAlert(docAlert, '');
@@ -2535,8 +2544,24 @@
                     actions.appendChild(removeButton);
                     card.appendChild(actions);
 
+                    if (employee.id === selectedEmployeeId) {
+                        card.classList.add('is-active');
+                    }
+
+                    card.addEventListener('click', (event) => {
+                        if (event.target.closest('[data-remove-employee]')) {
+                            return;
+                        }
+
+                        selectEmployee(employee.id);
+                    });
+
                     teamList.appendChild(card);
                 });
+
+            if (selectedEmployeeId) {
+                selectEmployee(selectedEmployeeId);
+            }
         }
 
         function updateStats(employees) {

@@ -68,14 +68,14 @@
             <div class="calendar-layout">
                 <div class="calendar-month">
                     <div class="calendar-controls" aria-controls="calendarGrid">
-                        <button class="calendar-controls__button" type="button" data-calendar-nav="prev" aria-label="Previous month">
+                        <button class="calendar-controls__button" type="button" id="prevMonth" aria-label="Previous month">
                             ‹
                         </button>
                         <div class="calendar-controls__label">
                             <span class="calendar-controls__heading" id="calendarControlsLabel" data-calendar-controls-label>October 2025</span>
                             <button class="calendar-controls__link" type="button" data-calendar-nav="today">Jump to today</button>
                         </div>
-                        <button class="calendar-controls__button" type="button" data-calendar-nav="next" aria-label="Next month">
+                        <button class="calendar-controls__button" type="button" id="nextMonth" aria-label="Next month">
                             ›
                         </button>
                     </div>
@@ -187,8 +187,9 @@
     <script src="leads.js"></script>
     <script src="calendar.js"></script>
     <script>
-        const navToggle = document.getElementById('mobileNavToggle');
-        const nav = document.getElementById('primaryNav');
+        (function () {
+            const navToggle = document.getElementById('mobileNavToggle');
+            const nav = document.getElementById('primaryNav');
 
         if (navToggle && nav) {
             navToggle.addEventListener('click', () => {
