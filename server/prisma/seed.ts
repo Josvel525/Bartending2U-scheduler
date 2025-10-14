@@ -92,6 +92,9 @@ async function seed() {
       endTime: new Date('2025-10-05T23:00:00Z'),
       location: 'Downtown Houston',
       status: EventStatus.scheduled,
+      clientName: 'Acme Corp',
+      clientPhone: '+17135550000',
+      notes: 'Celebrating quarterly milestone.',
     },
   });
 
@@ -104,6 +107,9 @@ async function seed() {
       endTime: new Date('2025-10-15T23:30:00Z'),
       location: 'The Grand Hall',
       status: EventStatus.scheduled,
+      clientName: 'Hannah & Luis',
+      clientPhone: '+17135550012',
+      notes: 'Signature his & hers cocktails requested.',
     },
   });
 
@@ -116,6 +122,9 @@ async function seed() {
       endTime: new Date('2025-10-22T21:30:00Z'),
       location: 'Private Residence',
       status: EventStatus.scheduled,
+      clientName: 'Neighborhood HOA',
+      clientPhone: '+17135550025',
+      notes: 'Focus on fall flavors and mocktail options.',
     },
   });
 

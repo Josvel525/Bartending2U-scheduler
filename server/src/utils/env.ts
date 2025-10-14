@@ -7,7 +7,7 @@ const envSchema = z.object({
   NODE_ENV: z.string().optional().default('development'),
   PORT: z.coerce.number().optional().default(4000),
   DEV_ORIGIN: z.string().optional(),
-  PRISMA_PROVIDER: z.enum(['sqlite', 'postgresql']).default('sqlite'),
+  PRISMA_PROVIDER: z.enum(['sqlite', 'postgresql']).default('postgresql'),
   DATABASE_URL: z.string(),
 });
 

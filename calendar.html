@@ -58,10 +58,10 @@
             </div>
         </section>
 
-        <section id="calendar-overview" class="content-card" data-subsection="Monthly overview">
+        <section id="calendar-overview" class="content-card" data-subsection="Monthly overview" data-calendar-root>
             <div class="card-header">
                 <div>
-                    <h2 class="card-title" id="calendarMonthHeading">This month</h2>
+                    <h2 class="card-title" id="calendarMonthHeading" data-calendar-heading>This month</h2>
                     <p class="card-subtitle">Select a day to view its events and staffing.</p>
                 </div>
             </div>
@@ -72,8 +72,8 @@
                             ‹
                         </button>
                         <div class="calendar-controls__label">
-                            <span class="calendar-controls__heading" id="calendarControlsLabel">October 2025</span>
-                            <button class="calendar-controls__link" type="button" id="jumpToday">Jump to today</button>
+                            <span class="calendar-controls__heading" id="calendarControlsLabel" data-calendar-controls-label>October 2025</span>
+                            <button class="calendar-controls__link" type="button" data-calendar-nav="today">Jump to today</button>
                         </div>
                         <button class="calendar-controls__button" type="button" id="nextMonth" aria-label="Next month">
                             ›
@@ -88,12 +88,18 @@
                         <span>Fri</span>
                         <span>Sat</span>
                     </div>
-                    <div class="calendar-grid" id="calendarGrid" role="grid" aria-labelledby="calendarControlsLabel"></div>
+                    <div
+                        class="calendar-grid"
+                        id="calendarGrid"
+                        role="grid"
+                        aria-labelledby="calendarControlsLabel"
+                        data-calendar-grid
+                    ></div>
                 </div>
                 <aside class="calendar-detail" id="calendarDayDetails" aria-live="polite">
-                    <h3 class="calendar-detail__title" id="calendarSelectedHeading">Today</h3>
-                    <p class="calendar-detail__subtitle" id="calendarSelectedSummary">No events yet.</p>
-                    <div class="calendar-detail__list" id="calendarDayList"></div>
+                    <h3 class="calendar-detail__title" id="calendarSelectedHeading" data-calendar-selected-heading>Today</h3>
+                    <p class="calendar-detail__subtitle" id="calendarSelectedSummary" data-calendar-selected-summary>No events yet.</p>
+                    <div class="calendar-detail__list" id="calendarDayList" data-calendar-day-list></div>
                 </aside>
             </div>
         </section>
@@ -155,123 +161,41 @@
                                 <td data-label="Prep hours">3</td>
                             </tr>
                         </tbody>
-                        <tbody id="weekSummaryTable"></tbody>
+                        <tbody id="weekSummaryTable" data-calendar-week-summary></tbody>
                     </table>
                 </div>
             </article>
-        </section>
+</section>
     </main>
+
+    <div id="leadModal" class="modal" hidden>
+        <div class="modal__backdrop" data-lead-modal-dismiss></div>
+        <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="leadModalTitle">
+            <button class="modal__close" type="button" aria-label="Close" data-lead-modal-dismiss>&times;</button>
+            <div class="modal__header">
+                <h3 class="modal__title" id="leadModalTitle"></h3>
+                <p class="modal__subtitle" id="leadModalSubtitle"></p>
+            </div>
+            <div class="modal__content" id="leadModalContent"></div>
+        </div>
+    </div>
 
     <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
     <script src="scripts.js"></script>
     <script src="storage.js"></script>
+    <script src="leads.js"></script>
+    <script src="calendar.js"></script>
     <script>
         (function () {
             const navToggle = document.getElementById('mobileNavToggle');
             const nav = document.getElementById('primaryNav');
 
-            if (navToggle && nav) {
-                navToggle.addEventListener('click', () => {
-                    nav.classList.toggle('open');
-                });
-            }
-        })();
-    </script>
-    <script>
-        (function () {
-            const grid = document.getElementById('calendarGrid');
-            const monthHeading = document.getElementById('calendarMonthHeading');
-            const monthLabel = document.getElementById('calendarControlsLabel');
-            const prevBtn = document.getElementById('prevMonth');
-            const nextBtn = document.getElementById('nextMonth');
-            const todayBtn = document.getElementById('jumpToday');
-
-            if (!grid || !monthHeading || !monthLabel || !prevBtn || !nextBtn) {
-                return;
-            }
-
-            let current = new Date();
-            const today = new Date();
-            const monthFormatter = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' });
-            const dayFormatter = new Intl.DateTimeFormat('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
-
-            function startOfMonth(date) {
-                return new Date(date.getFullYear(), date.getMonth(), 1);
-            }
-
-            function startOfCalendar(date) {
-                const first = startOfMonth(date);
-                const start = new Date(first);
-                start.setDate(first.getDate() - first.getDay());
-                return start;
-            }
-
-            function sameDate(a, b) {
-                return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
-            }
-
-            function render() {
-                grid.innerHTML = '';
-
-                const monthText = monthFormatter.format(current);
-                monthHeading.textContent = monthText;
-                monthLabel.textContent = monthText;
-
-                const start = startOfCalendar(current);
-
-                for (let index = 0; index < 42; index += 1) {
-                    const cellDate = new Date(start);
-                    cellDate.setDate(start.getDate() + index);
-
-                    const cell = document.createElement('div');
-                    cell.className = 'calendar-cell';
-                    cell.setAttribute('role', 'gridcell');
-                    cell.setAttribute('aria-label', dayFormatter.format(cellDate));
-
-                    if (cellDate.getMonth() !== current.getMonth()) {
-                        cell.classList.add('calendar-cell--muted');
-                        cell.setAttribute('aria-disabled', 'true');
-                        cell.tabIndex = -1;
-                    } else {
-                        cell.tabIndex = 0;
-                    }
-
-                    if (sameDate(cellDate, today)) {
-                        cell.classList.add('calendar-cell--today');
-                    }
-
-                    const dateNumber = document.createElement('span');
-                    dateNumber.className = 'calendar-cell__date';
-                    dateNumber.textContent = cellDate.getDate();
-                    cell.appendChild(dateNumber);
-
-                    grid.appendChild(cell);
-                }
-            }
-
-            function changeMonth(offset) {
-                current = new Date(current.getFullYear(), current.getMonth() + offset, 1);
-                render();
-            }
-
-            prevBtn.addEventListener('click', () => {
-                changeMonth(-1);
+        if (navToggle && nav) {
+            navToggle.addEventListener('click', () => {
+                nav.classList.toggle('open');
             });
-
-            nextBtn.addEventListener('click', () => {
-                changeMonth(1);
-            });
-
-            if (todayBtn) {
-                todayBtn.addEventListener('click', () => {
-                    current = new Date(today.getFullYear(), today.getMonth(), 1);
-                    render();
-                });
-            }
-
-            render();
-        })();
+        }
     </script>
     <script src="app.js"></script>
 </body>

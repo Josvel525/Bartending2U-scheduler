@@ -10,3 +10,4 @@ apiRouter.use('/events', eventRouter);
 apiRouter.use('/scheduler', schedulerRouter);
 
 export { apiRouter };
+export default apiRouter;

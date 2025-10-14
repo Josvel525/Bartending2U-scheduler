@@ -42,14 +42,18 @@ model Event {
   id         String       @id @default(uuid())
   title      String
   date       DateTime
-  startTime  DateTime
-  endTime    DateTime
+  startTime  DateTime?
+  endTime    DateTime?
   location   String?
   status     EventStatus  @default(scheduled)
+  clientName String?
+  clientPhone String?
+  notes      String?
   createdAt  DateTime     @default(now())
   updatedAt  DateTime     @updatedAt
 
   assignments Assignment[]
+  drafts       SavedItem[]
 }
 
 model Assignment {
@@ -63,4 +67,20 @@ model Assignment {
   employee Employee @relation(fields: [employeeId], references: [id])
 
   @@unique([eventId, employeeId])
+}
+
+model SavedItem {
+  id          String   @id @default(uuid())
+  formKey     String
+  kind        String
+  payload     Json
+  formVersion String?
+  eventId     String?
+  createdBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  event Event? @relation(fields: [eventId], references: [id])
+
+  @@unique([formKey, kind])
 }

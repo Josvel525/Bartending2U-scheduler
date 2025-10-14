@@ -39,7 +39,51 @@ export type EmployeeDetailDto = BaseEmployeeDto & {
   }[];
 };
 
-function deriveStatus(status: Employee['status']) {
+function parseStringArray(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.filter((item): item is string => typeof item === 'string');
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (Array.isArray(parsed)) {
+        return parsed.filter((item): item is string => typeof item === 'string');
+      }
+    } catch (error) {
+      console.warn('Failed to parse string array value', error);
+    }
+  }
+
+  return [];
+}
+
+function parseAvailability(value: unknown): unknown {
+  if (!value) {
+    return undefined;
+  }
+
+  if (typeof value === 'object') {
+    return value;
+  }
+
+  if (typeof value === 'string') {
+    try {
+      const parsed = JSON.parse(value);
+      if (parsed && typeof parsed === 'object') {
+        return parsed;
+      }
+    } catch (error) {
+      console.warn('Failed to parse availability payload', error);
+    }
+  }
+
+  return undefined;
+}
+
+function deriveStatus(rawStatus: Employee['status']) {
+  const status = (rawStatus || 'inactive').toLowerCase() === 'active' ? 'active' : 'inactive';
+
   if (status === 'active') {
     return {
       status: 'active' as const,
@@ -112,6 +156,9 @@ function summariseAvailability(availability: unknown): string | null {
 
 function mapBase(employee: EmployeeWithCount): BaseEmployeeDto {
   const { status, statusLabel, statusLevel } = deriveStatus(employee.status);
+  const skills = parseStringArray(employee.skills);
+  const certifications = parseStringArray(employee.certifications);
+  const availability = parseAvailability(employee.availability);
 
   return {
     id: employee.id,
@@ -124,10 +171,10 @@ function mapBase(employee: EmployeeWithCount): BaseEmployeeDto {
     status,
     statusLabel,
     statusLevel,
-    skills: employee.skills,
-    certifications: employee.certifications,
+    skills,
+    certifications,
     hourlyRate: toNumber(employee.hourlyRate),
-    availability: employee.availability ?? undefined,
+    availability,
     notes: employee.notes,
     assignmentsCount: employee._count?.assignments ?? 0,
   };
@@ -144,7 +191,7 @@ export function mapEmployeeListItem(employee: EmployeeWithCount): EmployeeListIt
 
 export function mapEmployeeDetail(employee: EmployeeWithAssignments): EmployeeDetailDto {
   const base = mapBase({ ...employee, _count: { assignments: employee.assignments.length } });
-  const availabilitySummary = summariseAvailability(employee.availability ?? undefined ?? null);
+  const availabilitySummary = summariseAvailability(parseAvailability(employee.availability));
 
   const upcomingAssignments = employee.assignments
     .map((assignment) => {
@@ -153,8 +200,8 @@ export function mapEmployeeDetail(employee: EmployeeWithAssignments): EmployeeDe
         id: assignment.id,
         title: event?.title ?? 'Scheduled event',
         date: event ? event.date.toISOString() : assignment.assignedAt.toISOString(),
-        startTime: event ? event.startTime.toISOString() : null,
-        endTime: event ? event.endTime.toISOString() : null,
+        startTime: event?.startTime ? event.startTime.toISOString() : null,
+        endTime: event?.endTime ? event.endTime.toISOString() : null,
         location: event?.location ?? null,
         role: assignment.role ?? null,
       };
