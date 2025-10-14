@@ -1,23 +1,23 @@
 :root {
-  --primary-50: #eff4ff;
-  --primary-100: #dbe8ff;
-  --primary-500: #1d4ed8;
-  --primary-600: #1e40af;
-  --primary-700: #1e3a8a;
-  --primary-rgb: 29, 78, 216;
+  --primary-50: #fff7ed;
+  --primary-100: #ffedd5;
+  --primary-500: #f97316;
+  --primary-600: #ea580c;
+  --primary-700: #c2410c;
+  --primary-rgb: 249, 115, 22;
   --slate-900: #0f172a;
   --slate-700: #334155;
   --slate-600: #475569;
   --slate-500: #64748b;
-  --accent-500: #0ea5e9;
-  --accent-600: #0369a1;
-  --accent-rgb: 14, 165, 233;
+  --accent-500: #fb923c;
+  --accent-600: #ea580c;
+  --accent-rgb: 251, 146, 60;
   --success-500: #10b981;
   --warning-500: #f59e0b;
   --danger-500: #ef4444;
   --surface: rgba(255, 255, 255, 0.98);
-  --surface-soft: rgba(243, 246, 253, 0.94);
-  --border-soft: rgba(29, 78, 216, 0.14);
+  --surface-soft: rgba(255, 247, 237, 0.94);
+  --border-soft: rgba(249, 115, 22, 0.14);
   --shadow-sm: 0 18px 40px -25px rgba(15, 23, 42, 0.35);
   --shadow-lg: 0 30px 60px -35px rgba(15, 23, 42, 0.45);
 }
@@ -31,9 +31,9 @@
 body {
   font-family: "Inter", "Segoe UI", Roboto, Arial, sans-serif;
   line-height: 1.6;
-  background: radial-gradient(1200px circle at -10% -20%, rgba(var(--primary-rgb), 0.12), transparent 60%),
-    radial-gradient(900px circle at 110% 0%, rgba(var(--accent-rgb), 0.1), transparent 55%),
-    linear-gradient(160deg, #f8fbff 0%, #eef2f8 45%, #e3e9f4 100%);
+  background: radial-gradient(1200px circle at -10% -20%, rgba(var(--primary-rgb), 0.16), transparent 60%),
+    radial-gradient(900px circle at 110% 0%, rgba(var(--accent-rgb), 0.12), transparent 55%),
+    linear-gradient(160deg, #fffaf5 0%, #ffeeda 45%, #fde4c8 100%);
   color: var(--slate-700);
   min-height: 100vh;
   position: relative;
@@ -44,8 +44,8 @@ body::after {
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(880px circle at 18% 78%, rgba(var(--primary-rgb), 0.08), transparent 62%),
-    radial-gradient(720px circle at 88% 22%, rgba(var(--accent-rgb), 0.08), transparent 58%);
+  background: radial-gradient(880px circle at 18% 78%, rgba(var(--primary-rgb), 0.12), transparent 62%),
+    radial-gradient(720px circle at 88% 22%, rgba(var(--accent-rgb), 0.1), transparent 58%);
   opacity: 0.7;
   z-index: -1;
 }
@@ -281,7 +281,7 @@ img {
 .stat-card {
   position: relative;
   overflow: hidden;
-  background: linear-gradient(140deg, rgba(255, 255, 255, 0.97), rgba(235, 240, 255, 0.9));
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.97), rgba(255, 241, 227, 0.9));
   border-radius: 18px;
   padding: 1.4rem;
   box-shadow: var(--shadow-sm);
@@ -297,7 +297,7 @@ img {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(420px circle at 18% 0%, rgba(var(--primary-rgb), 0.12), transparent 60%);
+  background: radial-gradient(420px circle at 18% 0%, rgba(var(--primary-rgb), 0.16), transparent 60%);
   opacity: 0.9;
   pointer-events: none;
 }
@@ -1109,7 +1109,7 @@ textarea {
 .subsection-nav__button:focus-visible {
   outline: none;
   border-color: rgba(var(--primary-rgb), 0.55);
-  box-shadow: 0 0 0 3px rgba(191, 219, 254, 0.9), 0 8px 20px rgba(var(--primary-rgb), 0.24);
+  box-shadow: 0 0 0 3px rgba(254, 215, 170, 0.9), 0 8px 20px rgba(var(--primary-rgb), 0.24);
 }
 
 .subsection-nav__button.is-active {
@@ -1121,7 +1121,7 @@ textarea {
 
 .subsection-nav__button.is-active::before {
   background: var(--primary-500);
-  box-shadow: 0 0 0 4px rgba(191, 219, 254, 0.7);
+  box-shadow: 0 0 0 4px rgba(254, 215, 170, 0.7);
 }
 
 @media (max-width: 600px) {
