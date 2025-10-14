@@ -1,302 +1,226 @@
-(function () {
-  const storage = window.B2UStorage || null;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Events - Bartending2U</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+    <header class="top-bar">
+        <div class="top-bar__inner">
+            <div class="brand">
+                <img src="IMG_9047.png" alt="Bartending2U logo" />
+                <div class="brand__text">
+                    <span class="brand__subtitle">Bartending2U</span>
+                    <span class="brand__title">Scheduling Suite</span>
+                </div>
+            </div>
 
-  const form = document.getElementById('eventForm');
-  const saveButton = document.getElementById('saveDraftButton');
-  const submitButton = document.getElementById('submitSchedulerButton');
-  const savedBadge = document.getElementById('draftStatusBadge');
-  const savedTime = document.getElementById('draftStatusTime');
-  const assignmentsSelect = document.getElementById('eventAssignments');
-  const eventsTableBody = document.getElementById('eventsTableBody');
-  const filterButtons = document.querySelectorAll('[data-filter]');
-  const toast = document.getElementById('toast');
-  const hiddenIdField = document.getElementById('eventId');
-  const modeIndicator = document.getElementById('eventFormModeIndicator');
+            <button class="mobile-nav-toggle" id="mobileNavToggle" type="button" aria-label="Toggle navigation" aria-expanded="false" data-mobile-nav-toggle>
+                <span class="mobile-nav-toggle__icon" aria-hidden="true">☰</span>
+                <span class="sr-only">Toggle navigation</span>
+            </button>
 
-  if (!form || !saveButton || !submitButton || !assignmentsSelect || !eventsTableBody) {
-    console.warn('Calendar form or elements missing.');
-    return;
-  }
+            <nav class="nav-links" id="primaryNav">
+                <a class="nav-link" href="index.html">Dashboard</a>
+                <a class="nav-link active" href="events.html">Events</a>
+                <a class="nav-link" href="leads.html">Leads</a>
+                <a class="nav-link" href="employees.html">Employees</a>
+                <a class="nav-link" href="calendar.html">Calendar</a>
+                <a class="nav-link" href="settings.html">Settings</a>
+            </nav>
 
-  const state = {
-    employees: [],
-    events: [],
-    filter: 'all',
-    editingId: null,
-  };
+            <a class="cta-button" href="#new-event">+ New Event</a>
+        </div>
+    </header>
 
-  const statusBadgeMap = {
-    draft: 'neutral',
-    scheduled: 'info',
-    completed: 'success',
-    canceled: 'danger',
-  };
+    <main class="page-content">
+        <section class="page-header">
+            <div>
+                <p class="page-eyebrow">Events</p>
+                <h1 class="page-title">Manage events</h1>
+                <p class="lead-text">Track confirmed gigs, proposals, and staffing status in one place.</p>
+            </div>
+            <div class="hero-actions">
+                <a class="button primary" href="#new-event" data-subsection-target="new-event">Log new booking</a>
+                <a class="secondary-link" href="calendar.html">Sync with calendar →</a>
+            </div>
+        </section>
 
-  // ====== UI Helpers ======
-  function showToast(message, variant) {
-    if (!toast) return;
-    toast.textContent = message;
-    toast.dataset.variant = variant || 'info';
-    toast.classList.remove('toast--visible');
-    void toast.offsetWidth;
-    toast.classList.add('toast--visible');
-    setTimeout(() => toast.classList.remove('toast--visible'), 3000);
-  }
+        <section id="event-pipeline" class="content-card" data-subsection="Event pipeline">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">Event pipeline</h2>
+                    <p class="card-subtitle">Filter bookings, review details, and update staffing.</p>
+                </div>
+            </div>
 
-  function setSavedStatus(isSaved, timestamp) {
-    if (!savedBadge || !savedTime) return;
-    if (isSaved) {
-      savedBadge.hidden = false;
-      const date = timestamp ? new Date(timestamp) : new Date();
-      savedTime.textContent = date.toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-    } else {
-      savedBadge.hidden = true;
-      savedTime.textContent = '';
-    }
-  }
+            <div class="tab-bar">
+                <button class="tab active" type="button" data-filter="all">All</button>
+                <button class="tab" type="button" data-filter="scheduled">Scheduled</button>
+                <button class="tab" type="button" data-filter="draft">Drafts</button>
+                <button class="tab" type="button" data-filter="completed">Completed</button>
+                <button class="tab" type="button" data-filter="canceled">Canceled</button>
+            </div>
 
-  function formatDate(dateString, options) {
-    if (!dateString) return 'Date TBC';
-    const date = new Date(dateString);
-    return Number.isNaN(date.getTime())
-      ? 'Date TBC'
-      : new Intl.DateTimeFormat('en-US', options || {
-          month: 'short',
-          day: 'numeric',
-          year: 'numeric',
-        }).format(date);
-  }
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Event</th>
+                            <th>Date</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Client</th>
+                            <th>Staffing</th>
+                            <th>Updated</th>
+                        </tr>
+                    </thead>
+                    <tbody id="eventsTableBody"></tbody>
+                </table>
+            </div>
+        </section>
 
-  function formatTime(value) {
-    if (!value) return '';
-    const [h, m] = value.split(':');
-    if (!h || !m) return '';
-    const date = new Date();
-    date.setHours(+h, +m);
-    return new Intl.DateTimeFormat('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-    }).format(date);
-  }
+        <section id="new-event" class="content-card" data-subsection="Create new event">
+            <div class="card-header">
+                <div>
+                    <h2 class="card-title">Create new event</h2>
+                    <p class="card-subtitle">Capture the essentials, assign talent, and keep clients delighted.</p>
+                    <p class="form-mode-indicator" id="eventFormModeIndicator" aria-live="polite"></p>
+                </div>
+            </div>
 
-  function formatStatus(status) {
-    if (!status) return '—';
-    return status.charAt(0).toUpperCase() + status.slice(1);
-  }
+            <form id="eventForm">
+                <input id="eventId" name="id" type="hidden" />
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="eventName">Event name</label>
+                        <input id="eventName" name="name" type="text" placeholder="E.g. Winter Soirée" required />
+                    </div>
+                    <div class="form-field">
+                        <label for="eventDate">Date</label>
+                        <input id="eventDate" name="date" type="date" required />
+                    </div>
+                    <div class="form-field">
+                        <label for="eventTime">Start time</label>
+                        <input id="eventTime" name="time" type="time" />
+                    </div>
+                    <div class="form-field">
+                        <label for="eventEndTime">End time</label>
+                        <input id="eventEndTime" name="endTime" type="time" />
+                    </div>
+                    <div class="form-field">
+                        <label for="eventLocation">Location</label>
+                        <input id="eventLocation" name="location" type="text" placeholder="Venue or address" />
+                    </div>
+                    <div class="form-field">
+                        <label for="eventPackage">Service package</label>
+                        <select id="eventPackage" name="package" required>
+                            <option value="" selected disabled>Select package</option>
+                            <option>Signature Cocktail Bar</option>
+                            <option>Premium Mixology</option>
+                            <option>Interactive Workshop</option>
+                            <option>Custom Experience</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="guestCount">Guest count</label>
+                        <input id="guestCount" name="guestCount" type="number" min="0" placeholder="Expected attendees" />
+                    </div>
+                    <div class="form-field">
+                        <label for="eventPayout">Estimated payout (USD)</label>
+                        <input id="eventPayout" name="payout" type="number" min="0" step="50" placeholder="0" />
+                    </div>
+                    <div class="form-field">
+                        <label for="requiredStaff">Target staff count</label>
+                        <input id="requiredStaff" name="requiredStaff" type="number" min="0" step="1" placeholder="0" />
+                    </div>
+                </div>
 
-  // ====== Form & Data Helpers ======
-  function clearForm() {
-    form.reset();
-    if (assignmentsSelect)
-      Array.from(assignmentsSelect.options).forEach((opt) => (opt.selected = false));
-    hiddenIdField.value = '';
-    setSavedStatus(false);
-    state.editingId = null;
-    modeIndicator.textContent = '';
-    submitButton.textContent = 'Submit & schedule';
-  }
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="clientName">Client name</label>
+                        <input id="clientName" name="clientName" type="text" placeholder="Client or company" />
+                    </div>
+                    <div class="form-field">
+                        <label for="clientPhone">Client phone</label>
+                        <input id="clientPhone" name="clientPhone" type="tel" placeholder="(713) 555-0100" />
+                    </div>
+                    <div class="form-field">
+                        <label for="eventAssignments">Assign employees</label>
+                        <select id="eventAssignments" name="assignments" multiple size="4" aria-describedby="eventAssignmentsHelp"></select>
+                        <p class="field-help" id="eventAssignmentsHelp">Select bartenders to assign on submission.</p>
+                    </div>
+                </div>
 
-  function getFormValues() {
-    const formData = new FormData(form);
-    const assignments = Array.from(assignmentsSelect.selectedOptions).map((opt) => ({
-      employeeId: opt.value,
-      role: 'Staff',
-    }));
+                <div class="form-grid">
+                    <div class="form-field">
+                        <label for="eventStatus">Event status</label>
+                        <select id="eventStatus" name="status" required>
+                            <option value="draft" selected>Draft</option>
+                            <option value="scheduled">Scheduled</option>
+                            <option value="completed">Completed</option>
+                            <option value="canceled">Canceled</option>
+                        </select>
+                    </div>
+                    <div class="form-field">
+                        <label for="eventStaffing">Staffing status</label>
+                        <select id="eventStaffing" name="staffingStatus" required>
+                            <option value="" disabled>Select staffing</option>
+                            <option value="Fully staffed" data-level="success" selected>Fully staffed</option>
+                            <option value="Ready" data-level="success">Ready</option>
+                            <option value="Needs 1 bartender" data-level="warning">Needs 1 bartender</option>
+                            <option value="Needs 2 bartenders" data-level="warning">Needs 2 bartenders</option>
+                            <option value="Unassigned" data-level="danger">Unassigned</option>
+                        </select>
+                    </div>
+                </div>
 
-    return {
-      id: hiddenIdField.value || crypto.randomUUID(),
-      name: formData.get('name')?.toString().trim() || '',
-      date: formData.get('date')?.toString() || '',
-      time: formData.get('time')?.toString() || '',
-      endTime: formData.get('endTime')?.toString() || '',
-      location: formData.get('location')?.toString().trim() || '',
-      clientName: formData.get('clientName')?.toString().trim() || '',
-      clientPhone: formData.get('clientPhone')?.toString().trim() || '',
-      notes: formData.get('notes')?.toString().trim() || '',
-      status: formData.get('status')?.toString() || 'draft',
-      assignedStaffIds: assignments.map((a) => a.employeeId),
-      package: formData.get('package')?.toString() || '',
-      guestCount: formData.get('guestCount')?.toString() || '',
-      payout: formData.get('payout')?.toString() || '',
-      requiredStaff: formData.get('requiredStaff')?.toString() || '',
-      staffingStatus: formData.get('staffingStatus')?.toString() || '',
-      updatedAt: new Date().toISOString(),
-    };
-  }
+                <div class="form-field">
+                    <label for="eventNotes">Notes & client preferences</label>
+                    <textarea id="eventNotes" name="notes" placeholder="Share tastings, specialty cocktails, or logistics."></textarea>
+                </div>
 
-  // ====== Rendering ======
-  function renderEvents() {
-    const events = state.events.filter(
-      (event) => state.filter === 'all' || event.status === state.filter
-    );
-    eventsTableBody.innerHTML = '';
+                <div class="table-actions" style="justify-content: space-between;">
+                    <div class="saved-indicator" id="draftStatusBadge" hidden>
+                        <span class="badge success">Saved</span>
+                        <span class="saved-indicator__time">Updated <time id="draftStatusTime"></time></span>
+                    </div>
+                    <div class="form-actions">
+                        <button class="button ghost" type="reset">Clear</button>
+                        <button class="button secondary" type="button" id="saveDraftButton">Save draft</button>
+                        <button class="button primary" type="button" id="submitSchedulerButton">Submit &amp; schedule</button>
+                    </div>
+                </div>
+            </form>
+        </section>
+    </main>
 
-    if (!events.length) {
-      const row = document.createElement('tr');
-      const cell = document.createElement('td');
-      cell.colSpan = 7;
-      cell.textContent = 'No events found.';
-      row.appendChild(cell);
-      eventsTableBody.appendChild(row);
-      return;
-    }
+    <footer class="app-footer">
+        © 2025 Bartending2U. Crafted for seamless event coordination.
+    </footer>
 
-    events.forEach((event) => {
-      const row = document.createElement('tr');
-      row.className = 'lead-row';
-      row.dataset.id = event.id;
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-      const staffingLabel =
-        event.staffingStatus ||
-        (event.assignedStaffIds?.length
-          ? event.assignedStaffIds.join(', ')
-          : 'Unassigned');
+    <div class="modal-backdrop" id="modalBackdrop" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+            <div class="modal__header">
+                <h2 class="modal__title" id="modalTitle">Event</h2>
+                <button class="modal__close" type="button" data-modal-close aria-label="Close dialog">✕</button>
+            </div>
+            <div class="modal__body" id="modalBody"></div>
+            <div class="modal__footer" id="modalFooter"></div>
+        </div>
+    </div>
 
-      row.innerHTML = `
-        <td data-label="Event">${event.name}</td>
-        <td data-label="Date">${formatDate(event.date)} ${formatTime(event.time)}</td>
-        <td data-label="Location">${event.location || 'TBD'}</td>
-        <td data-label="Status"><span class="badge ${
-          statusBadgeMap[event.status] || 'neutral'
-        }">${formatStatus(event.status)}</span></td>
-        <td data-label="Client">${event.clientName || '—'}</td>
-        <td data-label="Staffing">${staffingLabel}</td>
-        <td data-label="Updated">${formatDate(event.updatedAt, {
-          month: 'short',
-          day: 'numeric',
-        })}</td>
-      `;
-      eventsTableBody.appendChild(row);
-    });
-  }
-
-  function loadEvents() {
-    if (!storage || typeof storage.getEvents !== 'function') {
-      console.warn('No storage found.');
-      return;
-    }
-    state.events = storage.getEvents() || [];
-    renderEvents();
-  }
-
-  function loadEmployees() {
-    if (!storage || typeof storage.getEmployees !== 'function') {
-      console.warn('No employee storage found.');
-      return;
-    }
-
-    state.employees = storage.getEmployees() || [];
-    if (!state.employees.length) {
-      state.employees = [
-        { id: '1', firstName: 'Alex', lastName: 'Ramirez' },
-        { id: '2', firstName: 'Taylor', lastName: 'Nguyen' },
-        { id: '3', firstName: 'Jordan', lastName: 'Brooks' },
-      ];
-    }
-
-    assignmentsSelect.innerHTML = '';
-    state.employees.forEach((emp) => {
-      const option = document.createElement('option');
-      option.value = emp.id;
-      option.textContent = `${emp.firstName || emp.name} ${emp.lastName || ''}`.trim();
-      assignmentsSelect.appendChild(option);
-    });
-  }
-
-  // ====== Save / Update ======
-  function saveEvent() {
-    const payload = getFormValues();
-    if (!payload.name || !payload.date) {
-      showToast('Event name and date required', 'warning');
-      return;
-    }
-
-    if (!storage) {
-      showToast('Local storage unavailable', 'danger');
-      return;
-    }
-
-    if (state.editingId) {
-      // Update existing
-      storage.updateEvent(state.editingId, payload);
-      showToast('Event updated', 'success');
-    } else {
-      // New event
-      storage.addEvent(payload);
-      showToast('Event saved locally', 'success');
-    }
-
-    clearForm();
-    loadEvents();
-  }
-
-  // ====== Edit Mode ======
-  function enterEditMode(eventId) {
-    const eventData = state.events.find((e) => e.id === eventId);
-    if (!eventData) return;
-
-    // Fill form
-    hiddenIdField.value = eventData.id;
-    form.name.value = eventData.name || '';
-    form.date.value = eventData.date || '';
-    form.time.value = eventData.time || '';
-    form.endTime.value = eventData.endTime || '';
-    form.location.value = eventData.location || '';
-    form.package.value = eventData.package || '';
-    form.guestCount.value = eventData.guestCount || '';
-    form.payout.value = eventData.payout || '';
-    form.requiredStaff.value = eventData.requiredStaff || '';
-    form.clientName.value = eventData.clientName || '';
-    form.clientPhone.value = eventData.clientPhone || '';
-    form.status.value = eventData.status || 'draft';
-    form.staffingStatus.value = eventData.staffingStatus || 'Unassigned';
-    form.notes.value = eventData.notes || '';
-
-    Array.from(assignmentsSelect.options).forEach((opt) => {
-      opt.selected = eventData.assignedStaffIds?.includes(opt.value);
-    });
-
-    state.editingId = eventId;
-    modeIndicator.textContent = `Editing existing event: ${eventData.name}`;
-    submitButton.textContent = 'Update Event';
-    showToast('Edit mode activated', 'info');
-  }
-
-  // ====== Listeners ======
-  form.addEventListener('input', () => setSavedStatus(false));
-  saveButton.addEventListener('click', (e) => {
-    e.preventDefault();
-    saveEvent();
-  });
-  submitButton.addEventListener('click', (e) => {
-    e.preventDefault();
-    saveEvent();
-  });
-  form.addEventListener('reset', () => clearForm());
-
-  filterButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-      filterButtons.forEach((btn) => btn.classList.remove('active'));
-      button.classList.add('active');
-      state.filter = button.dataset.filter || 'all';
-      renderEvents();
-    });
-  });
-
-  eventsTableBody.addEventListener('click', (e) => {
-    const row = e.target.closest('tr[data-id]');
-    if (!row) return;
-    const eventId = row.dataset.id;
-    enterEditMode(eventId);
-  });
-
-  // ====== Init ======
-  (function init() {
-    loadEmployees();
-    loadEvents();
-    showToast('Loaded offline data', 'info');
-  })();
-})();
+    <!-- === JS Files (executed in order) === -->
+    <script src="scripts.js"></script>
+    <script src="storage.js"></script>
+    <script src="api.js"></script>
+    <script src="events-page.js"></script>
+</body>
+</html>
