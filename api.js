@@ -1,116 +1,65 @@
 (function (global) {
-    const API_BASE = '/api';
-
-    async function request(path, options) {
-        const response = await fetch(`${API_BASE}${path}`, {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            credentials: 'include',
-            ...options,
-        });
-
-        const contentType = response.headers.get('content-type') || '';
-        const isJson = contentType.includes('application/json');
-        const data = isJson ? await response.json() : await response.text();
-
-        if (!response.ok) {
-            const message = isJson && data && typeof data === 'object' && 'error' in data
-                ? data.error.message
-                : response.statusText || 'Request failed';
-            const error = new Error(message);
-            error.status = response.status;
-            error.payload = data;
-            throw error;
-        }
-
-        if (isJson && data && typeof data === 'object' && 'ok' in data) {
-            return data;
-        }
-
-        return { ok: true, data };
-    }
-
     const api = {
+        // ---- Employees ----
         async listEmployees() {
-            const result = await request('/employees');
-            return result.data;
+            return global.B2UStore.getEmployees();
         },
         async createEmployee(payload) {
-            const result = await request('/employees', {
-                method: 'POST',
-                body: JSON.stringify(payload),
-            });
-            return result.data;
+            return global.B2UStore.addEmployee(payload);
         },
         async updateEmployee(id, payload) {
-            const result = await request(`/employees/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify(payload),
-            });
-            return result.data;
+            return global.B2UStore.updateEmployee(id, payload);
         },
+
+        // ---- Events ----
         async listEvents(params) {
-            const query = new URLSearchParams();
+            let events = global.B2UStore.getEvents();
+
+            // optional filtering
             if (params) {
-                if (params.status) query.set('status', params.status);
-                if (params.dateFrom) query.set('dateFrom', params.dateFrom);
-                if (params.dateTo) query.set('dateTo', params.dateTo);
+                if (params.status && params.status !== 'all') {
+                    events = events.filter(e => e.status.toLowerCase() === params.status.toLowerCase());
+                }
+                if (params.dateFrom) {
+                    events = events.filter(e => new Date(e.date) >= new Date(params.dateFrom));
+                }
+                if (params.dateTo) {
+                    events = events.filter(e => new Date(e.date) <= new Date(params.dateTo));
+                }
             }
-            const result = await request(`/events${query.toString() ? `?${query}` : ''}`);
-            return result.data;
+
+            return events;
         },
         async createEvent(payload) {
-            const result = await request('/events', {
-                method: 'POST',
-                body: JSON.stringify(payload),
-            });
-            return result.data;
+            return global.B2UStore.addEvent(payload);
         },
         async updateEvent(id, payload) {
-            const result = await request(`/events/${id}`, {
-                method: 'PUT',
-                body: JSON.stringify(payload),
-            });
-            return result.data;
+            return global.B2UStore.updateEvent(id, payload);
         },
         async assignEmployee(eventId, payload) {
-            const result = await request(`/events/${eventId}/assign`, {
-                method: 'POST',
-                body: JSON.stringify(payload),
-            });
-            return result.data;
+            return global.B2UStore.assignStaff(eventId, payload);
         },
-        async removeAssignment(eventId, assignmentId) {
-            const result = await request(`/events/${eventId}/assign/${assignmentId}`, {
-                method: 'DELETE',
-            });
-            return result.data;
+        async removeAssignment(eventId, staffId) {
+            const event = global.B2UStore.getEvent(eventId);
+            if (!event) return null;
+            const next = event.assignedStaffIds.filter(id => id !== staffId);
+            return global.B2UStore.assignStaff(eventId, next);
         },
+
+        // ---- Scheduler / Drafts ----
         async saveSchedulerDraft(payload) {
-            const result = await request('/scheduler/save', {
-                method: 'POST',
-                body: JSON.stringify(payload),
-            });
-            return result.data;
+            return global.B2UStore.addEvent(Object.assign({}, payload, { status: 'Draft' }));
         },
-        async fetchSchedulerDraft(formKey) {
-            const result = await request(`/scheduler/saved?${new URLSearchParams({ formKey })}`);
-            return result.data;
+        async fetchSchedulerDraft() {
+            const events = global.B2UStore.getEvents();
+            return events.filter(e => e.status.toLowerCase() === 'draft');
         },
         async deleteSchedulerDraft(id) {
-            const result = await request(`/scheduler/saved/${id}`, {
-                method: 'DELETE',
-            });
-            return result.data;
+            return global.B2UStore.removeEvent(id);
         },
         async submitScheduler(payload) {
-            const result = await request('/scheduler/submit', {
-                method: 'POST',
-                body: JSON.stringify(payload),
-            });
-            return result.data;
-        },
+            return global.B2UStore.addEvent(Object.assign({}, payload, { status: 'Scheduled' }));
+        }
     };
 
     global.B2UApi = api;
