@@ -1,270 +1,242 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Events - Bartending2U</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Events - Bartending2U</title>
+
+  <!-- Fonts and Styles -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-    <header class="top-bar">
-        <div class="top-bar__inner">
-            <div class="brand">
-                <img src="IMG_9047.png" alt="Bartending2U logo" />
-                <div class="brand__text">
-                    <span class="brand__subtitle">Bartending2U</span>
-                    <span class="brand__title">Scheduling Suite</span>
-                </div>
-            </div>
-
-            <button
-                class="mobile-nav-toggle"
-                id="mobileNavToggle"
-                type="button"
-                aria-label="Toggle navigation"
-                aria-expanded="false"
-                data-mobile-nav-toggle
-            >
-                <span class="mobile-nav-toggle__icon" aria-hidden="true">☰</span>
-                <span class="sr-only">Toggle navigation</span>
-            </button>
-
-            <nav class="nav-links" id="primaryNav">
-                <a class="nav-link" href="index.html">Dashboard</a>
-                <a class="nav-link active" href="events.html">Events</a>
-                <a class="nav-link" href="leads.html">Leads</a>
-                <a class="nav-link" href="employees.html">Employees</a>
-                <a class="nav-link" href="calendar.html">Calendar</a>
-                <a class="nav-link" href="settings.html">Settings</a>
-            </nav>
-
-            <a class="cta-button" href="#new-event">+ New Event</a>
+  <!-- Header -->
+  <header class="top-bar">
+    <div class="top-bar__inner">
+      <div class="brand">
+        <img src="IMG_9047.png" alt="Bartending2U logo" />
+        <div class="brand__text">
+          <span class="brand__subtitle">Bartending2U</span>
+          <span class="brand__title">Scheduling Suite</span>
         </div>
-    </header>
+      </div>
 
-    <main class="page-content">
-        <section class="page-header">
-            <div>
-                <p class="page-eyebrow">Events</p>
-                <h1 class="page-title">Manage events</h1>
-                <p class="lead-text">Track confirmed gigs, proposals, and staffing status in one place.</p>
-            </div>
-            <div class="hero-actions">
-                <a class="button primary" href="#new-event" data-subsection-target="new-event">Log new booking</a>
-                <a class="secondary-link" href="calendar.html">Sync with calendar →</a>
-            </div>
-        </section>
+      <button
+        class="mobile-nav-toggle"
+        id="mobileNavToggle"
+        type="button"
+        aria-label="Toggle navigation"
+        aria-expanded="false"
+        data-mobile-nav-toggle
+      >
+        <span class="mobile-nav-toggle__icon" aria-hidden="true">☰</span>
+        <span class="sr-only">Toggle navigation</span>
+      </button>
 
-        <section id="event-pipeline" class="content-card" data-subsection="Event pipeline">
-            <div class="card-header">
-                <div>
-                    <h2 class="card-title">Event pipeline</h2>
-                    <p class="card-subtitle">Filter bookings, review details, and update staffing.</p>
-                </div>
-            </div>
-            <div class="tab-bar">
-                <button class="tab active" type="button" data-filter="all">All</button>
-                <button class="tab" type="button" data-filter="scheduled">Scheduled</button>
-                <button class="tab" type="button" data-filter="draft">Drafts</button>
-                <button class="tab" type="button" data-filter="completed">Completed</button>
-                <button class="tab" type="button" data-filter="canceled">Canceled</button>
-            </div>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Event</th>
-                            <th>Date</th>
-                            <th>Location</th>
-                            <th>Status</th>
-                            <th>Client</th>
-                            <th>Staffing</th>
-                            <th>Updated</th>
-                        </tr>
-                    </thead>
-                    <tbody id="eventsTableBody"></tbody>
-                </table>
-            </div>
-        </section>
+      <nav class="nav-links" id="primaryNav">
+        <a class="nav-link" href="index.html">Dashboard</a>
+        <a class="nav-link active" href="events.html">Events</a>
+        <a class="nav-link" href="leads.html">Leads</a>
+        <a class="nav-link" href="employees.html">Employees</a>
+        <a class="nav-link" href="calendar.html">Calendar</a>
+        <a class="nav-link" href="settings.html">Settings</a>
+      </nav>
 
-        <section id="new-event" class="content-card" data-subsection="Create new event">
-            <div class="card-header">
-                <div>
-                    <h2 class="card-title">Create new event</h2>
-                    <p class="card-subtitle">Capture the essentials, assign talent, and keep clients delighted.</p>
-                    <p class="form-mode-indicator" id="eventFormModeIndicator" aria-live="polite"></p>
-                    <p class="card-subtitle">Log the basics, set staffing needs, and keep notes handy.</p>
-                </div>
-            </div>
-            <form id="eventForm">
-                <input id="eventId" name="id" type="hidden" />
-                <div class="form-grid">
-                    <div class="form-field">
-                        <label for="eventName">Event name</label>
-                        <input id="eventName" name="name" type="text" placeholder="E.g. Winter Soirée" required />
-                    </div>
-                    <div class="form-field">
-                        <label for="eventDate">Date</label>
-                        <input id="eventDate" name="date" type="date" required />
-                    </div>
-                    <div class="form-field">
-                        <label for="eventTime">Start time</label>
-                        <input id="eventTime" name="time" type="time" />
-                    </div>
-                    <div class="form-field">
-                        <label for="eventEndTime">End time</label>
-                        <input id="eventEndTime" name="endTime" type="time" />
-                    </div>
-                    <div class="form-field">
-                        <label for="eventLocation">Location</label>
-                        <input id="eventLocation" name="location" type="text" placeholder="Venue or address" />
-                    </div>
-                    <div class="form-field">
-                        <label for="eventPackage">Service package</label>
-                        <select id="eventPackage" name="package" required>
-                            <option value="" selected disabled>Select package</option>
-                            <option>Signature Cocktail Bar</option>
-                            <option>Premium Mixology</option>
-                            <option>Interactive Workshop</option>
-                            <option>Custom Experience</option>
-                        </select>
-                    </div>
-                    <div class="form-field">
-                        <label for="guestCount">Guest count</label>
-                        <input id="guestCount" name="guestCount" type="number" min="0" placeholder="Expected attendees" />
-                    </div>
-                    <div class="form-field">
-                        <label for="eventPayout">Estimated payout (USD)</label>
-                        <input id="eventPayout" name="payout" type="number" min="0" step="50" placeholder="0" />
-                    </div>
-                    <div class="form-field">
-                        <label for="requiredStaff">Target staff count</label>
-                        <input id="requiredStaff" name="requiredStaff" type="number" min="0" step="1" placeholder="0" />
-                    </div>
-                </div>
-                <div class="form-grid">
-                    <div class="form-field">
-                        <label for="clientName">Client name</label>
-                        <input id="clientName" name="clientName" type="text" placeholder="Client or company" />
-                    </div>
-                    <div class="form-field">
-                        <label for="clientPhone">Client phone</label>
-                        <input id="clientPhone" name="clientPhone" type="tel" placeholder="(713) 555-0100" />
-                    </div>
-                    <div class="form-field">
-                        <label for="eventAssignments">Assign employees</label>
-                        <select id="eventAssignments" name="assignments" multiple size="4" aria-describedby="eventAssignmentsHelp"></select>
-                        <p class="field-help" id="eventAssignmentsHelp">Select bartenders to assign on submission.</p>
-                    </div>
-                </div>
-                <div class="form-grid">
-                    <div class="form-field">
-                        <label for="eventStatus">Event status</label>
-                        <select id="eventStatus" name="status" required>
-                            <option value="draft" selected>Draft</option>
-                            <option value="scheduled">Scheduled</option>
-                            <option value="completed">Completed</option>
-                            <option value="canceled">Canceled</option>
-                        </select>
-                    </div>
-                    <div class="form-field">
-                        <label for="eventStaffing">Staffing status</label>
-                        <select id="eventStaffing" name="staffingStatus" required>
-                            <option value="" disabled>Select staffing</option>
-                            <option value="Fully staffed" data-level="success" selected>Fully staffed</option>
-                            <option value="Ready" data-level="success">Ready</option>
-                            <option value="Needs 1 bartender" data-level="warning">Needs 1 bartender</option>
-                            <option value="Needs 2 bartenders" data-level="warning">Needs 2 bartenders</option>
-                            <option value="Unassigned" data-level="danger">Unassigned</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-field">
-                    <label for="eventNotes">Notes & client preferences</label>
-                    <textarea id="eventNotes" name="notes" placeholder="Share tastings, specialty cocktails, or logistics."></textarea>
-                </div>
-                <div class="table-actions" style="justify-content: space-between;">
-                    <div class="saved-indicator" id="draftStatusBadge" hidden>
-                        <span class="badge success">Saved</span>
-                        <span class="saved-indicator__time">Updated <time id="draftStatusTime"></time></span>
-                    </div>
-                    <div class="form-actions">
-                        <button class="button ghost" type="reset">Clear</button>
-                        <button class="button secondary" type="button" id="saveDraftButton">Save draft</button>
-                        <button class="button primary" type="button" id="submitSchedulerButton">Submit &amp; schedule</button>
-                    </div>
-                </div>
-            </form>
-        </section>
-
-        <div id="eventModal" class="modal" hidden>
-            <div class="modal__backdrop" data-modal-dismiss></div>
-            <div class="modal__panel" role="dialog" aria-modal="true" aria-labelledby="eventModalTitle">
-                <button class="modal__close" type="button" aria-label="Close" data-modal-dismiss>&times;</button>
-                <div class="modal__header">
-                    <h3 class="modal__title" id="eventModalTitle"></h3>
-                    <p class="modal__subtitle" data-modal-subtitle></p>
-                </div>
-                <div class="modal__content" data-modal-content></div>
-            </div>
-        </div>
-
-        <template id="checklistTemplate">
-            <div class="event-checklist">
-                <ul class="event-checklist__items" data-checklist-items></ul>
-                <form class="event-checklist__form" data-checklist-form>
-                    <label class="sr-only" for="checklistNewItem">Add checklist item</label>
-                    <input id="checklistNewItem" name="label" type="text" placeholder="Add new item" required autocomplete="off" />
-                    <button class="button primary" type="submit">Add</button>
-                </form>
-            </div>
-        </template>
-
-        <template id="prepSheetTemplate">
-            <form class="prep-sheet" data-prep-form>
-                <div class="prep-sheet__fields">
-                    <label class="form-field">
-                        <span class="form-field__label">Menu focus</span>
-                        <textarea name="menu" rows="3" placeholder="Signature cocktails, mocktail options, etc."></textarea>
-                    </label>
-                    <label class="form-field">
-                        <span class="form-field__label">Equipment & logistics</span>
-                        <textarea name="equipment" rows="3" placeholder="Bar kits, glassware counts, load-in notes"></textarea>
-                    </label>
-                    <label class="form-field">
-                        <span class="form-field__label">Staffing notes</span>
-                        <textarea name="staffing" rows="3" placeholder="Arrival times, attire, assignments"></textarea>
-                    </label>
-                </div>
-                <div class="prep-sheet__actions">
-                    <span class="prep-sheet__status" aria-live="polite" data-prep-status></span>
-                    <button class="button primary" type="submit">Save prep sheet</button>
-                </div>
-            </form>
-        </template>
-    </main>
-
-    <div class="modal-backdrop" id="modalBackdrop" hidden>
-        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-            <div class="modal__header">
-                <h2 class="modal__title" id="modalTitle">Event</h2>
-                <button class="modal__close" type="button" data-modal-close aria-label="Close dialog">✕</button>
-            </div>
-            <div class="modal__body" id="modalBody"></div>
-            <div class="modal__footer" id="modalFooter"></div>
-        </div>
+      <a class="cta-button" href="#new-event">+ New Event</a>
     </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="page-content">
+    <!-- Page Header -->
+    <section class="page-header">
+      <div>
+        <p class="page-eyebrow">Events</p>
+        <h1 class="page-title">Manage events</h1>
+        <p class="lead-text">
+          Track confirmed gigs, proposals, and staffing status in one place.
+        </p>
+      </div>
+      <div class="hero-actions">
+        <a class="button primary" href="#new-event" data-subsection-target="new-event">Log new booking</a>
+        <a class="secondary-link" href="calendar.html">Sync with calendar →</a>
+      </div>
+    </section>
+
+    <!-- Event Pipeline -->
+    <section id="event-pipeline" class="content-card" data-subsection="Event pipeline">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Event pipeline</h2>
+          <p class="card-subtitle">Filter bookings, review details, and update staffing.</p>
+        </div>
+      </div>
+
+      <div class="tab-bar">
+        <button class="tab active" type="button" data-filter="all">All</button>
+        <button class="tab" type="button" data-filter="scheduled">Scheduled</button>
+        <button class="tab" type="button" data-filter="draft">Drafts</button>
+        <button class="tab" type="button" data-filter="completed">Completed</button>
+        <button class="tab" type="button" data-filter="canceled">Canceled</button>
+      </div>
+
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>Date</th>
+              <th>Location</th>
+              <th>Status</th>
+              <th>Client</th>
+              <th>Staffing</th>
+              <th>Updated</th>
+            </tr>
+          </thead>
+          <tbody id="eventsTableBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Create / Edit Event -->
+    <section id="new-event" class="content-card" data-subsection="Create new event">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Create new event</h2>
+          <p class="card-subtitle">
+            Capture the essentials, assign talent, and keep clients delighted.
+          </p>
+          <p class="form-mode-indicator" id="eventFormModeIndicator" aria-live="polite"></p>
+          <p class="card-subtitle">
+            Log the basics, set staffing needs, and keep notes handy.
+          </p>
+        </div>
+      </div>
+
+      <form id="eventForm">
+        <input id="eventId" name="id" type="hidden" />
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="eventName">Event name</label>
+            <input id="eventName" name="name" type="text" placeholder="E.g. Winter Soirée" required />
+          </div>
+          <div class="form-field">
+            <label for="eventDate">Date</label>
+            <input id="eventDate" name="date" type="date" required />
+          </div>
+          <div class="form-field">
+            <label for="eventTime">Start time</label>
+            <input id="eventTime" name="time" type="time" />
+          </div>
+          <div class="form-field">
+            <label for="eventEndTime">End time</label>
+            <input id="eventEndTime" name="endTime" type="time" />
+          </div>
+          <div class="form-field">
+            <label for="eventLocation">Location</label>
+            <input id="eventLocation" name="location" type="text" placeholder="Venue or address" />
+          </div>
+          <div class="form-field">
+            <label for="eventPackage">Service package</label>
+            <select id="eventPackage" name="package" required>
+              <option value="" selected disabled>Select package</option>
+              <option>Signature Cocktail Bar</option>
+              <option>Premium Mixology</option>
+              <option>Interactive Workshop</option>
+              <option>Custom Experience</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="guestCount">Guest count</label>
+            <input id="guestCount" name="guestCount" type="number" min="0" placeholder="Expected attendees" />
+          </div>
+          <div class="form-field">
+            <label for="eventPayout">Estimated payout (USD)</label>
+            <input id="eventPayout" name="payout" type="number" min="0" step="50" placeholder="0" />
+          </div>
+          <div class="form-field">
+            <label for="requiredStaff">Target staff count</label>
+            <input id="requiredStaff" name="requiredStaff" type="number" min="0" step="1" placeholder="0" />
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="clientName">Client name</label>
+            <input id="clientName" name="clientName" type="text" placeholder="Client or company" />
+          </div>
+          <div class="form-field">
+            <label for="clientPhone">Client phone</label>
+            <input id="clientPhone" name="clientPhone" type="tel" placeholder="(713) 555-0100" />
+          </div>
+          <div class="form-field">
+            <label for="eventAssignments">Assign employees</label>
+            <select id="eventAssignments" name="assignments" multiple size="4" aria-describedby="eventAssignmentsHelp"></select>
+            <p class="field-help" id="eventAssignmentsHelp">
+              Select bartenders to assign on submission.
+            </p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field">
+            <label for="eventStatus">Event status</label>
+            <select id="eventStatus" name="status" required>
+              <option value="draft" selected>Draft</option>
+              <option value="scheduled">Scheduled</option>
+              <option value="completed">Completed</option>
+              <option value="canceled">Canceled</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label for="eventStaffing">Staffing status</label>
+            <select id="eventStaffing" name="staffingStatus" required>
+              <option value="" disabled>Select staffing</option>
+              <option value="Fully staffed" data-level="success" selected>Fully staffed</option>
+              <option value="Ready" data-level="success">Ready</option>
+              <option value="Needs 1 bartender" data-level="warning">Needs 1 bartender</option>
+              <option value="Needs 2 bartenders" data-level="warning">Needs 2 bartenders</option>
+              <option value="Unassigned" data-level="danger">Unassigned</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="eventNotes">Notes & client preferences</label>
+          <textarea id="eventNotes" name="notes" placeholder="Share tastings, specialty cocktails, or logistics."></textarea>
+        </div>
+
+        <div class="table-actions" style="justify-content: space-between;">
+          <div class="saved-indicator" id="draftStatusBadge" hidden>
+            <span class="badge success">Saved</span>
+            <span class="saved-indicator__time">Updated <time id="draftStatusTime"></time></span>
+          </div>
+          <div class="form-actions">
+            <button class="button ghost" type="reset">Clear</button>
+            <button class="button secondary" type="button" id="saveDraftButton">Save draft</button>
+            <button class="button primary" type="button" id="submitSchedulerButton">
+              Submit &amp; schedule
+            </button>
+          </div>
+        </div>
+      </form>
+    </section>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  </main>
 
-    <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
+  <!-- Footer -->
+  <footer class="app-footer">© 2025 Bartending2U. Crafted for seamless event coordination.</footer>
 
-    <script src="scripts.js"></script>
-    <script src="storage.js"></script>
-    <script src="api.js"></script>
-    <script src="events-page.js"></script>
+  <!-- Scripts (load in correct order) -->
+  <script src="scripts.js"></script>
+  <script src="storage.js"></script>
+  <!-- <script src="api.js"></script> Removed: No backend calls -->
+  <script src="events-page.js"></script>
 </body>
 </html>
