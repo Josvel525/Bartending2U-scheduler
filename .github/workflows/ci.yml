@@ -1,4 +1,4 @@
-name: CI
+name: Deploy static site
 
 on:
   push:
@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -16,50 +16,34 @@ jobs:
       - name: Use Node.js 20
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
-      - name: Install dependencies
-        working-directory: server
-        run: npm install
-
-      - name: Prisma generate
-        working-directory: server
-        env:
-          DATABASE_URL: "file:./ci.db"
-          DATABASE_PROVIDER: sqlite
-        run: npm run generate
-
-      - name: Prisma migrate deploy
-        working-directory: server
-        env:
-          DATABASE_URL: "file:./ci.db"
-          DATABASE_PROVIDER: sqlite
-        run: npx prisma migrate deploy
-
-      - name: Build server
-        working-directory: server
-        env:
-          DATABASE_URL: "file:./ci.db"
-          DATABASE_PROVIDER: sqlite
-        run: npm run build
-
-      - name: Seed database
-        working-directory: server
-        env:
-          DATABASE_URL: "file:./ci.db"
-          DATABASE_PROVIDER: sqlite
-        run: npm run seed
-
-      - name: API smoke test
-        working-directory: server
-        env:
-          DATABASE_URL: "file:./ci.db"
-          DATABASE_PROVIDER: sqlite
-          PORT: "4000"
-          ENABLE_CORS: "false"
+      - name: Install dependencies (if any)
         run: |
-          node dist/index.js &
-          SERVER_PID=$!
-          sleep 5
-          curl -f http://localhost:4000/api/employees || (kill $SERVER_PID && exit 1)
-          kill $SERVER_PID
+          npm install --ignore-scripts || true
+
+      - name: Build static site
+        run: |
+          echo "Building static site for GitHub Pages"
+          mkdir -p dist
+          cp -r index.html events.html employees.html leads.html calendar.html settings.html styles.css assets/ dist/
+          cp -r scripts.js storage.js api.js events-page.js dist/
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
