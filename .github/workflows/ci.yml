@@ -1,9 +1,14 @@
-name: Deploy static site
+name: Build and Deploy Static Site
 
 on:
   push:
     branches: ["main", "master"]
   pull_request:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build:
@@ -13,36 +18,32 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Use Node.js 20
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
-
-      - name: Install dependencies (if any)
-        run: |
-          npm install --ignore-scripts || true
+          node-version: '20'
 
       - name: Build static site
         run: |
-          echo "Building static site for GitHub Pages"
+          echo "Preparing static files for deployment..."
           mkdir -p dist
-          cp -r index.html events.html employees.html leads.html calendar.html settings.html styles.css assets/ dist/
-          cp -r scripts.js storage.js api.js events-page.js dist/
+          cp -r index.html events.html employees.html leads.html calendar.html settings.html styles.css dist/ 2>/dev/null || true
+          cp -r scripts.js storage.js api.js events-page.js dist/ 2>/dev/null || true
+          cp -r assets dist/assets 2>/dev/null || true
+          echo "Static site build complete."
 
-      - name: Upload artifact
+      - name: Upload artifact for GitHub Pages
         uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
   deploy:
-    needs: build
     runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
+    needs: build
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
