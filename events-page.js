@@ -29,10 +29,8 @@
     const statusBadgeMap = {
         draft: 'neutral',
         scheduled: 'info',
-        confirmed: 'success',
         completed: 'success',
         canceled: 'danger',
-        awaiting: 'warning',
     };
 
     function showToast(message, variant) {
@@ -113,18 +111,8 @@
         };
     }
 
-    function normaliseStatus(value) {
-        return (value || '').toString().trim().toLowerCase();
-    }
-
     function renderEvents() {
-        const events = state.events.filter(event => {
-            if (state.filter === 'all') {
-                return true;
-            }
-
-            return normaliseStatus(event.status) === state.filter;
-        });
+        const events = state.events.filter(event => state.filter === 'all' || event.status === state.filter);
         eventsTableBody.innerHTML = '';
 
         if (!events.length) {
@@ -142,17 +130,11 @@
             row.className = 'lead-row';
             const staffingLabel =
                 event.staffingStatus || (event.assignedStaffIds?.length ? event.assignedStaffIds.join(', ') : 'Unassigned');
-            const normalisedStatus = normaliseStatus(event.status);
-            const badgeKey =
-                normalisedStatus in statusBadgeMap
-                    ? normalisedStatus
-                    : Object.keys(statusBadgeMap).find(key => normalisedStatus.startsWith(key)) || 'default';
-            const badgeVariant = statusBadgeMap[badgeKey] || 'neutral';
             row.innerHTML = `
                 <td data-label="Event">${event.name}</td>
                 <td data-label="Date">${formatDate(event.date)} ${formatTime(event.time)}</td>
                 <td data-label="Location">${event.location || 'TBD'}</td>
-                <td data-label="Status"><span class="badge ${badgeVariant}">${formatStatus(event.status)}</span></td>
+                <td data-label="Status"><span class="badge ${statusBadgeMap[event.status] || 'neutral'}">${formatStatus(event.status)}</span></td>
                 <td data-label="Client">${event.clientName || '—'}</td>
                 <td data-label="Staffing">${staffingLabel}</td>
                 <td data-label="Updated">${formatDate(event.updatedAt, { month: 'short', day: 'numeric' })}</td>
