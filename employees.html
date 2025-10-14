@@ -1641,6 +1641,8 @@
             let hasActive = false;
 
             list.forEach((employee) => {
+                const roleText = employee.role || '';
+                const specialtiesText = employee.specialties ? ` · ${employee.specialties}` : '';
                 const button = document.createElement('button');
                 button.type = 'button';
                 button.className = 'person-card';
@@ -1648,7 +1650,7 @@
                 button.innerHTML = `
                     <div>
                         <h3 class="person-card__name">${employee.name}</h3>
-                        <p class="person-card__role">${employee.role} · ${employee.specialties}</p>
+                        <p class="person-card__role">${roleText}${specialtiesText}</p>
                     </div>
                     <div class="person-card__status"><span class="${statusClasses[employee.status] || 'badge'}">${employee.statusLabel}</span></div>
                 `;
@@ -1750,7 +1752,8 @@
             }
 
             detailName.textContent = employee.name;
-            detailRole.textContent = `${employee.role} · ${employee.specialties}`;
+            const specialtiesText = employee.specialties ? ` · ${employee.specialties}` : '';
+            detailRole.textContent = `${employee.role || ''}${specialtiesText}`.trim() || '—';
             detailStatus.textContent = employee.statusLabel;
             detailStatus.className = statusClasses[employee.status] || 'badge';
             detailEmail.textContent = employee.email;
@@ -1916,6 +1919,9 @@
         function applyFilters() {
             const query = employeeSearch ? employeeSearch.value.toLowerCase().trim() : '';
             const filtered = employees.filter((employee) => {
+                const name = (employee.name || '').toLowerCase();
+                const role = (employee.role || '').toLowerCase();
+                const specialties = (employee.specialties || '').toLowerCase();
                 const matchesStatus =
                     activeFilter === 'all' ||
                     (activeFilter === 'available' && employee.status === 'available') ||
@@ -1923,9 +1929,9 @@
 
                 const matchesQuery =
                     !query ||
-                    employee.name.toLowerCase().includes(query) ||
-                    employee.role.toLowerCase().includes(query) ||
-                    employee.specialties.toLowerCase().includes(query);
+                    name.includes(query) ||
+                    role.includes(query) ||
+                    specialties.includes(query);
 
                 return matchesStatus && matchesQuery;
             });
