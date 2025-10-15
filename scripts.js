@@ -105,3 +105,46 @@
         });
     });
 })();
+
+/* Seed employees ONCE if the store is empty (safe no-op otherwise) */
+(function (w) {
+    w.B2U = w.B2U || {};
+    w.B2U.seedEmployeesIfEmpty = function () {
+        const store = w.B2UStore;
+        if (!store || typeof store.getSnapshot !== 'function') return;
+
+        try {
+            const snap = store.getSnapshot();
+            const hasEmployees = Array.isArray(snap.employees) && snap.employees.length > 0;
+            if (hasEmployees) return;
+
+            // Minimal, sane defaults (add more if you like)
+            const seed = [
+                {
+                    id: 'john-doe',
+                    name: 'John Doe',
+                    role: 'Bar Lead',
+                    status: 'available',
+                    statusLabel: 'Available',
+                    email: 'john.doe@bartending2u.com',
+                    phone: '(713) 555-0114'
+                },
+                {
+                    id: 'priya-singh',
+                    name: 'Priya Singh',
+                    role: 'Mixology Lead',
+                    status: 'available',
+                    statusLabel: 'Available',
+                    email: 'priya.singh@bartending2u.com',
+                    phone: '(832) 555-0177'
+                }
+            ];
+
+            snap.employees = seed;
+            store.saveSnapshot(snap);
+            console.info('[B2U] Seeded employees into local store.');
+        } catch (e) {
+            console.warn('[B2U] Could not seed employees:', e);
+        }
+    };
+})(window);
