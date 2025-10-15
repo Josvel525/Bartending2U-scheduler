@@ -220,6 +220,10 @@
     <!-- === JS Files (executed in order) === -->
     <script src="scripts.js"></script>
     <script src="storage.js"></script>
+    <script>
+        // Ensure there are employees in the store so other pages can read them
+        window.B2U?.seedEmployeesIfEmpty();
+    </script>
     <script src="api.js"></script>
     <script src="events-page.js"></script>
 </body>
