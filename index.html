@@ -370,6 +370,10 @@
 
     <script src="scripts.js"></script>
     <script src="storage.js"></script>
+    <script>
+        // Ensure there are employees in the store so other pages can read them
+        window.B2U?.seedEmployeesIfEmpty();
+    </script>
     <script src="leads.js"></script>
     <script src="calendar.js"></script>
     <script>
