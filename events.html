@@ -8,6 +8,40 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css" />
+    <style>
+        #eventDetailModal .modal__dialog {
+            background: var(--surface, #fff);
+            border-radius: 18px;
+            border: 1px solid rgba(148, 163, 184, 0.25);
+            box-shadow: var(--shadow-lg);
+            width: min(720px, calc(100% - 2rem));
+            max-height: min(90vh, 680px);
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        #eventDetailModal .modal__header {
+            padding: 1.5rem 1.75rem 1rem;
+            border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+        }
+
+        #eventDetailModal .modal__content {
+            padding: 1.5rem 1.75rem 1.75rem;
+            background: var(--surface, #fff);
+            overflow-y: auto;
+        }
+
+        #eventDetailModal .modal__actions {
+            padding: 1rem 1.75rem 1.5rem;
+            border-top: 1px solid rgba(226, 232, 240, 0.9);
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+    </style>
 </head>
 <body>
     <header class="top-bar">
