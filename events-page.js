@@ -248,18 +248,18 @@
 
         const assignedStaffNames = getAssignedStaffNames(eventData.assignedStaffIds);
         const details = [
-            { label: 'Date & time', value: [formatDate(eventData.date), formatTimeRange(eventData.time, eventData.endTime)].filter(Boolean).join(' • ') || 'Date TBC' },
+            { label: 'Date and Time', value: [formatDate(eventData.date), formatTimeRange(eventData.time, eventData.endTime)].filter(Boolean).join(' • ') || 'Date TBC' },
             { label: 'Location', value: eventData.location || 'TBD' },
             { label: 'Status', value: formatStatus(eventData.status) },
-            { label: 'Staffing status', value: eventData.staffingStatus || '—' },
-            { label: 'Assigned staff', value: assignedStaffNames.length ? assignedStaffNames.join(', ') : 'None assigned' },
-            { label: 'Service package', value: eventData.package || '—' },
-            { label: 'Guest count', value: eventData.guestCount ? String(eventData.guestCount) : '—' },
-            { label: 'Target staff', value: eventData.requiredStaff ? String(eventData.requiredStaff) : '—' },
-            { label: 'Estimated payout', value: formatCurrency(eventData.payout) },
-            { label: 'Client name', value: eventData.clientName || '—' },
-            { label: 'Client phone', value: eventData.clientPhone || '—' },
-            { label: 'Last updated', value: eventData.updatedAt ? formatDate(eventData.updatedAt, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—' },
+            { label: 'Staffing Status', value: eventData.staffingStatus || '—' },
+            { label: 'Assigned Staff', value: assignedStaffNames.length ? assignedStaffNames.join(', ') : 'None assigned' },
+            { label: 'Service Package', value: eventData.package || '—' },
+            { label: 'Guest Count', value: eventData.guestCount ? String(eventData.guestCount) : '—' },
+            { label: 'Target Staff', value: eventData.requiredStaff ? String(eventData.requiredStaff) : '—' },
+            { label: 'Estimated Payout', value: formatCurrency(eventData.payout) },
+            { label: 'Client Name', value: eventData.clientName || '—' },
+            { label: 'Client Phone', value: eventData.clientPhone || '—' },
+            { label: 'Last Updated', value: eventData.updatedAt ? formatDate(eventData.updatedAt, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }) : '—' },
         ];
 
         eventModalDetails.innerHTML = '';

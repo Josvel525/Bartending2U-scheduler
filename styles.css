@@ -2573,15 +2573,16 @@ body.modal-open {
 }
 
 .modal__details dt {
-  font-weight: 600;
-  font-size: 0.85rem;
-  color: var(--slate-600);
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--slate-900);
+  letter-spacing: 0.01em;
 }
 
 .modal__details dd {
   margin: 0;
   font-size: 0.95rem;
-  color: var(--slate-800);
+  color: var(--slate-700);
 }
 
 .modal__preview {
@@ -2611,6 +2612,41 @@ body.modal-open {
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+#eventDetailModal .modal__overlay {
+  background: rgba(15, 23, 42, 0.45);
+}
+
+#eventDetailModal .modal__dialog {
+  background: var(--surface, #fff);
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: var(--shadow-lg);
+  width: min(720px, calc(100% - 2rem));
+  max-height: min(90vh, 680px);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#eventDetailModal .modal__header {
+  padding: 1.5rem 1.75rem 1rem;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.9);
+}
+
+#eventDetailModal .modal__content {
+  padding: 1.5rem 1.75rem 1.75rem;
+  background: var(--surface, #fff);
+  overflow-y: auto;
+}
+
+#eventDetailModal .modal__actions {
+  padding: 1rem 1.75rem 1.5rem;
+  border-top: 1px solid rgba(226, 232, 240, 0.9);
+  justify-content: flex-end;
 }
 
 .modal__actions .button.is-disabled,
