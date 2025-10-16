@@ -62,6 +62,13 @@
         canceled: 'danger',
     };
 
+    const statusOptions = [
+        { value: 'draft', label: 'Draft' },
+        { value: 'scheduled', label: 'Scheduled' },
+        { value: 'completed', label: 'Completed' },
+        { value: 'canceled', label: 'Canceled' },
+    ];
+
     const currencyFormatter = new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
@@ -289,13 +296,98 @@
         state.activeEventId = null;
     }
 
-    function showEventDetails(eventId) {
-        const eventData = state.events.find(item => item.id === eventId);
+    function getEventById(eventId) {
+        if (!eventId) {
+            return null;
+        }
+        return state.events.find(item => item.id === eventId) || null;
+    }
+
+    function openEventDetails(eventId) {
+        const eventData = getEventById(eventId);
         if (!eventData) {
             showToast('Event not found', 'warning');
             return;
         }
         openEventModal(eventData);
+    }
+
+    function editEvent(eventId) {
+        const eventData = getEventById(eventId);
+        if (!eventData) {
+            showToast('Event not found', 'warning');
+            return;
+        }
+
+        closeEventModal();
+        populateForm(eventData);
+        focusEventForm();
+    }
+
+    function deleteEvent(eventId) {
+        if (!eventId) {
+            return;
+        }
+
+        const eventData = getEventById(eventId);
+        if (!eventData) {
+            showToast('Event not found', 'warning');
+            return;
+        }
+
+        const shouldDelete = window.confirm(`Delete "${eventData.name || 'Untitled event'}"? This cannot be undone.`);
+        if (!shouldDelete) {
+            return;
+        }
+
+        if (!storage || typeof storage.removeEvent !== 'function') {
+            showToast('Unable to delete event', 'danger');
+            return;
+        }
+
+        storage.removeEvent(eventId);
+        showToast('Event deleted', 'info');
+
+        if (state.activeEventId === eventId) {
+            closeEventModal();
+        }
+
+        if (hiddenIdField.value === eventId) {
+            clearForm();
+        }
+
+        loadEvents();
+    }
+
+    function updateEventStatus(eventId, nextStatus) {
+        if (!eventId || !nextStatus) {
+            return;
+        }
+
+        if (!storage || typeof storage.updateEvent !== 'function') {
+            showToast('Unable to update status', 'danger');
+            return;
+        }
+
+        const normalised = nextStatus.toString().trim().toLowerCase();
+        const eventData = getEventById(eventId);
+
+        if (!eventData) {
+            showToast('Event not found', 'warning');
+            return;
+        }
+
+        storage.updateEvent(eventId, { status: normalised });
+        showToast(`Status updated to ${formatStatus(normalised)}`, 'success');
+
+        if (state.activeEventId === eventId) {
+            const updated = typeof storage.getEvent === 'function' ? storage.getEvent(eventId) : null;
+            if (updated) {
+                renderEventModal(updated);
+            }
+        }
+
+        loadEvents();
     }
 
     function clearForm() {
@@ -360,30 +452,97 @@
         events.forEach(event => {
             const row = document.createElement('tr');
             row.className = 'lead-row';
+            row.dataset.eventId = event.id;
+            row.tabIndex = 0;
+            row.setAttribute('aria-label', `View details for ${event.name}`);
+            row.dataset.eventRow = 'true';
+
+            const eventCell = document.createElement('td');
+            eventCell.dataset.label = 'Event';
+            const title = document.createElement('div');
+            title.className = 'event-row__title';
+            title.textContent = event.name || 'Untitled event';
+
+            const actionsContainer = document.createElement('div');
+            actionsContainer.className = 'event-row__actions';
+
+            const viewButton = document.createElement('button');
+            viewButton.type = 'button';
+            viewButton.className = 'link-button';
+            viewButton.dataset.eventAction = 'view';
+            viewButton.dataset.eventId = event.id;
+            viewButton.textContent = 'View details';
+
+            const editButton = document.createElement('button');
+            editButton.type = 'button';
+            editButton.className = 'link-button';
+            editButton.dataset.eventAction = 'edit';
+            editButton.dataset.eventId = event.id;
+            editButton.textContent = 'Edit';
+
+            const deleteButton = document.createElement('button');
+            deleteButton.type = 'button';
+            deleteButton.className = 'link-button';
+            deleteButton.dataset.eventAction = 'delete';
+            deleteButton.dataset.eventId = event.id;
+            deleteButton.dataset.variant = 'danger';
+            deleteButton.textContent = 'Delete';
+
+            actionsContainer.append(viewButton, editButton, deleteButton);
+            eventCell.append(title, actionsContainer);
+
+            const dateCell = document.createElement('td');
+            dateCell.dataset.label = 'Date';
+            const dateDisplay = [formatDate(event.date), formatTime(event.time)].filter(Boolean).join(' ');
+            dateCell.textContent = dateDisplay || 'Date TBC';
+
+            const locationCell = document.createElement('td');
+            locationCell.dataset.label = 'Location';
+            locationCell.textContent = event.location || 'TBD';
+
+            const statusCell = document.createElement('td');
+            statusCell.dataset.label = 'Status';
+            const statusWrapper = document.createElement('div');
+            statusWrapper.className = 'status-cell';
+            const badge = document.createElement('span');
+            badge.className = `badge ${statusBadgeMap[event.status] || 'neutral'}`;
+            badge.textContent = formatStatus(event.status);
+
+            const statusSelect = document.createElement('select');
+            statusSelect.className = 'status-select';
+            statusSelect.dataset.eventAction = 'status';
+            statusSelect.dataset.eventId = event.id;
+            statusSelect.setAttribute('aria-label', `Update status for ${event.name || 'event'}`);
+
+            statusOptions.forEach(option => {
+                const opt = document.createElement('option');
+                opt.value = option.value;
+                opt.textContent = option.label;
+                if (option.value === event.status) {
+                    opt.selected = true;
+                }
+                statusSelect.appendChild(opt);
+            });
+
+            statusWrapper.append(badge, statusSelect);
+            statusCell.appendChild(statusWrapper);
+
+            const clientCell = document.createElement('td');
+            clientCell.dataset.label = 'Client';
+            clientCell.textContent = event.clientName || '—';
+
+            const staffingCell = document.createElement('td');
+            staffingCell.dataset.label = 'Staffing';
             const assignedStaffNames = getAssignedStaffNames(event.assignedStaffIds);
             const staffingLabel = event.staffingStatus
                 || (assignedStaffNames.length ? assignedStaffNames.join(', ') : 'Unassigned');
-            const dateDisplay = [formatDate(event.date), formatTime(event.time)].filter(Boolean).join(' ');
-            row.innerHTML = `
-                <td data-label="Event">${event.name}</td>
-                <td data-label="Date">${dateDisplay || 'Date TBC'}</td>
-                <td data-label="Location">${event.location || 'TBD'}</td>
-                <td data-label="Status"><span class="badge ${statusBadgeMap[event.status] || 'neutral'}">${formatStatus(event.status)}</span></td>
-                <td data-label="Client">${event.clientName || '—'}</td>
-                <td data-label="Staffing">${staffingLabel}</td>
-                <td data-label="Updated">${formatDate(event.updatedAt, { month: 'short', day: 'numeric' })}</td>
-            `;
-            row.dataset.eventId = event.id;
-            row.tabIndex = 0;
-            row.setAttribute('role', 'button');
-            row.setAttribute('aria-label', `View details for ${event.name}`);
-            row.addEventListener('click', () => showEventDetails(event.id));
-            row.addEventListener('keydown', evt => {
-                if (evt.key === 'Enter' || evt.key === ' ') {
-                    evt.preventDefault();
-                    showEventDetails(event.id);
-                }
-            });
+            staffingCell.textContent = staffingLabel;
+
+            const updatedCell = document.createElement('td');
+            updatedCell.dataset.label = 'Updated';
+            updatedCell.textContent = formatDate(event.updatedAt, { month: 'short', day: 'numeric' });
+
+            row.append(eventCell, dateCell, locationCell, statusCell, clientCell, staffingCell, updatedCell);
             eventsTableBody.appendChild(row);
         });
     }
@@ -445,7 +604,16 @@
         }
 
         const isUpdate = state.events.some(event => event.id === payload.id);
-        storage.addEvent(payload);
+
+        if (isUpdate && typeof storage.updateEvent === 'function') {
+            storage.updateEvent(payload.id, payload);
+        } else if (typeof storage.addEvent === 'function') {
+            storage.addEvent(payload);
+        } else {
+            showToast('Unable to save event', 'danger');
+            return;
+        }
+
         showToast(isUpdate ? 'Event updated' : 'Event saved locally', 'success');
         clearForm();
         loadEvents();
@@ -488,32 +656,88 @@
     if (eventEditButton) {
         eventEditButton.addEventListener('click', () => {
             if (!state.activeEventId) return;
-            const eventData = state.events.find(item => item.id === state.activeEventId);
-            if (!eventData) return;
-            closeEventModal();
-            populateForm(eventData);
-            focusEventForm();
+            editEvent(state.activeEventId);
         });
     }
 
     if (eventDeleteButton) {
         eventDeleteButton.addEventListener('click', () => {
             if (!state.activeEventId) return;
-            const eventData = state.events.find(item => item.id === state.activeEventId);
-            if (!eventData) return;
-            const shouldDelete = window.confirm(`Delete "${eventData.name}"?`);
-            if (!shouldDelete) return;
-            if (!storage || typeof storage.removeEvent !== 'function') {
-                showToast('Unable to delete event', 'danger');
-                return;
+            deleteEvent(state.activeEventId);
+        });
+    }
+
+    function handleEventTableClick(event) {
+        const target = event.target;
+        if (!(target instanceof Element)) {
+            return;
+        }
+
+        const actionElement = target.closest('[data-event-action]');
+        if (actionElement) {
+            const eventId = actionElement.dataset.eventId;
+            const action = actionElement.dataset.eventAction;
+
+            if (action === 'view') {
+                openEventDetails(eventId);
+            } else if (action === 'edit') {
+                editEvent(eventId);
+            } else if (action === 'delete') {
+                deleteEvent(eventId);
             }
-            storage.removeEvent(state.activeEventId);
-            showToast('Event deleted', 'info');
-            closeEventModal();
-            if (hiddenIdField.value === state.activeEventId) {
-                clearForm();
-            }
-            loadEvents();
+            return;
+        }
+
+        const row = target.closest('tr[data-event-id]');
+        if (row && !(target instanceof HTMLSelectElement)) {
+            openEventDetails(row.dataset.eventId || '');
+        }
+    }
+
+    function handleEventTableChange(event) {
+        const target = event.target;
+        if (!(target instanceof HTMLSelectElement)) {
+            return;
+        }
+
+        if (target.dataset.eventAction === 'status') {
+            updateEventStatus(target.dataset.eventId || '', target.value);
+        }
+    }
+
+    function handleEventTableKeydown(event) {
+        if (event.key !== 'Enter' && event.key !== ' ') {
+            return;
+        }
+
+        const target = event.target;
+        if (!(target instanceof Element)) {
+            return;
+        }
+
+        if (target.closest('[data-event-action]')) {
+            return;
+        }
+
+        const row = target.closest('tr[data-event-id]');
+        if (!row) {
+            return;
+        }
+
+        event.preventDefault();
+        openEventDetails(row.dataset.eventId || '');
+    }
+
+    eventsTableBody.addEventListener('click', handleEventTableClick);
+    eventsTableBody.addEventListener('change', handleEventTableChange);
+    eventsTableBody.addEventListener('keydown', handleEventTableKeydown);
+
+    if (typeof window !== 'undefined') {
+        window.B2UEventsPage = Object.assign({}, window.B2UEventsPage, {
+            openEventDetails,
+            editEvent,
+            deleteEvent,
+            updateEventStatus,
         });
     }
 
