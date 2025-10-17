@@ -453,6 +453,40 @@
             }).format(amount);
         }
 
+        function getEmployeeStatusLevel(employee) {
+            if (!employee) {
+                return 'neutral';
+            }
+
+            if (employee.statusLevel) {
+                return employee.statusLevel;
+            }
+
+            const normalized = `${employee.status || ''} ${employee.statusLabel || ''}`.toLowerCase();
+            if (!normalized.trim()) {
+                return 'success';
+            }
+
+            if (normalized.includes('available') || normalized.includes('ready')) {
+                return 'success';
+            }
+
+            if (normalized.includes('pto') || normalized.includes('limited')) {
+                return 'warning';
+            }
+
+            if (
+                normalized.includes('unavailable') ||
+                normalized.includes('inactive') ||
+                normalized.includes('booked') ||
+                normalized.includes('out')
+            ) {
+                return 'danger';
+            }
+
+            return 'info';
+        }
+
         const FALLBACK_STATS = Object.freeze({
             totalEvents: 4,
             teamAvailability: { available: 6, total: 8 },
@@ -696,7 +730,7 @@
             }
 
             if (teamAvailability) {
-                const available = employees.filter((employee) => employee.statusLevel === 'success').length;
+                const available = employees.filter((employee) => getEmployeeStatusLevel(employee) === 'success').length;
                 teamAvailability.textContent = `${available} / ${employees.length}`;
             }
 
@@ -750,7 +784,9 @@
             list.innerHTML = '';
 
             const needsStaff = events.filter((event) => event.staffingLevel !== 'success');
-            const availableEmployees = employees.filter((employee) => employee.statusLevel === 'success');
+            const availableEmployees = employees.filter(
+                (employee) => getEmployeeStatusLevel(employee) === 'success'
+            );
 
             if (needsStaff.length === 0) {
                 emptyState.hidden = false;
