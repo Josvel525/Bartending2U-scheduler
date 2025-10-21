@@ -2,7 +2,8 @@
     const navToggle = document.querySelector('[data-mobile-nav-toggle]');
     const nav = document.getElementById('primaryNav');
 
-    if (navToggle && nav) {
+    if (navToggle && nav && nav.dataset.navInitialized !== 'true') {
+        nav.dataset.navInitialized = 'true';
         const lockScroll = (shouldLock) => {
             document.body.classList.toggle('nav-open', shouldLock);
         };
