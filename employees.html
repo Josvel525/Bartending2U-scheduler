@@ -2559,7 +2559,12 @@
                     }
 
                     card.addEventListener('click', (event) => {
-                        if (event.target.closest('[data-remove-employee]')) {
+                        const removeTrigger =
+                            event.target instanceof Element
+                                ? event.target.closest('[data-remove-employee]')
+                                : null;
+
+                        if (removeTrigger) {
                             return;
                         }
 
