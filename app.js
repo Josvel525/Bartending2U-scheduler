@@ -2,9 +2,74 @@
     const navToggle = document.getElementById('mobileNavToggle');
     const nav = document.getElementById('primaryNav');
 
-    if (navToggle && nav) {
+    if (navToggle && nav && nav.dataset.navInitialized !== 'true') {
+        nav.dataset.navInitialized = 'true';
+
+        const lockScroll = (shouldLock) => {
+            document.body.classList.toggle('nav-open', shouldLock);
+        };
+
+        const closeNav = () => {
+            nav.classList.remove('open');
+            navToggle.setAttribute('aria-expanded', 'false');
+            lockScroll(false);
+        };
+
+        const openNav = () => {
+            nav.classList.add('open');
+            navToggle.setAttribute('aria-expanded', 'true');
+            lockScroll(true);
+        };
+
         navToggle.addEventListener('click', () => {
-            nav.classList.toggle('open');
+            if (nav.classList.contains('open')) {
+                closeNav();
+            } else {
+                openNav();
+            }
+        });
+
+        nav.addEventListener('click', (event) => {
+            const target = event.target;
+            if (!(target instanceof Element)) {
+                return;
+            }
+
+            if (target.matches('a')) {
+                closeNav();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape') {
+                closeNav();
+            }
+        });
+
+        document.addEventListener('click', (event) => {
+            if (!nav.classList.contains('open')) {
+                return;
+            }
+
+            if (!(event.target instanceof Element)) {
+                return;
+            }
+
+            if (nav.contains(event.target)) {
+                return;
+            }
+
+            if (event.target === navToggle || navToggle.contains(event.target)) {
+                return;
+            }
+
+            closeNav();
+        });
+
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 960) {
+                closeNav();
+            }
         });
     }
 
