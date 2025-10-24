@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 pytest.importorskip("fastapi")
-from fastapi.testclient import TestClient
+from simple_testclient import TestClient
 
 
 def test_event_crud_cycle(tmp_path, monkeypatch):

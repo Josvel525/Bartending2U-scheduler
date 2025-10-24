@@ -67,3 +67,5 @@ pytest test_api.py
 ```
 
 The tests perform a create → list → update → delete flow and confirm data persists across an app restart.
+Install dependencies with `pip install -r requirements.txt` to ensure `httpx` is available for Starlette/FastAPI tooling when
+running the test suite.
