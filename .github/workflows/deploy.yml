@@ -28,7 +28,7 @@ jobs:
           echo "Preparing static files for deployment..."
           mkdir -p dist
           cp -r index.html events.html employees.html leads.html calendar.html settings.html styles.css dist/ 2>/dev/null || true
-          cp -r scripts.js storage.js api.js events-page.js dist/ 2>/dev/null || true
+          cp -r ./*.js dist/ 2>/dev/null || true
           cp -r assets dist/assets 2>/dev/null || true
           echo "Static site build complete."
 
