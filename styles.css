@@ -302,16 +302,17 @@ body.layout-with-sidebar .mobile-nav-toggle:focus-visible {
 }
 
 body.layout-with-sidebar .page-content {
-  max-width: min(1100px, 100%);
-  width: min(1100px, 100%);
-  margin: 2.75rem auto 3.5rem;
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  min-height: 100vh;
   padding: 3rem clamp(2.5rem, 4vw, 3.5rem) 3.75rem;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 250, 252, 0.88));
-  border-radius: 36px 0 0 36px;
-  box-shadow: 0 40px 64px -48px rgba(15, 23, 42, 0.4);
-  backdrop-filter: blur(18px);
-  justify-self: center;
-  align-self: start;
+  background: #ffffff;
+  border-radius: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  justify-self: stretch;
+  align-self: stretch;
 }
 
 body.layout-with-sidebar .cta-button {
