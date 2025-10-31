@@ -204,36 +204,74 @@
         return ['draft', 'scheduled', 'completed', 'canceled'].includes(normalised) ? normalised : 'draft';
     }
 
+    function extractAssignedStaffIds(payload) {
+        if (Array.isArray(payload.assignedStaffIds)) {
+            return payload.assignedStaffIds.map(id => id != null ? String(id) : '').filter(Boolean);
+        }
+
+        if (Array.isArray(payload.assign_employees)) {
+            return payload.assign_employees.map(id => id != null ? String(id) : '').filter(Boolean);
+        }
+
+        if (Array.isArray(payload.assignEmployees)) {
+            return payload.assignEmployees.map(id => id != null ? String(id) : '').filter(Boolean);
+        }
+
+        if (Array.isArray(payload.assignments)) {
+            return payload.assignments
+                .map(assignment => assignment?.employeeId || assignment?.employee?.id || assignment?.id)
+                .filter(Boolean)
+                .map(id => String(id));
+        }
+
+        return [];
+    }
+
     function normaliseEvent(payload) {
         const nowIso = new Date().toISOString();
+        const assignedStaffIds = extractAssignedStaffIds(payload);
+        const date = payload.date || payload.eventDate || payload.startDate || '';
+        const startTime = payload.time || payload.startTime || payload.start_time || payload.beginTime || '';
+        const endTime = payload.endTime || payload.end_time || payload.finishTime || payload.finish_time || '';
+
         return {
-            id: payload.id || createId('evt'),
-            name: payload.name || 'Untitled event',
-            date: payload.date || '',
-            time: payload.time || '',
-            endTime: payload.endTime || '',
-            location: payload.location || '',
-            package: payload.package || '',
-            guestCount: payload.guestCount ?? '',
-            payout: payload.payout ?? '',
-            requiredStaff: payload.requiredStaff ?? '',
-            assignedStaffIds: Array.isArray(payload.assignedStaffIds) ? payload.assignedStaffIds.slice() : [],
-            staffingStatus: payload.staffingStatus || '',
-            clientName: payload.clientName || '',
-            clientPhone: payload.clientPhone || '',
-            notes: payload.notes || '',
-            status: toStatus(payload.status),
-            updatedAt: payload.updatedAt || nowIso,
+            id: payload.id || payload.eventId || payload.uuid || createId('evt'),
+            name: payload.name || payload.title || payload.eventName || 'Untitled event',
+            date,
+            time: startTime,
+            endTime,
+            location: payload.location || payload.venue || payload.address || '',
+            package: payload.package || payload.servicePackage || payload.service_package || '',
+            guestCount:
+                payload.guestCount ?? payload.guests ?? payload.guest_count ?? payload.expectedGuests ?? '',
+            payout:
+                payload.payout ?? payload.estimatedPayout ?? payload.estimated_payout ?? payload.fee ?? '',
+            requiredStaff:
+                payload.requiredStaff
+                ?? payload.targetStaffCount
+                ?? payload.target_staff_count
+                ?? payload.staff_target
+                ?? '',
+            assignedStaffIds,
+            staffingStatus: payload.staffingStatus || payload.staffing_status || payload.staffing || '',
+            clientName: payload.clientName || payload.client_name || '',
+            clientPhone: payload.clientPhone || payload.client_phone || '',
+            notes: payload.notes || payload.eventNotes || payload.description || '',
+            status: toStatus(payload.status || payload.state || payload.eventStatus),
+            updatedAt: payload.updatedAt || payload.updated_at || payload.updated || nowIso,
         };
     }
 
     function normaliseEmployee(payload) {
+        const firstName = payload.firstName || payload.first_name || payload.givenName || '';
+        const lastName = payload.lastName || payload.last_name || payload.familyName || '';
+        const derivedName = `${firstName} ${lastName}`.trim();
         return {
-            id: payload.id || createId('emp'),
-            name: payload.name || 'Unnamed employee',
-            role: payload.role || '',
-            phone: payload.phone || '',
-            email: payload.email || '',
+            id: payload.id || payload.employeeId || payload.employee_id || createId('emp'),
+            name: payload.name || derivedName || 'Unnamed employee',
+            role: payload.role || payload.title || payload.position || '',
+            phone: payload.phone || payload.phoneNumber || payload.phone_number || '',
+            email: payload.email || payload.emailAddress || payload.email_address || '',
         };
     }
 
@@ -335,6 +373,28 @@
             employees[index] = Object.assign({}, employees[index], changes, { id });
             persistEmployees(employees);
             return clone(employees[index]);
+        },
+        getSnapshot() {
+            return clone(state);
+        },
+        saveSnapshot(snapshot) {
+            if (!snapshot || typeof snapshot !== 'object') {
+                throw new Error('Snapshot must be an object');
+            }
+
+            const events = Array.isArray(snapshot.events)
+                ? snapshot.events.map(normaliseEvent)
+                : [];
+            const employees = Array.isArray(snapshot.employees)
+                ? snapshot.employees.map(normaliseEmployee)
+                : [];
+            const leads = Array.isArray(snapshot.leads) ? snapshot.leads.slice() : [];
+
+            const nextState = { events, employees, leads };
+            writeState(nextState);
+            emit('b2u:events:updated', { events: clone(events) });
+            emit('b2u:employees:updated', { employees: clone(employees) });
+            return clone(nextState);
         },
     };
 
