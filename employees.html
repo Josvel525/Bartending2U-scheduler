@@ -1047,6 +1047,9 @@
         const blastPreview = document.getElementById('blastPreview');
         const blastAlert = document.getElementById('blastAlert');
         const communicationForm = document.getElementById('communicationForm');
+        const teamList = document.getElementById('teamList');
+        const teamForm = document.getElementById('teamForm');
+        const upcomingShifts = document.getElementById('upcomingShifts');
         const docViewer = document.getElementById('docViewer');
         const docViewerDialog = docViewer ? docViewer.querySelector('.modal__dialog') : null;
         const docViewerTitle = document.getElementById('docViewerTitle');
@@ -2434,9 +2437,6 @@
         updateCharacterCount();
         updateBlastTypeVisibility();
         updateBlastPreview();
-        const teamList = document.getElementById('teamList');
-        const teamForm = document.getElementById('teamForm');
-        const upcomingShifts = document.getElementById('upcomingShifts');
 
         function createBadge(text, level) {
             const badge = document.createElement('span');
